@@ -1,0 +1,12 @@
+.users__input-label {
+  cursor: pointer;
+
+  &:hover {
+    background-color: rgb(221, 221, 221);
+  }
+}
+
+.active-user {
+  background-color: rgb(244, 213, 213) !important;
+  color: red !important;
+}
