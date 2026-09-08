@@ -1,13 +1,15 @@
-import './header.scss';
-import { useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { supabase } from '../../lib/supabese';
+import "./header.scss";
+import { useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabese";
 
 export const Header = () => {
   const navigate = useNavigate();
-  const [message, setMessage] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isAdmin, setIsAdmin] = useState(window.localStorage.getItem("isAdmin") === "true");
+  console.log(isAdmin);
 
   const handleLogin = async () => {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -16,42 +18,45 @@ export const Header = () => {
     });
 
     if (error) {
-      setMessage('Email yoki parol noto‘g‘ri');
+      setMessage("Email yoki parol noto‘g‘ri");
       console.log(error);
       handleDarkMode();
       return;
     }
 
     const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .select('role')
-      .eq('user_id', data.user.id)
+      .from("users")
+      .select("role")
+      .eq("user_id", data.user.id)
       .single();
     console.log(profileError);
 
     if (profileError) {
-      setMessage('Foydalanuvchi maʼlumotlari topilmadi');
+      setMessage("Foydalanuvchi maʼlumotlari topilmadi");
       console.log(profileError);
       handleDarkMode();
       return;
     }
 
-    console.log('ROLE:', profile.role);
+    console.log("ROLE:", profile.role);
 
-    setEmail('');
-    setPassword('');
+    setEmail("");
+    setPassword("");
 
-    if (profile.role === 'admin') {
-      navigate('/admins');
+    if (profile.role === "admin") {
+      window.localStorage.setItem("isAdmin", "true");
+      setIsAdmin(true);
+      navigate("/control-users");
     } else {
-      setMessage('Kechirasiz, siz usersiz');
+      setIsAdmin(false);
+      setMessage("Kechirasiz, siz usersiz");
       handleDarkMode();
       return;
     }
 
-    setMessage('Authenticationdan muvaffaqiyatli otdingiz');
+    setMessage("Authenticationdan muvaffaqiyatli otdingiz");
     handleDarkMode();
-    console.log('Login successful:', data.user);
+    console.log("Login successful:", data.user);
   };
 
   const [showNotification, setShowNotification] = useState(false);
@@ -61,7 +66,7 @@ export const Header = () => {
 
     setTimeout(() => {
       setShowNotification(false);
-    }, 5000);
+    }, 3000);
   }
 
   return (
@@ -69,7 +74,7 @@ export const Header = () => {
       {showNotification && message && (
         <div
           className="position-absolute top-0 start-50 translate-middle-x p-3"
-          style={{ minWidth: '270px' }}
+          style={{ minWidth: "270px" }}
         >
           <div
             className="alert alert-warning position-fixed"
@@ -91,25 +96,35 @@ export const Header = () => {
 
         <nav>
           <ul className="m-0 p-0 list-unstyled d-flex ">
+            {isAdmin && (
+              <li className="header__nav-item me-3">
+                <NavLink
+                  to="/control-users"
+                  className={({ isActive }) => (isActive ? "active-link" : "")}
+                >
+                  Control Users
+                </NavLink>
+              </li>
+            )}
+
             <li className="header__nav-item me-3">
-              <NavLink to="/" className={({ isActive }) => (isActive ? 'active-link' : '')}>
+              <NavLink to="/" className={({ isActive }) => (isActive ? "active-link" : "")}>
                 Home
               </NavLink>
             </li>
             <li className="header__nav-item me-3">
               <NavLink
                 to="/duties-schedule"
-                className={({ isActive }) => (isActive ? 'active-link' : '')}
+                className={({ isActive }) => (isActive ? "active-link" : "")}
               >
                 Duties schedule
               </NavLink>
             </li>
             <li className="header__nav-item me-3">
-              <NavLink to="/users" className={({ isActive }) => (isActive ? 'active-link' : '')}>
+              <NavLink to="/users" className={({ isActive }) => (isActive ? "active-link" : "")}>
                 Users
               </NavLink>
             </li>
-
             <li className="header__nav-item ">
               <button
                 type="button"

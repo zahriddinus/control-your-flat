@@ -1,7 +1,7 @@
 import { Home } from './Home';
 import { DutiesSchedule } from './DutiesSchedule';
 import { Users } from './Users';
-import { ForAdmins } from './ForAdmins';
+import { ControlUsers } from './ControlUsers';
 import { Error } from './Error';
 
-export { Home, DutiesSchedule, Users, ForAdmins, Error };
+export { Home, DutiesSchedule, Users, ControlUsers, Error };

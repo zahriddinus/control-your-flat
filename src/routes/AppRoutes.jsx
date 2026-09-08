@@ -1,6 +1,6 @@
-import { Route, Routes } from 'react-router-dom';
-import { DutiesSchedule, Error, ForAdmins, Home, Users } from '../pages';
-import { ProtectedRoute } from '../routes';
+import { Route, Routes } from "react-router-dom";
+import { DutiesSchedule, Error, ControlUsers, Home, Users } from "../pages";
+import { ProtectedRoute } from "../routes";
 
 export const AppRoutes = () => {
   return (
@@ -9,10 +9,10 @@ export const AppRoutes = () => {
       <Route path="/duties-schedule" element={<DutiesSchedule />} />
       <Route path="/users" element={<Users />} />
       <Route
-        path="/admins"
+        path="/control-users"
         element={
           <ProtectedRoute>
-            <ForAdmins />
+            <ControlUsers />
           </ProtectedRoute>
         }
       />

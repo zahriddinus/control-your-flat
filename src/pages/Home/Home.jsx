@@ -1,9 +1,9 @@
-import { supabase } from '../../lib/supabese';
+// import { supabase } from '../../lib/supabese';
 
-const { data, error } = await supabase.from('users').select('*');
+// const { data, error } = await supabase.from('users').select('*');
 
-console.log('DATA:', data);
-console.log('ERROR:', error);
+// console.log('DATA:', data);
+// console.log('ERROR:', error);
 
 export const Home = () => {
   return (

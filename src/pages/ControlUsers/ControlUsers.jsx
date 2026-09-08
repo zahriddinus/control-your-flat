@@ -1,7 +1,9 @@
-import { useRef } from 'react';
-import { supabase } from '../../lib/supabese';
+import { useEffect, useRef } from "react";
+import { supabase } from "../../lib/supabese";
+import { useNavigate } from "react-router-dom";
 
-export const ForAdmins = () => {
+export const ControlUsers = () => {
+  const navigate = useNavigate();
   const roleRef = useRef();
   const nameRef = useRef();
   const lastNameRef = useRef();
@@ -19,7 +21,7 @@ export const ForAdmins = () => {
     };
 
     async function addUser() {
-      const { data, error } = await supabase.from('users').insert(newUser).select();
+      const { data, error } = await supabase.from("users").insert(newUser).select();
 
       if (error) {
         console.error(error);
@@ -31,10 +33,27 @@ export const ForAdmins = () => {
     addUser();
   }
 
+  const checkAdmin = window.localStorage.getItem("isAdmin");
+
+  function handleExit() {
+    if (checkAdmin) {
+      window.localStorage.removeItem("isAdmin");
+    }
+
+    console.log("SSSSS");
+    navigate("/");
+  }
+
+  useEffect(() => {
+    if (!checkAdmin) {
+      navigate("/");
+    }
+  }, [checkAdmin, navigate]);
+
   return (
     <div>
       <form className="" onSubmit={handleForm}>
-        <select ref={roleRef}>
+        <select ref={roleRef} defaultValue={"user"}>
           <option value="admin">Admin</option>
           <option value="user">User</option>
         </select>
@@ -44,6 +63,10 @@ export const ForAdmins = () => {
 
         <button type="submit">Submit</button>
       </form>
+
+      <button className="p-2" type="button" onClick={handleExit}>
+        Exit
+      </button>
     </div>
   );
 };
