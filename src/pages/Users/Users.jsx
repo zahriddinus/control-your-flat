@@ -1,9 +1,52 @@
-import './users.scss';
+import "./users.scss";
+import { useEffect, useState } from "react";
+import { supabase } from "../../lib/supabese";
 
 export const Users = () => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const getUsers = async () => {
+      const { data, error } = await supabase.from("users").select("*");
+
+      if (error) {
+        console.log(error);
+
+        return;
+      }
+
+      setData(data);
+    };
+
+    getUsers();
+  }, []);
+
+  console.log(data);
+
   return (
     <div className="container">
       <h1>Users</h1>
+
+      <table className="table table-info table-striped  border">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">First</th>
+            <th scope="col">Last</th>
+            <th scope="col">Email</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((user, index) => (
+            <tr key={user.user_id}>
+              <th scope="row">{index + 1}</th>
+              <td>{user.name}</td>
+              <td>{user.last_name}</td>
+              <td>{user.age}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

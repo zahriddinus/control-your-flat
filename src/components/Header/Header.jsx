@@ -9,7 +9,6 @@ export const Header = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isAdmin, setIsAdmin] = useState(window.localStorage.getItem("isAdmin") === "true");
-  console.log(isAdmin);
 
   const handleLogin = async () => {
     const { data, error } = await supabase.auth.signInWithPassword({

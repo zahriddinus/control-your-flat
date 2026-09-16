@@ -41,19 +41,14 @@ export const DutiesSchedule = () => {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-  // Bugungi navbatchilar
   const todayUserIndexDuty = (todayDay - 1) % data.length;
 
-  // Bugungi musor tashlovchi
   const todayUserIndexRubbish = Math.floor((todayDay - 1) / 3) % data.length;
 
-  // Generalniy uborka boshlanish sanasi
   const startDate = new Date(2026, 8, 1);
 
-  // Berilgan sanadan boshlang'ich kungacha nechta kun o'tganini hisoblash
   const getDaysFromStart = (date) => Math.floor((date - startDate) / (1000 * 60 * 60 * 24));
 
-  // Generalniy uborka ma'lumotlari
   const getCleaningInfo = (day) => {
     const date = new Date(year, month, day);
     const daysFromStart = getDaysFromStart(date);
@@ -75,7 +70,6 @@ export const DutiesSchedule = () => {
     };
   };
 
-  // Bugungi generalniy uborka
   const todayCleaning = getCleaningInfo(todayDay);
 
   return (

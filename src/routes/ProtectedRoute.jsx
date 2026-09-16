@@ -28,12 +28,12 @@ export const ProtectedRoute = ({ children }) => {
       }
 
       setLoading(false);
-      console.log("ERROR:", error);
+      // console.log("ERROR:", error);
 
-      console.log("SESSION:", session);
-      console.log("EMAIL:", session?.user?.email);
-      console.log("USER:", data);
-      console.log("ROLE:", data?.role);
+      // console.log("SESSION:", session);
+      // console.log("EMAIL:", session?.user?.email);
+      // console.log("USER:", data);
+      // console.log("ROLE:", data?.role);
     };
 
     checkAdmin();
