@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabese";
+import { Loading } from "../../components/Loading";
 
 export const DutiesSchedule = () => {
   const [data, setData] = useState([]);
@@ -74,7 +75,7 @@ export const DutiesSchedule = () => {
 
   return (
     <div className="container">
-      {!error ? (
+      {data.length ? (
         <div>
           {/* Navbatchi */}
           <div>
@@ -268,7 +269,7 @@ export const DutiesSchedule = () => {
           </div>
         </div>
       ) : (
-        <h1>Loading...</h1>
+        <Loading />
       )}
     </div>
   );

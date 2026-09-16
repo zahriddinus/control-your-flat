@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { supabase } from "../lib/supabese";
+import { Loading } from "../components/Loading";
 
 export const ProtectedRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
@@ -40,7 +41,7 @@ export const ProtectedRoute = ({ children }) => {
   }, []);
 
   if (loading) {
-    return <h1>Loading...</h1>;
+    return <Loading />;
   }
 
   if (!isAdmin) {

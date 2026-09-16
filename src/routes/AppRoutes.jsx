@@ -5,9 +5,6 @@ import { ProtectedRoute } from "../routes";
 export const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/duties-schedule" element={<DutiesSchedule />} />
-      <Route path="/users" element={<Users />} />
       <Route
         path="/control-users"
         element={
@@ -16,6 +13,9 @@ export const AppRoutes = () => {
           </ProtectedRoute>
         }
       />
+      <Route path="/" element={<Home />} />
+      <Route path="/duties-schedule" element={<DutiesSchedule />} />
+      <Route path="/users" element={<Users />} />
       <Route path="*" element={<Error />} />
     </Routes>
   );
