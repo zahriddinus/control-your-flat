@@ -24,7 +24,10 @@ export const ControlUsers = () => {
 
   // GET
   async function addUser() {
-    const { data, error } = await supabase.from("users").select();
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .order("user_id", { ascending: true });
 
     if (error) {
       console.error(error);

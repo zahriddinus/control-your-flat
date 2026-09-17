@@ -8,7 +8,10 @@ export const Users = () => {
 
   useEffect(() => {
     const getUsers = async () => {
-      const { data, error } = await supabase.from("users").select("*");
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .order("user_id", { ascending: true });
 
       if (error) {
         console.log(error);
@@ -36,6 +39,7 @@ export const Users = () => {
                 <th scope="col">#</th>
                 <th scope="col">First</th>
                 <th scope="col">Last</th>
+                <th scope="col">Age</th>
                 <th scope="col">Email</th>
               </tr>
             </thead>
@@ -46,6 +50,7 @@ export const Users = () => {
                   <td>{user.name}</td>
                   <td>{user.last_name}</td>
                   <td>{user.age}</td>
+                  <td>{user.email || "—"}</td>
                 </tr>
               ))}
             </tbody>

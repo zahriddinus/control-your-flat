@@ -10,7 +10,10 @@ export const DutiesSchedule = () => {
 
   useEffect(() => {
     const getUsers = async () => {
-      const { data, error } = await supabase.from("users").select("*");
+      const { data, error } = await supabase
+        .from("users")
+        .select("*")
+        .order("user_id", { ascending: true });
 
       if (error) {
         setError(error);
@@ -75,7 +78,7 @@ export const DutiesSchedule = () => {
 
   return (
     <div className="container">
-      {data.length ? (
+      {data.length && !error ? (
         <div>
           {/* Navbatchi */}
           <div>
