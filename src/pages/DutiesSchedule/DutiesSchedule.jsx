@@ -3,11 +3,16 @@ import { supabase } from "../../lib/supabese";
 import { Loading } from "../../components/Loading";
 
 export const DutiesSchedule = () => {
+  const [monthSchedules, setMonthSchedules] = useState({});
   const [data, setData] = useState([]);
   const [error, setError] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
+
   const dateRef = useRef();
 
+  // =========================
+  // GET USERS
+  // =========================
   useEffect(() => {
     const getUsers = async () => {
       const { data, error } = await supabase
@@ -26,6 +31,9 @@ export const DutiesSchedule = () => {
     getUsers();
   }, []);
 
+  // =========================
+  // CURRENT DATE UPDATE
+  // =========================
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentDate(new Date());
@@ -43,44 +51,95 @@ export const DutiesSchedule = () => {
   });
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-  const todayUserIndexDuty = (todayDay - 1) % data.length;
+  // =========================
+  // FORMAT DATE
+  // =========================
+  const formatDate = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
 
-  const todayUserIndexRubbish = Math.floor((todayDay - 1) / 3) % data.length;
-
-  const startDate = new Date(2026, 8, 1);
-
-  const getDaysFromStart = (date) => Math.floor((date - startDate) / (1000 * 60 * 60 * 24));
-
-  const getCleaningInfo = (day) => {
-    const date = new Date(year, month, day);
-    const daysFromStart = getDaysFromStart(date);
-
-    if (daysFromStart < 0) {
-      return {
-        isCleaningDay: false,
-        firstUser: null,
-        secondUser: null,
-      };
-    }
-
-    const group = Math.floor(daysFromStart / 7);
-
-    return {
-      isCleaningDay: daysFromStart % 7 === 0,
-      firstUser: (group * 2) % data.length,
-      secondUser: (group * 2 + 1) % data.length,
-    };
+    return `${y}-${m}-${d}`;
   };
 
-  const todayCleaning = getCleaningInfo(todayDay);
+  // =========================
+  // GET MONTH SCHEDULES
+  // =========================
+  useEffect(() => {
+    if (!data.length) return;
+
+    let cancelled = false;
+
+    const getMonthSchedules = async () => {
+      try {
+        // Shu oyda nechta kun borligini aniqlaymiz
+        const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
+
+        const currentDays = Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1);
+
+        // Barcha kunlar uchun RPC'larni parallel yuboramiz
+        const results = await Promise.all(
+          currentDays.map(async (day) => {
+            const date = new Date(year, month, day);
+            const dateString = formatDate(date);
+
+            const { data: scheduleData, error } = await supabase.rpc("get_duty_schedule", {
+              target_date: dateString,
+            });
+
+            if (error) {
+              throw new Error(`Schedule error ${dateString}: ${error.message}`);
+            }
+
+            return {
+              day,
+              schedule: scheduleData,
+            };
+          })
+        );
+
+        // Agar component eski requestni bekor qilgan bo'lsa,
+        // state'ni o'zgartirmaymiz
+        if (cancelled) return;
+
+        const schedules = {};
+
+        results.forEach(({ day, schedule }) => {
+          schedules[day] = schedule;
+        });
+
+        setMonthSchedules(schedules);
+        setError(null);
+      } catch (error) {
+        if (cancelled) return;
+
+        console.error("Month schedules error:", error);
+        setError(error);
+      }
+    };
+
+    getMonthSchedules();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [year, month, data.length]);
+
+  // =========================
+  // TODAY SCHEDULE
+  // =========================
+  const todaySchedule = monthSchedules[todayDay];
 
   return (
     <div className="container">
       {data.length && !error ? (
         <div>
-          {/* Navbatchi */}
+          {/* =========================
+              NAVBATCHILIK
+          ========================= */}
           <div>
             <h3>Navbatchilik kunlari</h3>
 
@@ -89,6 +148,7 @@ export const DutiesSchedule = () => {
                 <thead>
                   <tr>
                     <th></th>
+
                     <th colSpan={days.length}>{monthName}</th>
                   </tr>
 
@@ -108,16 +168,17 @@ export const DutiesSchedule = () => {
                     <tr key={user.user_id}>
                       <th
                         className={`${
-                          index === todayUserIndexDuty ? "active-user" : ""
+                          todaySchedule?.duty?.user_id === user.user_id ? "active-user" : ""
                         } text-start`}
                       >
                         {index + 1}.{user.name}
                       </th>
 
                       {days.map((day) => {
-                        const userIndex = (day - 1) % data.length;
+                        const daySchedule = monthSchedules[day];
 
-                        const isDutyDay = userIndex === index;
+                        const isDutyDay = daySchedule?.duty?.user_id === user.user_id;
+
                         const isToday = day === todayDay;
 
                         return (
@@ -133,7 +194,9 @@ export const DutiesSchedule = () => {
             </div>
           </div>
 
-          {/* Musor tashlash */}
+          {/* =========================
+              MUSOR TASHLASH
+          ========================= */}
           <div>
             <h3>Musor tashlash</h3>
 
@@ -142,6 +205,7 @@ export const DutiesSchedule = () => {
                 <thead>
                   <tr>
                     <th></th>
+
                     <th colSpan={days.length}>{monthName}</th>
                   </tr>
 
@@ -161,24 +225,21 @@ export const DutiesSchedule = () => {
                     <tr key={user.user_id}>
                       <th
                         className={`${
-                          index === todayUserIndexRubbish ? "active-user" : ""
+                          todaySchedule?.rubbish?.user_id === user.user_id ? "active-user" : ""
                         } text-start`}
                       >
                         {index + 1}.{user.name}
                       </th>
 
                       {days.map((day) => {
-                        const userIndex = Math.floor((day - 1) / 3) % data.length;
+                        const daySchedule = monthSchedules[day];
 
-                        const isDutyDay = userIndex === index && (day - 1) % 3 === 0;
+                        const isDutyDay = daySchedule?.rubbish?.user_id === user.user_id;
 
                         const isToday = day === todayDay;
 
                         return (
-                          <td
-                            className={isToday && userIndex === index ? "active-user" : ""}
-                            key={day}
-                          >
+                          <td className={isToday && isDutyDay ? "active-user" : ""} key={day}>
                             {isDutyDay && "✓"}
                           </td>
                         );
@@ -190,7 +251,9 @@ export const DutiesSchedule = () => {
             </div>
           </div>
 
-          {/* Generalniy uborka */}
+          {/* =========================
+              GENERALNIY UBORKA
+          ========================= */}
           <div>
             <h3>Generalniy uborka</h3>
 
@@ -199,6 +262,7 @@ export const DutiesSchedule = () => {
                 <thead>
                   <tr>
                     <th></th>
+
                     <th colSpan={days.length}>{monthName}</th>
                   </tr>
 
@@ -218,7 +282,9 @@ export const DutiesSchedule = () => {
                     <tr key={user.user_id}>
                       <th
                         className={`${
-                          index === todayCleaning.firstUser || index === todayCleaning.secondUser
+                          todaySchedule?.cleaning?.some(
+                            (cleaningUser) => cleaningUser.user_id === user.user_id
+                          )
                             ? "active-user"
                             : ""
                         } text-start`}
@@ -227,21 +293,22 @@ export const DutiesSchedule = () => {
                       </th>
 
                       {days.map((day) => {
-                        const cleaning = getCleaningInfo(day);
+                        const daySchedule = monthSchedules[day];
 
-                        const isDutyUser =
-                          index === cleaning.firstUser || index === cleaning.secondUser;
+                        const isDutyUser = daySchedule?.cleaning?.some(
+                          (cleaningUser) => cleaningUser.user_id === user.user_id
+                        );
+
+                        const isCleaningDay = daySchedule?.cleaning?.length > 0;
 
                         const isToday = day === todayDay;
 
                         return (
                           <td
                             key={day}
-                            className={
-                              isToday && cleaning.isCleaningDay && isDutyUser ? "active-user" : ""
-                            }
+                            className={isToday && isCleaningDay && isDutyUser ? "active-user" : ""}
                           >
-                            {cleaning.isCleaningDay && isDutyUser && "✓"}
+                            {isCleaningDay && isDutyUser && "✓"}
                           </td>
                         );
                       })}
@@ -252,7 +319,9 @@ export const DutiesSchedule = () => {
             </div>
           </div>
 
-          {/* Sana tanlash */}
+          {/* =========================
+              SANA TANLASH
+          ========================= */}
           <div>
             <label
               className="users__input-label p-2"
