@@ -18,7 +18,7 @@ export const DutiesSchedule = () => {
       const { data, error } = await supabase
         .from("users")
         .select("*")
-        .order("user_id", { ascending: true });
+        .order("duty_order", { ascending: true });
 
       if (error) {
         setError(error);
@@ -141,7 +141,7 @@ export const DutiesSchedule = () => {
               NAVBATCHILIK
           ========================= */}
           <div>
-            <h3>Navbatchilik kunlari</h3>
+            <h3>Navbatchilik kunlari {formatDate(currentDate)}</h3>
 
             <div className="table-responsive">
               <table className="table table-bordered">
@@ -198,7 +198,7 @@ export const DutiesSchedule = () => {
               MUSOR TASHLASH
           ========================= */}
           <div>
-            <h3>Musor tashlash</h3>
+            <h3>Musor tashlash {formatDate(currentDate)}</h3>
 
             <div className="table-responsive">
               <table className="table table-bordered">
@@ -255,7 +255,7 @@ export const DutiesSchedule = () => {
               GENERALNIY UBORKA
           ========================= */}
           <div>
-            <h3>Generalniy uborka</h3>
+            <h3>Generalniy uborka {formatDate(currentDate)}</h3>
 
             <div className="table-responsive">
               <table className="table table-bordered">

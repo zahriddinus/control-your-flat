@@ -11,7 +11,7 @@ export const Users = () => {
       const { data, error } = await supabase
         .from("users")
         .select("*")
-        .order("user_id", { ascending: true });
+        .order("duty_order", { ascending: true });
 
       if (error) {
         console.log(error);
@@ -24,8 +24,6 @@ export const Users = () => {
 
     getUsers();
   }, []);
-
-  console.log(data);
 
   return (
     <>

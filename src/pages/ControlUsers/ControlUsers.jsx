@@ -5,7 +5,6 @@ import { UserModal } from "../../components/UserModal/UserModal";
 
 export const ControlUsers = () => {
   const [data, setData] = useState([]);
-
   const navigate = useNavigate();
 
   // MODAL
@@ -22,12 +21,12 @@ export const ControlUsers = () => {
     setEditModal(true);
   }
 
-  // GET
+  // GET USERS
   async function addUser() {
     const { data, error } = await supabase
       .from("users")
       .select("*")
-      .order("user_id", { ascending: true });
+      .order("duty_order", { ascending: true });
 
     if (error) {
       console.error(error);
@@ -39,28 +38,79 @@ export const ControlUsers = () => {
 
   // ADD / EDIT
   async function handleModalSubmit(formData) {
-    const userData = {
-      role: formData.role,
-      name: formData.name,
-      last_name: formData.lastName,
-      age: Number(formData.age),
-    };
+    const dutyOrder = Number(formData.dutyOrder);
 
+    // -------------------------
+    // EDIT USER
+    // -------------------------
     if (selectedUser) {
-      const { error } = await supabase
+      // Avval oddiy ma'lumotlarni update qilamiz
+      const { error: userError } = await supabase
         .from("users")
-        .update(userData)
+        .update({
+          role: formData.role,
+          name: formData.name,
+          last_name: formData.lastName,
+          age: Number(formData.age),
+        })
         .eq("user_id", selectedUser.user_id);
 
-      if (error) {
-        console.log(error);
+      if (userError) {
+        console.log(userError);
         return;
       }
-    } else {
-      const { error } = await supabase.from("users").insert([userData]);
 
-      if (error) {
-        console.log(error);
+      // Duty order o'zgargan bo'lsa
+      if (dutyOrder && dutyOrder !== selectedUser.duty_order) {
+        const { error: orderError } = await supabase.rpc("move_user_to_order", {
+          p_user_id: selectedUser.user_id,
+          p_new_order: dutyOrder,
+        });
+
+        if (orderError) {
+          console.log(orderError);
+          return;
+        }
+      }
+    }
+
+    // -------------------------
+    // ADD USER
+    // -------------------------
+    else {
+      // Hozirgi maksimal order
+      const maxOrder = data.length > 0 ? Math.max(...data.map((user) => user.duty_order || 0)) : 0;
+
+      // Admin order kiritmagan bo'lsa,
+      // oxiriga qo'shamiz
+      const newOrder = dutyOrder > 0 ? dutyOrder : maxOrder + 1;
+
+      // Agar yangi user o'rtaga kirayotgan bo'lsa,
+      // undan keyingi userlarni suramiz
+      if (newOrder <= maxOrder) {
+        const { error: shiftError } = await supabase.rpc("shift_users_for_insert", {
+          p_new_order: newOrder,
+        });
+
+        if (shiftError) {
+          console.log(shiftError);
+          return;
+        }
+      }
+
+      // Yangi user
+      const { error: insertError } = await supabase.from("users").insert([
+        {
+          role: formData.role,
+          name: formData.name,
+          last_name: formData.lastName,
+          age: Number(formData.age),
+          duty_order: newOrder,
+        },
+      ]);
+
+      if (insertError) {
+        console.log(insertError);
         return;
       }
     }
@@ -74,7 +124,7 @@ export const ControlUsers = () => {
   // DELETE
   async function handleDelete(user) {
     const confirmDelete = window.confirm(
-      `Are we sure we want to delete  ${user.name} ${user.last_name}?`
+      `Are we sure we want to delete ${user.name} ${user.last_name}?`
     );
 
     if (!confirmDelete) return;
@@ -86,7 +136,17 @@ export const ControlUsers = () => {
       return;
     }
 
-    setData((prevData) => prevData.filter((item) => item.user_id !== user.user_id));
+    // O'chirilgan odamdan keyingilarni 1 pog'ona yuqoriga suramiz
+    const { error: shiftError } = await supabase.rpc("shift_users_after_delete", {
+      p_deleted_order: user.duty_order,
+    });
+
+    if (shiftError) {
+      console.log(shiftError);
+      return;
+    }
+
+    await addUser();
   }
 
   const checkAdmin = window.localStorage.getItem("isAdmin");
@@ -109,6 +169,14 @@ export const ControlUsers = () => {
     addUser();
   }, []);
 
+  const formatDate = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+
+    return `${y}-${m}-${d}`;
+  };
+
   return (
     <div className="container">
       <div>
@@ -116,6 +184,8 @@ export const ControlUsers = () => {
           <button className="p-2" type="button" onClick={handleAddUser}>
             Add User
           </button>
+
+          <h3>{formatDate(new Date())}</h3>
 
           <button className="p-2" type="button" onClick={handleExit}>
             Exit
@@ -128,18 +198,24 @@ export const ControlUsers = () => {
               <th>#</th>
               <th>First</th>
               <th>Last</th>
-              <th>Email</th>
+              <th>Age</th>
+              <th>Duty Order</th>
               <th>Changes</th>
             </tr>
           </thead>
 
           <tbody>
-            {data.map((user, index) => (
+            {data.map((user) => (
               <tr key={user.user_id}>
-                <th>{index + 1}</th>
+                <th>{user.duty_order}</th>
+
                 <td>{user.name}</td>
+
                 <td>{user.last_name}</td>
+
                 <td>{user.age}</td>
+
+                <td>{user.duty_order}</td>
 
                 <td>
                   <button type="button" onClick={() => handleEdit(user)}>

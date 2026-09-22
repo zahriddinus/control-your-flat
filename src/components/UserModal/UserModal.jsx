@@ -6,10 +6,10 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
     name: "",
     lastName: "",
     age: "",
+    dutyOrder: "",
   });
 
   // Modal ochilganda yoki user o'zgarganda
-  // form qiymatlarini to'ldirish
   useEffect(() => {
     if (selectedUser) {
       setFormData({
@@ -17,6 +17,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
         name: selectedUser.name || "",
         lastName: selectedUser.last_name || "",
         age: selectedUser.age || "",
+        dutyOrder: selectedUser.duty_order || "",
       });
     } else {
       setFormData({
@@ -24,6 +25,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
         name: "",
         lastName: "",
         age: "",
+        dutyOrder: "",
       });
     }
   }, [selectedUser, isOpen]);
@@ -56,6 +58,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
       >
         <div className="modal-dialog">
           <div className="modal-content">
+            {/* HEADER */}
             <div className="modal-header">
               <h5 className="modal-title" id="userModalLabel">
                 {selectedUser ? "Edit User" : "Add New User"}
@@ -64,8 +67,10 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
               <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
 
+            {/* BODY */}
             <div className="modal-body">
               <form onSubmit={handleSubmit}>
+                {/* ROLE */}
                 <select
                   className="form-select mb-3"
                   name="role"
@@ -73,9 +78,11 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
                   onChange={handleChange}
                 >
                   <option value="admin">Admin</option>
+
                   <option value="user">User</option>
                 </select>
 
+                {/* NAME */}
                 <input
                   type="text"
                   className="form-control mb-3"
@@ -86,6 +93,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
                   required
                 />
 
+                {/* LAST NAME */}
                 <input
                   type="text"
                   className="form-control mb-3"
@@ -96,6 +104,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
                   required
                 />
 
+                {/* AGE */}
                 <input
                   type="number"
                   className="form-control mb-3"
@@ -106,6 +115,27 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
                   required
                 />
 
+                {/* DUTY ORDER */}
+                <label htmlFor="dutyOrder" className="form-label">
+                  Duty order
+                </label>
+
+                <input
+                  id="dutyOrder"
+                  type="number"
+                  className="form-control mb-3"
+                  placeholder="Masalan: 3"
+                  name="dutyOrder"
+                  value={formData.dutyOrder}
+                  onChange={handleChange}
+                  min="1"
+                />
+
+                <small className="text-muted">
+                  Tartib raqamini bo'sh qoldirsangiz, user oxiriga qo'shiladi.
+                </small>
+
+                {/* FOOTER */}
                 <div className="modal-footer">
                   <button type="button" className="btn btn-secondary" onClick={onClose}>
                     Close
