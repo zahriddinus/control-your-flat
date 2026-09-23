@@ -35,8 +35,8 @@ export const Users = () => {
             <thead>
               <tr>
                 <th scope="col">#</th>
-                <th scope="col">First</th>
-                <th scope="col">Last</th>
+                <th scope="col text-start">First</th>
+                <th scope="col text-start">Last</th>
                 <th scope="col">Age</th>
                 <th scope="col">Email</th>
               </tr>
@@ -45,8 +45,8 @@ export const Users = () => {
               {data.map((user, index) => (
                 <tr key={user.user_id}>
                   <th scope="row">{index + 1}</th>
-                  <td>{user.name}</td>
-                  <td>{user.last_name}</td>
+                  <td className="text-start">{user.name}</td>
+                  <td className="text-start">{user.last_name}</td>
                   <td>{user.age}</td>
                   <td>{user.email || "—"}</td>
                 </tr>

@@ -29,6 +29,11 @@ export const ProtectedRoute = ({ children }) => {
       }
 
       setLoading(false);
+
+      if (error) {
+        console.error(error);
+        return;
+      }
       // console.log("ERROR:", error);
 
       // console.log("SESSION:", session);
