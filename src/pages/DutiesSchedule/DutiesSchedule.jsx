@@ -1,3 +1,4 @@
+import "./dutiesSchedule.scss";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabese";
 import { Loading } from "../../components/Loading";
@@ -10,9 +11,8 @@ export const DutiesSchedule = () => {
 
   const dateRef = useRef();
 
-  // =========================
   // GET USERS
-  // =========================
+
   useEffect(() => {
     const getUsers = async () => {
       const { data, error } = await supabase
@@ -31,9 +31,8 @@ export const DutiesSchedule = () => {
     getUsers();
   }, []);
 
-  // =========================
   // CURRENT DATE UPDATE
-  // =========================
+
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentDate(new Date());
@@ -54,9 +53,8 @@ export const DutiesSchedule = () => {
 
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
-  // =========================
   // FORMAT DATE
-  // =========================
+
   const formatDate = (date) => {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
@@ -65,9 +63,8 @@ export const DutiesSchedule = () => {
     return `${y}-${m}-${d}`;
   };
 
-  // =========================
   // GET MONTH SCHEDULES
-  // =========================
+
   useEffect(() => {
     if (!data.length) return;
 
@@ -101,8 +98,6 @@ export const DutiesSchedule = () => {
           })
         );
 
-        // Agar component eski requestni bekor qilgan bo'lsa,
-        // state'ni o'zgartirmaymiz
         if (cancelled) return;
 
         const schedules = {};
@@ -128,20 +123,19 @@ export const DutiesSchedule = () => {
     };
   }, [year, month, data.length]);
 
-  // =========================
   // TODAY SCHEDULE
-  // =========================
+
   const todaySchedule = monthSchedules[todayDay];
 
   return (
     <div className="container">
       {data.length && !error ? (
-        <div>
-          {/* =========================
-              NAVBATCHILIK
-          ========================= */}
+        <div className="schedule pt-3">
+          {/* NAVBATCHILIK */}
           <div>
-            <h3>Navbatchilik kunlari {formatDate(currentDate)}</h3>
+            <h3 className="schedule__title text-primary">
+              Navbatchilik kunlari {formatDate(currentDate)}
+            </h3>
 
             <div className="table-responsive">
               <table className="table table-bordered">
@@ -149,14 +143,19 @@ export const DutiesSchedule = () => {
                   <tr>
                     <th></th>
 
-                    <th colSpan={days.length}>{monthName}</th>
+                    <th className="schedule__cell" colSpan={days.length}>
+                      {monthName}
+                    </th>
                   </tr>
 
                   <tr>
-                    <th>T/r</th>
+                    <th className="schedule__cell">T/r</th>
 
                     {days.map((day) => (
-                      <th className={todayDay === day ? "active-user" : ""} key={day}>
+                      <th
+                        className={`schedule__cell ${todayDay === day ? "active-user" : ""}`}
+                        key={day}
+                      >
                         {day}
                       </th>
                     ))}
@@ -167,7 +166,7 @@ export const DutiesSchedule = () => {
                   {data.map((user, index) => (
                     <tr key={user.user_id}>
                       <th
-                        className={`${
+                        className={`schedule__cell ${
                           todaySchedule?.duty?.user_id === user.user_id ? "active-user" : ""
                         } text-start`}
                       >
@@ -182,7 +181,10 @@ export const DutiesSchedule = () => {
                         const isToday = day === todayDay;
 
                         return (
-                          <td className={isToday && isDutyDay ? "active-user" : ""} key={day}>
+                          <td
+                            className={`schedule__cell ${isToday && isDutyDay ? "active-user" : ""}`}
+                            key={day}
+                          >
                             {isDutyDay && "✓"}
                           </td>
                         );
@@ -193,12 +195,12 @@ export const DutiesSchedule = () => {
               </table>
             </div>
           </div>
+          {/* MUSOR TASHLASH */}
 
-          {/* =========================
-              MUSOR TASHLASH
-          ========================= */}
           <div>
-            <h3>Musor tashlash {formatDate(currentDate)}</h3>
+            <h3 className="schedule__title text-primary">
+              Musor tashlash {formatDate(currentDate)}
+            </h3>
 
             <div className="table-responsive">
               <table className="table table-bordered">
@@ -206,14 +208,19 @@ export const DutiesSchedule = () => {
                   <tr>
                     <th></th>
 
-                    <th colSpan={days.length}>{monthName}</th>
+                    <th className="schedule__cell" colSpan={days.length}>
+                      {monthName}
+                    </th>
                   </tr>
 
                   <tr>
-                    <th>T/r</th>
+                    <th className="schedule__cell">T/r</th>
 
                     {days.map((day) => (
-                      <th className={todayDay === day ? "active-user" : ""} key={day}>
+                      <th
+                        className={`schedule__cell ${todayDay === day ? "active-user" : ""}`}
+                        key={day}
+                      >
                         {day}
                       </th>
                     ))}
@@ -224,7 +231,7 @@ export const DutiesSchedule = () => {
                   {data.map((user, index) => (
                     <tr key={user.user_id}>
                       <th
-                        className={`${
+                        className={`schedule__cell ${
                           todaySchedule?.rubbish?.user_id === user.user_id ? "active-user" : ""
                         } text-start`}
                       >
@@ -239,7 +246,10 @@ export const DutiesSchedule = () => {
                         const isToday = day === todayDay;
 
                         return (
-                          <td className={isToday && isDutyDay ? "active-user" : ""} key={day}>
+                          <td
+                            className={`schedule__cell ${isToday && isDutyDay ? "active-user" : ""}`}
+                            key={day}
+                          >
                             {isDutyDay && "✓"}
                           </td>
                         );
@@ -250,12 +260,12 @@ export const DutiesSchedule = () => {
               </table>
             </div>
           </div>
+          {/* GENERALNIY UBORKA */}
 
-          {/* =========================
-              GENERALNIY UBORKA
-          ========================= */}
           <div>
-            <h3>Generalniy uborka {formatDate(currentDate)}</h3>
+            <h3 className="schedule__title text-primary">
+              Generalniy uborka {formatDate(currentDate)}
+            </h3>
 
             <div className="table-responsive">
               <table className="table table-bordered">
@@ -263,14 +273,19 @@ export const DutiesSchedule = () => {
                   <tr>
                     <th></th>
 
-                    <th colSpan={days.length}>{monthName}</th>
+                    <th className="schedule__title" colSpan={days.length}>
+                      {monthName}
+                    </th>
                   </tr>
 
                   <tr>
-                    <th>T/r</th>
+                    <th className="schedule__cell">T/r</th>
 
                     {days.map((day) => (
-                      <th className={todayDay === day ? "active-user" : ""} key={day}>
+                      <th
+                        className={`schedule__cell ${todayDay === day ? "active-user" : ""}`}
+                        key={day}
+                      >
                         {day}
                       </th>
                     ))}
@@ -281,7 +296,7 @@ export const DutiesSchedule = () => {
                   {data.map((user, index) => (
                     <tr key={user.user_id}>
                       <th
-                        className={`${
+                        className={`schedule__cell ${
                           todaySchedule?.cleaning?.some(
                             (cleaningUser) => cleaningUser.user_id === user.user_id
                           )
@@ -306,7 +321,7 @@ export const DutiesSchedule = () => {
                         return (
                           <td
                             key={day}
-                            className={isToday && isCleaningDay && isDutyUser ? "active-user" : ""}
+                            className={`schedule__cell ${isToday && isCleaningDay && isDutyUser ? "active-user" : ""}`}
                           >
                             {isCleaningDay && isDutyUser && "✓"}
                           </td>
@@ -318,10 +333,8 @@ export const DutiesSchedule = () => {
               </table>
             </div>
           </div>
+          {/* SANA TANLASH */}
 
-          {/* =========================
-              SANA TANLASH
-          ========================= */}
           <div>
             <label
               className="users__input-label p-2"

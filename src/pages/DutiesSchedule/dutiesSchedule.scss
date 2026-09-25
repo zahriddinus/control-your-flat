@@ -1,0 +1,29 @@
+.schedule {
+  &__title {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .schedule {
+    &__title {
+      font-size: 1.5rem;
+    }
+
+    &__cell {
+      font-size: 0.8rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .schedule {
+    &__title {
+      font-size: 1.2rem;
+    }
+
+    &__cell {
+      font-size: 0.7rem;
+    }
+  }
+}
