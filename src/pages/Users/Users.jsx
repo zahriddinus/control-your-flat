@@ -25,25 +25,27 @@ export const Users = () => {
     getUsers();
   }, []);
 
+  console.log(data);
+
   return (
-    <>
+    <div className="users">
       {data.length ? (
-        <div className="container">
-          <h1>Users</h1>
+        <div className="container pt-2">
+          <h1 className="users__title text-primary m-0 my-2 my-md-3">Users</h1>
 
           <table className="table table-info table-striped  border">
             <thead>
-              <tr>
+              <tr className="users__cell">
                 <th scope="col">#</th>
-                <th scope="col ">First</th>
-                <th scope="col ">Last</th>
+                <th scope="col">First</th>
+                <th scope="col">Last</th>
                 <th scope="col">Age</th>
                 <th scope="col">Email</th>
               </tr>
             </thead>
             <tbody>
               {data.map((user, index) => (
-                <tr key={user.user_id}>
+                <tr className="users__cell" key={user.user_id}>
                   <th scope="row">{index + 1}</th>
                   <td>{user.name}</td>
                   <td>{user.last_name}</td>
@@ -57,6 +59,6 @@ export const Users = () => {
       ) : (
         <Loading />
       )}
-    </>
+    </div>
   );
 };

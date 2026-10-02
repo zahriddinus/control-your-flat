@@ -100,7 +100,7 @@ export const Header = () => {
 
   return (
     <>
-      <header className="header">
+      <header className="header shadow-sm">
         {showNotification && message && (
           <div
             className="position-absolute top-0 start-50 translate-middle-x p-3"

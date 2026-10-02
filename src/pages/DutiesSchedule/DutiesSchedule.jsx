@@ -132,8 +132,9 @@ export const DutiesSchedule = () => {
       {data.length && !error ? (
         <div className="schedule pt-3">
           {/* NAVBATCHILIK */}
+
           <div>
-            <h3 className="schedule__title text-primary">
+            <h3 className="schedule__title m-0 my-2 m-md-3 text-primary text-shadow">
               Navbatchilik kunlari {formatDate(currentDate)}
             </h3>
 
@@ -198,7 +199,7 @@ export const DutiesSchedule = () => {
           {/* MUSOR TASHLASH */}
 
           <div>
-            <h3 className="schedule__title text-primary">
+            <h3 className="schedule__title m-0 my-2 m-md-3 text-primary">
               Musor tashlash {formatDate(currentDate)}
             </h3>
 
@@ -263,7 +264,7 @@ export const DutiesSchedule = () => {
           {/* GENERALNIY UBORKA */}
 
           <div>
-            <h3 className="schedule__title text-primary">
+            <h3 className="schedule__title m-0 my-2 m-md-3 text-primary">
               Generalniy uborka {formatDate(currentDate)}
             </h3>
 
@@ -273,7 +274,7 @@ export const DutiesSchedule = () => {
                   <tr>
                     <th></th>
 
-                    <th className="schedule__title" colSpan={days.length}>
+                    <th className="schedule__cell" colSpan={days.length}>
                       {monthName}
                     </th>
                   </tr>
