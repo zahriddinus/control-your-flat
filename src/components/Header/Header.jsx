@@ -209,7 +209,7 @@ export const Header = () => {
               <li className="header__nav-item">
                 <button
                   type="button"
-                  className="btn btn-primary"
+                  className="btn btn-primary py-1"
                   data-bs-toggle="modal"
                   data-bs-target="#exampleModal"
                   onClick={closeMenu}
@@ -274,6 +274,7 @@ export const Header = () => {
                   autoComplete="current-password"
                   id="inputPassword5"
                   className="form-control"
+                  placeholder="********"
                   value={password}
                   onChange={(evt) => setPassword(evt.target.value)}
                 />

@@ -7,9 +7,9 @@
 
 export const Home = () => {
   return (
-    <div className="container">
+    <div className="container mt-5">
       <h1>
-        Assalomu aleykum, <span>Zahriddin</span>
+        Assalomu aleykum, <span>Xonadoshlar!</span>
       </h1>
     </div>
   );

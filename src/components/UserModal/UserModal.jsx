@@ -2,11 +2,14 @@ import { useEffect, useState } from "react";
 
 export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
   const [formData, setFormData] = useState({
-    role: "user",
+    role: "",
     name: "",
     lastName: "",
     age: "",
     dutyOrder: "",
+    nickname: "",
+    phoneNumber: "",
+    email: "",
   });
 
   // Modal ochilganda yoki user o'zgarganda
@@ -18,6 +21,9 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
         lastName: selectedUser.last_name || "",
         age: selectedUser.age || "",
         dutyOrder: selectedUser.duty_order || "",
+        nickname: selectedUser.nickname || "",
+        phoneNumber: selectedUser.phone_number || "",
+        email: selectedUser.email || "",
       });
     } else {
       setFormData({
@@ -26,6 +32,9 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
         lastName: "",
         age: "",
         dutyOrder: "",
+        nickname: "",
+        phoneNumber: "",
+        email: "",
       });
     }
   }, [selectedUser, isOpen]);
@@ -58,19 +67,16 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
       >
         <div className="modal-dialog">
           <div className="modal-content">
-            {/* HEADER */}
             <div className="modal-header">
-              <h5 className="modal-title" id="userModalLabel">
+              <h5 className="modal-title fw-semibold text-primary" id="userModalLabel">
                 {selectedUser ? "Edit User" : "Add New User"}
               </h5>
 
               <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
 
-            {/* BODY */}
             <div className="modal-body">
               <form onSubmit={handleSubmit}>
-                {/* ROLE */}
                 <select
                   className="form-select mb-3"
                   name="role"
@@ -82,7 +88,6 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
                   <option value="user">User</option>
                 </select>
 
-                {/* NAME */}
                 <input
                   type="text"
                   className="form-control mb-3"
@@ -93,7 +98,6 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
                   required
                 />
 
-                {/* LAST NAME */}
                 <input
                   type="text"
                   className="form-control mb-3"
@@ -104,7 +108,6 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
                   required
                 />
 
-                {/* AGE */}
                 <input
                   type="number"
                   className="form-control mb-3"
@@ -115,28 +118,48 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
                   required
                 />
 
-                {/* DUTY ORDER */}
-                <label htmlFor="dutyOrder" className="form-label">
-                  Duty order
-                </label>
+                <input
+                  type="text"
+                  className="form-control mb-3"
+                  name="nickname"
+                  value={formData.nickname}
+                  onChange={handleChange}
+                  placeholder="@username"
+                />
 
                 <input
-                  id="dutyOrder"
-                  type="number"
+                  type="tel"
                   className="form-control mb-3"
-                  placeholder="Masalan: 3"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  placeholder="+998 90 123 45 67"
+                />
+
+                <input
+                  type="email"
+                  className="form-control mb-3"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="example@gmail.com"
+                />
+
+                <input
+                  type="number"
+                  className="form-control"
+                  placeholder="Duty  order: 1, 2, 3..."
                   name="dutyOrder"
                   value={formData.dutyOrder}
                   onChange={handleChange}
                   min="1"
                 />
 
-                <small className="text-muted">
+                <small className="text-muted d-block mt-1 ms-2" style={{ textAlign: "left" }}>
                   Tartib raqamini bo'sh qoldirsangiz, user oxiriga qo'shiladi.
                 </small>
 
-                {/* FOOTER */}
-                <div className="modal-footer">
+                <div className="modal-footer mt-3">
                   <button type="button" className="btn btn-secondary" onClick={onClose}>
                     Close
                   </button>

@@ -1,3 +1,4 @@
+import "./controlUsers.scss";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabese";
@@ -40,11 +41,9 @@ export const ControlUsers = () => {
   async function handleModalSubmit(formData) {
     const dutyOrder = Number(formData.dutyOrder);
 
-    // -------------------------
     // EDIT USER
-    // -------------------------
     if (selectedUser) {
-      // Avval oddiy ma'lumotlarni update qilamiz
+      // Oddiy ma'lumotlarni update qilamiz
       const { error: userError } = await supabase
         .from("users")
         .update({
@@ -52,6 +51,11 @@ export const ControlUsers = () => {
           name: formData.name,
           last_name: formData.lastName,
           age: Number(formData.age),
+
+          // YANGI FIELDLAR
+          nickname: formData.nickname,
+          phone_number: formData.phoneNumber,
+          email: formData.email,
         })
         .eq("user_id", selectedUser.user_id);
 
@@ -74,9 +78,7 @@ export const ControlUsers = () => {
       }
     }
 
-    // -------------------------
     // ADD USER
-    // -------------------------
     else {
       // Hozirgi maksimal order
       const maxOrder = data.length > 0 ? Math.max(...data.map((user) => user.duty_order || 0)) : 0;
@@ -106,6 +108,11 @@ export const ControlUsers = () => {
           last_name: formData.lastName,
           age: Number(formData.age),
           duty_order: newOrder,
+
+          // YANGI FIELDLAR
+          nickname: formData.nickname,
+          phone_number: formData.phoneNumber,
+          email: formData.email,
         },
       ]);
 
@@ -136,7 +143,8 @@ export const ControlUsers = () => {
       return;
     }
 
-    // O'chirilgan odamdan keyingilarni 1 pog'ona yuqoriga suramiz
+    // O'chirilgan odamdan keyingilarni
+    // 1 pog'ona yuqoriga suramiz
     const { error: shiftError } = await supabase.rpc("shift_users_after_delete", {
       p_deleted_order: user.duty_order,
     });
@@ -179,57 +187,95 @@ export const ControlUsers = () => {
 
   return (
     <div className="container">
-      <div>
-        <div className="d-flex justify-content-between align-items-center mb-3">
-          <button className="p-2" type="button" onClick={handleAddUser}>
+      <div className="control">
+        <div className="pt-3 d-flex justify-content-between align-items-center mb-3">
+          <button
+            className="control__btn py-1 btn btn-primary"
+            type="button"
+            onClick={handleAddUser}
+          >
             Add User
           </button>
 
-          <h3>{formatDate(new Date())}</h3>
+          <h3 className="control__title m-0 text-primary fw-semibold">{formatDate(new Date())}</h3>
 
-          <button className="p-2" type="button" onClick={handleExit}>
+          <button className="control__btn py-1 btn btn-danger" type="button" onClick={handleExit}>
             Exit
           </button>
         </div>
 
-        <table className="table table-info table-striped border">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>First</th>
-              <th>Last</th>
-              <th>Age</th>
-              <th>Duty Order</th>
-              <th>Changes</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {data.map((user) => (
-              <tr key={user.user_id}>
-                <th>{user.duty_order}</th>
-
-                <td>{user.name}</td>
-
-                <td>{user.last_name}</td>
-
-                <td>{user.age}</td>
-
-                <td>{user.duty_order}</td>
-
-                <td>
-                  <button type="button" onClick={() => handleEdit(user)}>
-                    Edit
-                  </button>
-
-                  <button type="button" onClick={() => handleDelete(user)}>
-                    Delete
-                  </button>
-                </td>
+        <div className="table-responsive">
+          <table className="table table-info table-striped border">
+            <thead>
+              <tr className="control__cell" style={{ whiteSpace: "nowrap" }}>
+                <th>#</th>
+                <th>First</th>
+                <th>Last</th>
+                <th>Age</th>
+                <th>Nickname</th>
+                <th>Phone Number</th>
+                <th>Email</th>
+                <th>Changes</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody style={{ whiteSpace: "nowrap" }}>
+              {data.map((user) => (
+                <tr className="control__cell align-middle" key={user.user_id}>
+                  <th>{user.duty_order}</th>
+
+                  <td>{user.name}</td>
+
+                  <td>{user.last_name}</td>
+
+                  <td>{user.age}</td>
+
+                  <td>
+                    {user.nickname ? (
+                      <a
+                        href={`https://t.me/${user.nickname.replace("@", "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {user.nickname}
+                      </a>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+
+                  <td>
+                    {user.phone_number ? (
+                      <a href={`tel:${user.phone_number}`}>{user.phone_number}</a>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
+
+                  <td>{user.email ? <a href={`mailto:${user.email}`}>{user.email}</a> : "—"}</td>
+
+                  <td>
+                    <button
+                      className="control__user-btn btn btn-primary py-1 me-2"
+                      type="button"
+                      onClick={() => handleEdit(user)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className="control__user-btn btn btn-danger py-1"
+                      type="button"
+                      onClick={() => handleDelete(user)}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <UserModal
