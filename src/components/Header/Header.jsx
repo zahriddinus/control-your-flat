@@ -1,144 +1,248 @@
 import "./header.scss";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabese";
+import { formatDate } from "../../utils/date";
+import { AdminMenu } from "./AdminMenu";
+import { LoginModal } from "./LoginModal";
+
+const NAV_LINKS = [
+  { to: "/", icon: "🏠", label: "Home" },
+  { to: "/duties-schedule", icon: "📅", label: "Duties schedule" },
+  { to: "/users", icon: "👥", label: "Users" },
+];
+
+const removeAdminFlag = () => {
+  try {
+    window.localStorage.removeItem("isAdmin");
+  } catch {
+    // Xotira yopiq bo'lsa, o'chiradigan narsa ham yo'q
+  }
+};
 
 export const Header = () => {
   const navigate = useNavigate();
 
-  const [message, setMessage] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isAdmin, setIsAdmin] = useState(window.localStorage.getItem("isAdmin") === "true");
-
-  const navRef = useRef(null);
-  const hamburgerRef = useRef(null);
-
-  const [showNotification, setShowNotification] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [notice, setNotice] = useState(null);
 
-  const closeMenu = () => {
-    setIsMenuOpen(false);
+  // undefined - hali tekshirilmagan, null - yo'q
+  const [session, setSession] = useState(undefined);
+  const [profile, setProfile] = useState(undefined);
+
+  const [todayKey, setTodayKey] = useState(() => formatDate(new Date()));
+  const [todayDuty, setTodayDuty] = useState(null);
+
+  const noticeTimer = useRef(null);
+
+  const closeMenu = () => setIsMenuOpen(false);
+  const closeLogin = useCallback(() => setIsLoginOpen(false), []);
+
+  const showNotice = (text, type = "success") => {
+    clearTimeout(noticeTimer.current);
+    setNotice({ text, type });
+
+    noticeTimer.current = setTimeout(() => setNotice(null), 3000);
   };
 
-  const handleLogin = async () => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+  useEffect(() => () => clearTimeout(noticeTimer.current), []);
 
-    if (error) {
-      setMessage("Email yoki parol noto‘g‘ri");
-      console.log(error);
-      handleDarkMode();
-      return;
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("user_id", data.user.id)
-      .single();
-
-    console.log(profileError);
-
-    if (profileError) {
-      await supabase.auth.signOut();
-      setMessage("Foydalanuvchi maʼlumotlari topilmadi");
-      console.log(profileError);
-      handleDarkMode();
-      return;
-    }
-
-    console.log("ROLE:", profile.role);
-
-    setEmail("");
-    setPassword("");
-
-    if (profile.role === "admin") {
-      window.localStorage.setItem("isAdmin", "true");
-      setIsAdmin(true);
-      navigate("/control-users");
-    } else {
-      // Admin bo'lmagan userning sessiyasini ochiq qoldirmaymiz
-      await supabase.auth.signOut();
-      setIsAdmin(false);
-      setMessage("Kechirasiz, siz usersiz");
-      handleDarkMode();
-      return;
-    }
-
-    setMessage("Authenticationdan muvaffaqiyatli otdingiz");
-    handleDarkMode();
-
-    console.log("Login successful:", data.user);
-  };
-
-  function handleDarkMode() {
-    setShowNotification(true);
-
-    setTimeout(() => {
-      setShowNotification(false);
-    }, 3000);
-  }
+  // AUTH
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (!isMenuOpen) return;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession);
 
-      const clickedInsideNav = navRef.current?.contains(event.target);
-      const clickedHamburger = hamburgerRef.current?.contains(event.target);
+      // Sessiya yo'q bo'lsa, eski "isAdmin" belgisi qolib ketmasin
+      if (!newSession) removeAdminFlag();
+    });
 
-      if (!clickedInsideNav && !clickedHamburger) {
-        setIsMenuOpen(false);
-      }
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const userId = session?.user?.id;
+
+  useEffect(() => {
+    if (!userId) {
+      setProfile(null);
+      return;
+    }
+
+    let cancelled = false;
+
+    const getProfile = async () => {
+      setProfile(undefined);
+
+      const { data, error } = await supabase
+        .from("users")
+        .select("name, last_name, role")
+        .eq("user_id", userId)
+        .single();
+
+      if (cancelled) return;
+
+      if (error) console.error(error);
+
+      setProfile(data ?? null);
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    getProfile();
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      cancelled = true;
+    };
+  }, [userId]);
+
+  const authReady = session !== undefined && profile !== undefined;
+  const isAdmin = profile?.role === "admin";
+
+  // TODAY DUTY
+
+  useEffect(() => {
+    const timer = setInterval(() => setTodayKey(formatDate(new Date())), 60 * 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const getTodayDuty = async () => {
+      const { data, error } = await supabase.rpc("get_duty_schedule", {
+        target_date: todayKey,
+      });
+
+      if (cancelled) return;
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+
+      setTodayDuty(data?.duty ?? null);
+    };
+
+    getTodayDuty();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [todayKey]);
+
+  // SCROLL
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 10);
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // MOBILE MENU: Escape bilan yopiladi, ochiqligida orqa sahifa qotadi
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const handleKeyDown = (evt) => {
+      if (evt.key === "Escape") setIsMenuOpen(false);
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isMenuOpen]);
 
+  // Ekran kattalashsa, mobil menyu yopiladi
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 769px)");
+
+    const handleChange = (evt) => {
+      if (evt.matches) setIsMenuOpen(false);
+    };
+
+    desktopQuery.addEventListener("change", handleChange);
+
+    return () => desktopQuery.removeEventListener("change", handleChange);
+  }, []);
+
+  // LOGIN / LOGOUT
+
+  function openLogin() {
+    closeMenu();
+    setIsLoginOpen(true);
+  }
+
+  function handleLoginSuccess(loggedProfile) {
+    closeLogin();
+    showNotice(`Xush kelibsiz, ${loggedProfile.name}! 👋`);
+    navigate("/control-users");
+  }
+
+  async function handleLogout() {
+    closeMenu();
+
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error(error);
+      showNotice("Chiqishda xatolik yuz berdi. Qayta urinib ko'ring.", "danger");
+      return;
+    }
+
+    removeAdminFlag();
+    showNotice("Tizimdan chiqdingiz. Xayr! 👋");
+    navigate("/");
+  }
+
+  const dutyChip = todayDuty && (
+    <Link
+      to="/duties-schedule"
+      className="header__duty"
+      onClick={closeMenu}
+      title="Bugungi navbatchi"
+    >
+      ⭐ Bugun: <strong>{todayDuty.name?.trim()}</strong>
+    </Link>
+  );
+
   return (
     <>
-      <header className="header shadow-sm">
-        {showNotification && message && (
-          <div
-            className="position-absolute top-0 start-50 translate-middle-x p-3"
-            style={{ minWidth: "270px" }}
-          >
-            <div
-              className="alert alert-warning position-fixed"
-              style={{
-                zIndex: 9999,
-              }}
-            >
-              {message}
-            </div>
-          </div>
-        )}
-
-        <div className="container py-2 header__container">
+      <header className={`header ${isScrolled ? "header--scrolled" : ""}`}>
+        <div className="container header__container">
           {/* Logo */}
-          <div className="header__logo">
-            <Link className="text-decoration-none fw-semibold" to="/" onClick={closeMenu}>
-              Residents
-            </Link>
-          </div>
+          <Link className="header__logo" to="/" onClick={closeMenu}>
+            <span className="header__logo-icon" aria-hidden="true">
+              🏡
+            </span>
+
+            <span className="header__logo-text">Control Your Flat</span>
+          </Link>
+
+          {/* Bugungi navbatchi (katta ekranda) */}
+          {dutyChip && <div className="d-none d-lg-block">{dutyChip}</div>}
 
           {/* Hamburger */}
           <button
-            ref={hamburgerRef}
             className={`header__hamburger ${isMenuOpen ? "open" : ""} rounded-circle`}
             type="button"
             onClick={() => setIsMenuOpen((prev) => !prev)}
-            aria-label={isMenuOpen ? "Close navigation" : "Open navigation"}
+            aria-label={isMenuOpen ? "Menyuni yopish" : "Menyuni ochish"}
+            aria-controls="main-navigation"
+            aria-expanded={isMenuOpen}
           >
             {isMenuOpen ? (
               <svg
-                className="header__close"
                 xmlns="http://www.w3.org/2000/svg"
                 width={24}
                 height={24}
@@ -153,7 +257,6 @@ export const Header = () => {
                 width={24}
                 height={24}
                 fill="currentColor"
-                className="bi bi-list"
                 viewBox="0 0 16 16"
               >
                 <path
@@ -164,148 +267,59 @@ export const Header = () => {
             )}
           </button>
 
+          {/* Mobil menyu ochiqligida orqa fon */}
+          {isMenuOpen && <div className="header__overlay" onClick={closeMenu}></div>}
+
           {/* Navigation */}
-          <nav className={`header__nav ${isMenuOpen ? "show" : ""}`} ref={navRef}>
-            <ul className="m-0 p-0 list-unstyled header__nav-list w-100">
-              {isAdmin && (
-                <li className="header__nav-item">
+          <nav
+            id="main-navigation"
+            className={`header__nav ${isMenuOpen ? "show" : ""}`}
+            aria-label="Asosiy menyu"
+          >
+            <ul className="header__nav-list">
+              {NAV_LINKS.map((link) => (
+                <li className="header__nav-item" key={link.to}>
                   <NavLink
-                    to="/control-users"
-                    className={({ isActive }) => (isActive ? "active-link" : "")}
+                    to={link.to}
+                    className={({ isActive }) => `header__link ${isActive ? "active-link" : ""}`}
                     onClick={closeMenu}
                   >
-                    Control Users
+                    <span aria-hidden="true">{link.icon}</span>
+                    {link.label}
                   </NavLink>
                 </li>
+              ))}
+
+              {authReady && (
+                <li className="header__nav-item">
+                  {isAdmin ? (
+                    <AdminMenu profile={profile} onNavigate={closeMenu} onLogout={handleLogout} />
+                  ) : (
+                    <button
+                      type="button"
+                      className="header__login-btn btn btn-primary"
+                      onClick={openLogin}
+                    >
+                      Log in
+                    </button>
+                  )}
+                </li>
               )}
-
-              <li className="header__nav-item">
-                <NavLink
-                  to="/"
-                  className={({ isActive }) => (isActive ? "active-link" : "")}
-                  onClick={closeMenu}
-                >
-                  Home
-                </NavLink>
-              </li>
-
-              <li className="header__nav-item">
-                <NavLink
-                  to="/duties-schedule"
-                  className={({ isActive }) => (isActive ? "active-link" : "")}
-                  onClick={closeMenu}
-                >
-                  Duties schedule
-                </NavLink>
-              </li>
-
-              <li className="header__nav-item">
-                <NavLink
-                  to="/users"
-                  className={({ isActive }) => (isActive ? "active-link" : "")}
-                  onClick={closeMenu}
-                >
-                  Users
-                </NavLink>
-              </li>
-
-              <li className="header__nav-item">
-                <button
-                  type="button"
-                  className="btn btn-primary py-1"
-                  data-bs-toggle="modal"
-                  data-bs-target="#exampleModal"
-                  onClick={closeMenu}
-                >
-                  Log in
-                </button>
-              </li>
             </ul>
+
+            {/* Bugungi navbatchi (mobil menyuda) */}
+            {dutyChip && <div className="header__mobile-duty">{dutyChip}</div>}
           </nav>
         </div>
       </header>
 
-      {/* Modal */}
-      <div
-        className="modal fade"
-        id="exampleModal"
-        tabIndex={-1}
-        aria-labelledby="exampleModalLabel"
-        aria-hidden="true"
-      >
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h1 className="modal-title fs-5" id="exampleModalLabel">
-                Authentication
-              </h1>
+      <LoginModal isOpen={isLoginOpen} onClose={closeLogin} onSuccess={handleLoginSuccess} />
 
-              <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="modal"
-                aria-label="Close"
-              />
-            </div>
-
-            <div className="modal-body text-start">
-              <div className="mb-2">
-                <label htmlFor="exampleFormControlInput1" className="form-label">
-                  Email address
-                </label>
-
-                <input
-                  type="email"
-                  name="email"
-                  autoComplete="email"
-                  className="form-control"
-                  id="exampleFormControlInput1"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(evt) => setEmail(evt.target.value)}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="inputPassword5" className="form-label">
-                  Password
-                </label>
-
-                <input
-                  type="password"
-                  name="password"
-                  autoComplete="current-password"
-                  id="inputPassword5"
-                  className="form-control"
-                  placeholder="********"
-                  value={password}
-                  onChange={(evt) => setPassword(evt.target.value)}
-                />
-
-                <div id="passwordHelpBlock" className="form-text">
-                  Your password must be 8-20 characters long, contain letters and numbers, and must
-                  not contain spaces, special characters, or emoji.
-                </div>
-              </div>
-            </div>
-
-            <div className="modal-footer">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">
-                Close
-              </button>
-
-              <button
-                type="button"
-                className="btn btn-primary"
-                data-bs-dismiss="modal"
-                onClick={handleLogin}
-              >
-                Check role
-              </button>
-            </div>
-          </div>
+      {notice && (
+        <div className="header-notice" role="status">
+          <div className={`alert alert-${notice.type} shadow m-0`}>{notice.text}</div>
         </div>
-      </div>
+      )}
     </>
   );
 };

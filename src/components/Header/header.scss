@@ -1,55 +1,215 @@
+$header-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+
 .header {
   width: 100%;
-  background-color: #fff;
   position: sticky;
   top: 0;
   z-index: 1050;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.3s ease;
 
-  &__container {
-    min-height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: relative;
+  // Fon alohida qatlamda: backdrop-filter header'ning o'ziga qo'yilsa,
+  // ichidagi position: fixed mobil menyu ekranga emas, header'ga bog'lanib qoladi
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-color: #fff;
+    transition: background-color 0.3s ease;
   }
 
-  &__logo {
-    flex-shrink: 0;
+  // Scroll'da "shisha" effekti
+  &--scrolled {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
 
-    a {
-      color: #212529;
-      font-size: 20px;
+    &::before {
+      background-color: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .header__container {
+      min-height: 54px;
     }
   }
 
+  &__container {
+    min-height: 66px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: min-height 0.3s ease;
+  }
+
+  // Logo
+  &__logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    text-decoration: none;
+
+    &:hover .header__logo-icon {
+      transform: rotate(-8deg) scale(1.05);
+    }
+  }
+
+  &__logo-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    background: $header-gradient;
+    box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+    transition: transform 0.3s ease;
+  }
+
+  &__logo-text {
+    font-size: 1.2rem;
+    font-weight: 800;
+    white-space: nowrap;
+    background: $header-gradient;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  // Bugungi navbatchi
+  &__duty {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid #ffe08a;
+    background-color: #fff8e1;
+    color: #8a6100;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: #ffefb3;
+      color: #6b4b00;
+    }
+  }
+
+  // Navigation
   &__nav {
     display: flex;
     align-items: center;
+    margin-left: auto;
   }
 
   &__nav-list {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 22px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
   &__nav-item {
     white-space: nowrap;
+  }
 
-    a {
-      color: #212529;
-      text-decoration: none;
-      transition: 0.2s;
+  &__link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+    color: #212529;
+    text-decoration: none;
+    transition: color 0.2s ease;
 
-      &:hover {
-        color: #0d6efd;
+    // Animatsiyali chiziq
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -2px;
+      height: 2px;
+      border-radius: 2px;
+      background: $header-gradient;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.25s ease;
+    }
+
+    &:hover {
+      color: #0d6efd;
+
+      &::after {
+        transform: scaleX(1);
+      }
+    }
+
+    &.active-link {
+      color: #0d6efd;
+      font-weight: 600;
+
+      &::after {
+        transform: scaleX(1);
       }
     }
   }
 
-  .active-link {
-    color: #0d6efd !important;
-    font-weight: 600;
+  &__login-btn {
+    padding: 4px 18px;
+    border: none;
+    border-radius: 999px;
+    background: $header-gradient;
+
+    &:hover,
+    &:focus {
+      background: $header-gradient;
+      filter: brightness(1.1);
+    }
+  }
+
+  // Admin menyusi
+  &__admin {
+    position: relative;
+  }
+
+  &__admin-btn {
+    padding: 3px 10px 3px 3px;
+    border: 1px solid #dee2e6;
+    border-radius: 999px;
+    background-color: #fff;
+
+    &:hover {
+      background-color: #f8f9fa;
+    }
+
+    .badge {
+      font-size: 0.65rem;
+    }
+  }
+
+  &__caret {
+    transition: transform 0.2s ease;
+
+    &.open {
+      transform: rotate(180deg);
+    }
+  }
+
+  &__admin-menu {
+    top: calc(100% + 8px);
+    right: 0;
+    left: auto;
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   }
 
   // Hamburger
@@ -59,59 +219,105 @@
     height: 40px;
     border: none;
     background: transparent;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
     cursor: pointer;
 
     svg {
       display: block;
-      width: 100%;
-      transition: 0.3s;
+    }
+
+    &:hover {
+      background-color: rgba(0, 0, 0, 0.05);
     }
   }
 
-  &__hamburger:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-    transition: 0.3s ease;
+  &__overlay,
+  &__mobile-duty {
+    display: none;
   }
 }
 
+// Bildirishnoma
+.header-notice {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  z-index: 1100;
+  min-width: 260px;
+  max-width: calc(100% - 32px);
+  transform: translateX(-50%);
+  animation: header-slide-down 0.3s ease;
+}
+
+.login-modal {
+  border-radius: 16px;
+}
+
+@keyframes header-slide-down {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes header-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+// Mobil: menyu o'ng tomondan chiqadi
 @media (max-width: 768px) {
   .header {
-    &__container {
-      min-height: 60px;
-    }
-
     &__hamburger {
       display: flex;
-      z-index: 1001;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 3;
+      margin-left: auto;
+    }
+
+    &__overlay {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      background-color: rgba(15, 23, 42, 0.45);
+      animation: header-fade-in 0.3s ease;
     }
 
     &__nav {
-      min-width: 300px;
-      position: absolute;
-      top: 100%;
-      left: auto;
+      position: fixed;
+      top: 0;
       right: 0;
+      z-index: 2;
+      width: min(300px, 85vw);
+      height: 100vh;
+      height: 100dvh;
+      padding: 76px 20px 20px;
+      flex-direction: column;
+      align-items: stretch;
+      overflow-y: auto;
       background-color: #fff;
-      padding: 0 20px;
-      max-height: 0;
-      overflow: hidden;
-      opacity: 0;
+      box-shadow: -8px 0 24px rgba(0, 0, 0, 0.12);
+      transform: translateX(100%);
+      visibility: hidden;
       transition:
-        max-height 0.3s ease,
-        opacity 0.2s ease,
-        padding 0.3s ease;
-      z-index: 1000;
-      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.08);
+        transform 0.3s ease,
+        visibility 0.3s;
 
       &.show {
-        margin-top: -1px;
-        max-height: 500px;
-        opacity: 1;
-        padding-top: 15px;
-        padding-bottom: 15px;
+        transform: translateX(0);
+        visibility: visible;
       }
     }
 
@@ -122,21 +328,49 @@
     }
 
     &__nav-item {
-      width: 100%;
-      padding: 10px 0;
+      padding: 12px 0;
       border-bottom: 1px solid #eee;
 
       &:last-child {
         border-bottom: none;
       }
+    }
 
-      a {
-        display: block;
-        width: 100%;
+    &__link {
+      display: flex;
+      width: 100%;
+
+      &::after {
+        display: none;
       }
+    }
 
-      .btn {
+    &__login-btn,
+    &__admin-btn {
+      width: 100%;
+    }
+
+    &__login-btn {
+      padding: 8px 18px;
+    }
+
+    &__admin-menu {
+      position: static;
+      width: 100%;
+      margin-top: 8px;
+      border: 1px solid #eee;
+      box-shadow: none;
+    }
+
+    &__mobile-duty {
+      display: block;
+      margin-top: auto;
+      padding-top: 16px;
+
+      .header__duty {
         width: 100%;
+        justify-content: center;
+        padding: 8px 12px;
       }
     }
   }
@@ -149,15 +383,14 @@
       padding-right: 15px !important;
     }
 
-    &__logo {
-      a {
-        font-size: 18px;
-      }
+    &__logo-icon {
+      width: 34px;
+      height: 34px;
+      font-size: 1.05rem;
     }
 
-    &__nav {
-      padding-left: 15px;
-      padding-right: 15px;
+    &__logo-text {
+      font-size: 1.05rem;
     }
   }
 }
@@ -169,10 +402,8 @@
       padding-right: 10px !important;
     }
 
-    &__logo {
-      a {
-        font-size: 17px;
-      }
+    &__logo-text {
+      font-size: 0.95rem;
     }
 
     &__hamburger {
