@@ -1,1 +1,1 @@
-export * from './DutiesSchedule';
+export * from "./DutiesSchedule";

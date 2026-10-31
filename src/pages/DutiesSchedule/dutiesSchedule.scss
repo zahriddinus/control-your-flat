@@ -1,13 +1,67 @@
+.active-user {
+  background-color: rgb(244, 213, 213) !important;
+  color: red !important;
+}
+
 .schedule {
+  &__month {
+    font-size: 1.5rem;
+    min-width: 180px;
+  }
+
+  &__summary-title {
+    font-size: 1.2rem;
+  }
+
+  &__summary {
+    border-radius: 12px;
+    border-left: 4px solid #0d6efd !important;
+
+    &--rubbish {
+      border-left-color: #198754 !important;
+    }
+
+    &--cleaning {
+      border-left-color: #fd7e14 !important;
+    }
+  }
+
+  &__summary-name {
+    font-size: 1.1rem;
+  }
+
   &__title {
-    font-size: 1.8rem;
+    font-size: 1.5rem;
+  }
+
+  &__cell {
+    min-width: 34px;
+    vertical-align: middle;
+
+    &--selected {
+      background-color: #e7f1ff !important;
+    }
+  }
+
+  // Jadval yon tomonga suriladigan bo'lsa ham, ismlar ko'rinib turadi
+  &__name-cell {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    min-width: 110px;
+    white-space: nowrap;
   }
 }
 
 @media (max-width: 768px) {
   .schedule {
+    &__month {
+      font-size: 1.25rem;
+      min-width: 150px;
+    }
+
     &__title {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
     }
 
     &__cell {
@@ -18,12 +72,22 @@
 
 @media (max-width: 480px) {
   .schedule {
+    &__month {
+      font-size: 1.1rem;
+      min-width: 130px;
+    }
+
     &__title {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
     }
 
     &__cell {
       font-size: 0.7rem;
+      min-width: 28px;
+    }
+
+    &__name-cell {
+      min-width: 90px;
     }
   }
 }
