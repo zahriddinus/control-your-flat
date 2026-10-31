@@ -1,16 +1,14 @@
 import "./header.scss";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabese";
 import { formatDate } from "../../utils/date";
+import { NAV_LINKS } from "../../utils/navigation";
+import { AppIcon, LogoIcon } from "../AppIcon";
+import { Notice, useNotice } from "../Notice";
+import { TaskIcon } from "../TaskIcon";
 import { AdminMenu } from "./AdminMenu";
 import { LoginModal } from "./LoginModal";
-
-const NAV_LINKS = [
-  { to: "/", icon: "🏠", label: "Home" },
-  { to: "/duties-schedule", icon: "📅", label: "Duties schedule" },
-  { to: "/users", icon: "👥", label: "Users" },
-];
 
 const removeAdminFlag = () => {
   try {
@@ -26,7 +24,7 @@ export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [notice, setNotice] = useState(null);
+  const [notice, showNotice] = useNotice();
 
   // undefined - hali tekshirilmagan, null - yo'q
   const [session, setSession] = useState(undefined);
@@ -35,19 +33,8 @@ export const Header = () => {
   const [todayKey, setTodayKey] = useState(() => formatDate(new Date()));
   const [todayDuty, setTodayDuty] = useState(null);
 
-  const noticeTimer = useRef(null);
-
   const closeMenu = () => setIsMenuOpen(false);
   const closeLogin = useCallback(() => setIsLoginOpen(false), []);
-
-  const showNotice = (text, type = "success") => {
-    clearTimeout(noticeTimer.current);
-    setNotice({ text, type });
-
-    noticeTimer.current = setTimeout(() => setNotice(null), 3000);
-  };
-
-  useEffect(() => () => clearTimeout(noticeTimer.current), []);
 
   // AUTH
 
@@ -212,7 +199,8 @@ export const Header = () => {
       onClick={closeMenu}
       title="Bugungi navbatchi"
     >
-      ⭐ Bugun: <strong>{todayDuty.name?.trim()}</strong>
+      <TaskIcon taskKey="duty" />
+      Bugun: <strong>{todayDuty.name?.trim()}</strong>
     </Link>
   );
 
@@ -223,10 +211,13 @@ export const Header = () => {
           {/* Logo */}
           <Link className="header__logo" to="/" onClick={closeMenu}>
             <span className="header__logo-icon" aria-hidden="true">
-              🏡
+              <LogoIcon />
             </span>
 
-            <span className="header__logo-text">Control Your Flat</span>
+            <span className="header__logo-text">
+              <span className="header__logo-small">Control</span>
+              Your Flat
+            </span>
           </Link>
 
           {/* Bugungi navbatchi (katta ekranda) */}
@@ -284,7 +275,9 @@ export const Header = () => {
                     className={({ isActive }) => `header__link ${isActive ? "active-link" : ""}`}
                     onClick={closeMenu}
                   >
-                    <span aria-hidden="true">{link.icon}</span>
+                    <span className="header__link-icon">
+                      <AppIcon name={link.icon} />
+                    </span>
                     {link.label}
                   </NavLink>
                 </li>
@@ -315,11 +308,7 @@ export const Header = () => {
 
       <LoginModal isOpen={isLoginOpen} onClose={closeLogin} onSuccess={handleLoginSuccess} />
 
-      {notice && (
-        <div className="header-notice" role="status">
-          <div className={`alert alert-${notice.type} shadow m-0`}>{notice.text}</div>
-        </div>
-      )}
+      <Notice notice={notice} />
     </>
   );
 };

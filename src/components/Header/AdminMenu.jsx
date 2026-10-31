@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { AppIcon } from "../AppIcon";
 import { Avatar } from "../Avatar";
 
 export const AdminMenu = ({ profile, onNavigate, onLogout }) => {
@@ -45,9 +46,7 @@ export const AdminMenu = ({ profile, onNavigate, onLogout }) => {
           <span className="badge text-bg-primary">Admin</span>
         </span>
 
-        <span className={`header__caret ${isOpen ? "open" : ""}`} aria-hidden="true">
-          ▾
-        </span>
+        <AppIcon name="chevron" className={`header__caret ${isOpen ? "open" : ""}`} />
       </button>
 
       <ul className={`header__admin-menu dropdown-menu ${isOpen ? "show" : ""}`}>
@@ -60,7 +59,8 @@ export const AdminMenu = ({ profile, onNavigate, onLogout }) => {
               onNavigate();
             }}
           >
-            ⚙️ Control Users
+            <AppIcon name="sliders" className="header__menu-icon" />
+            Control Users
           </Link>
         </li>
 
@@ -77,7 +77,8 @@ export const AdminMenu = ({ profile, onNavigate, onLogout }) => {
               onLogout();
             }}
           >
-            🚪 Chiqish
+            <AppIcon name="logout" className="header__menu-icon" />
+            Chiqish
           </button>
         </li>
       </ul>

@@ -1,0 +1,208 @@
+$footer-bg: #0f172a;
+$footer-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+
+.footer {
+  padding-top: 32px;
+  color: #e2e8f0;
+
+  &__wave {
+    display: block;
+    width: 100%;
+    height: 48px;
+    margin-bottom: -1px;
+
+    path {
+      fill: $footer-bg;
+    }
+  }
+
+  &__body {
+    padding: 24px 0 20px;
+    background: linear-gradient(180deg, $footer-bg 0%, #1e1b4b 100%);
+  }
+
+  &__muted {
+    color: #94a3b8;
+  }
+
+  // Brend (header logotipi bilan bir xil)
+  &__brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+
+    &:hover .footer__logo {
+      transform: rotate(-8deg) scale(1.05);
+    }
+  }
+
+  &__logo {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    background: $footer-gradient;
+    box-shadow: 0 4px 14px rgba(111, 66, 193, 0.4);
+    transition: transform 0.3s ease;
+  }
+
+  &__brand-text {
+    display: flex;
+    flex-direction: column;
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 800;
+    line-height: 1.05;
+  }
+
+  &__brand-small {
+    color: #a5b4fc;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  &__title {
+    margin-bottom: 12px;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  // Sahifalar
+  &__link {
+    display: inline-block;
+    padding: 4px 0;
+    color: #cbd5e1;
+    text-decoration: none;
+    transition:
+      color 0.2s ease,
+      transform 0.2s ease;
+
+    &:hover {
+      color: #fff;
+      transform: translateX(4px);
+    }
+  }
+
+  // Manbalar
+  &__source {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 0.9rem;
+    line-height: 1.2;
+    text-decoration: none;
+    background-color: rgba(255, 255, 255, 0.04);
+    transition:
+      background-color 0.2s ease,
+      border-color 0.2s ease;
+
+    &:hover {
+      color: #fff;
+      border-color: rgba(165, 180, 252, 0.5);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    small {
+      font-size: 0.7rem;
+    }
+  }
+
+  &__bottom {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  // Muallif: Telegram rangidagi belgi
+  &__author {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 14px 4px 4px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.1;
+    text-decoration: none;
+    background: linear-gradient(135deg, #229ed9 0%, #2aabee 100%);
+    box-shadow: 0 4px 12px rgba(34, 158, 217, 0.35);
+    transition: transform 0.2s ease;
+
+    &:hover {
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    small {
+      font-size: 0.65rem;
+      font-weight: 500;
+      opacity: 0.85;
+    }
+  }
+
+  // Oq doira ichida ko'k qog'oz samolyot
+  &__author-icon {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    color: #fff;
+  }
+
+  &__top-btn {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 1.1rem;
+    font-weight: 700;
+    background: $footer-gradient;
+    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.35);
+    transition: transform 0.2s ease;
+
+    &:hover {
+      transform: translateY(-3px);
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .footer {
+    &__wave {
+      height: 28px;
+    }
+
+    &__source {
+      font-size: 0.8rem;
+      padding: 6px 8px;
+    }
+  }
+}
+
+.footer__logo {
+  color: #fff;
+  font-size: 1.45rem;
+}
+
+.footer__link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer__link-icon {
+  color: #a5b4fc;
+}

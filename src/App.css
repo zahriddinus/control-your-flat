@@ -1,3 +1,8 @@
 .App {
   text-align: center;
+
+  /* Sahifa qisqa bo'lsa ham footer ekranning pastida turadi */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }

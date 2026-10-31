@@ -62,20 +62,32 @@ $header-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.2rem;
+    color: #fff;
+    font-size: 1.35rem;
     background: $header-gradient;
     box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
     transition: transform 0.3s ease;
   }
 
+  // Ikki qatorli ixcham yozuv: kichik "CONTROL" va ostida "Your Flat"
   &__logo-text {
-    font-size: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    font-size: 1.05rem;
     font-weight: 800;
+    line-height: 1.05;
     white-space: nowrap;
     background: $header-gradient;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
+  }
+
+  &__logo-small {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
   }
 
   // Bugungi navbatchi
@@ -196,6 +208,8 @@ $header-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
   }
 
   &__caret {
+    color: #6c757d;
+    font-size: 0.9rem;
     transition: transform 0.2s ease;
 
     &.open {
@@ -237,31 +251,8 @@ $header-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
 }
 
 // Bildirishnoma
-.header-notice {
-  position: fixed;
-  top: 16px;
-  left: 50%;
-  z-index: 1100;
-  min-width: 260px;
-  max-width: calc(100% - 32px);
-  transform: translateX(-50%);
-  animation: header-slide-down 0.3s ease;
-}
-
 .login-modal {
   border-radius: 16px;
-}
-
-@keyframes header-slide-down {
-  from {
-    opacity: 0;
-    transform: translate(-50%, -10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translate(-50%, 0);
-  }
 }
 
 @keyframes header-fade-in {
@@ -386,11 +377,11 @@ $header-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
     &__logo-icon {
       width: 34px;
       height: 34px;
-      font-size: 1.05rem;
+      font-size: 1.2rem;
     }
 
     &__logo-text {
-      font-size: 1.05rem;
+      font-size: 0.95rem;
     }
   }
 }
@@ -403,7 +394,7 @@ $header-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
     }
 
     &__logo-text {
-      font-size: 0.95rem;
+      font-size: 0.9rem;
     }
 
     &__hamburger {
@@ -411,4 +402,41 @@ $header-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
       height: 36px;
     }
   }
+}
+
+// Menyu belgilari yumaloq kvadrat ichida: faol sahifada gradient bilan to'ladi
+.header__link-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  font-size: 1rem;
+  background-color: #f1f5f9;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.header__link:hover .header__link-icon {
+  color: #0d6efd;
+  background-color: #e7f1ff;
+  transform: translateY(-1px);
+}
+
+.header__link.active-link .header__link-icon {
+  color: #fff;
+  background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+  box-shadow: 0 3px 8px rgba(13, 110, 253, 0.35);
+}
+
+// Admin menyusidagi bandlar belgisi
+.header__menu-icon {
+  margin-right: 8px;
+  font-size: 1rem;
+  vertical-align: -3px;
 }

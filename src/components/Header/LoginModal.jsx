@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabese";
+import { useModalEffects } from "../../hooks/useModalEffects";
 
 export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
   const [email, setEmail] = useState("");
@@ -15,7 +16,9 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
     if (!loading) onClose();
   };
 
-  // Oyna ochilganda: tozalaymiz, email'ga fokus beramiz va orqa sahifani qotiramiz
+  useModalEffects(isOpen, onClose, !loading);
+
+  // Oyna ochilganda: tozalaymiz va email'ga fokus beramiz
   useEffect(() => {
     if (!isOpen) return;
 
@@ -23,26 +26,7 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
     setPassword("");
     setShowPassword(false);
     emailRef.current?.focus();
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
   }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (evt) => {
-      if (evt.key === "Escape" && !loading) onClose();
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, loading, onClose]);
 
   async function handleSubmit(evt) {
     evt.preventDefault();
