@@ -1,0 +1,166 @@
+.home {
+  &__greeting {
+    border-radius: 16px;
+    color: #fff;
+    background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+  }
+
+  &__date,
+  &__subtitle {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  &__title {
+    font-size: 2rem;
+  }
+
+  &__tip {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    padding: 10px 14px;
+  }
+
+  &__section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+
+  &__task,
+  &__panel,
+  &__hero,
+  &__day,
+  &__link {
+    border-radius: 12px;
+  }
+
+  &__task {
+    border-left: 4px solid #0d6efd !important;
+
+    &--rubbish {
+      border-left-color: #198754 !important;
+    }
+
+    &--cleaning {
+      border-left-color: #fd7e14 !important;
+    }
+  }
+
+  &__icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  &__task-name {
+    font-size: 1.1rem;
+  }
+
+  &__tomorrow {
+    color: #6c757d;
+  }
+
+  &__hero {
+    background-color: #fff8e1;
+  }
+
+  &__hero-name {
+    font-size: 1.4rem;
+  }
+
+  &__turn {
+    border-bottom: 1px solid #eee;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__countdown {
+    font-size: 1.75rem;
+    color: #fd7e14;
+  }
+
+  &__week {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  &__day {
+    &--today {
+      outline: 2px solid #0d6efd;
+    }
+  }
+
+  // Har bir vazifa o'z rangida: navbatchi ko'k, musor yashil, uborka to'q sariq
+  &__day-task {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 2px 6px;
+    margin-bottom: 4px;
+    border-radius: 6px;
+    border-left: 3px solid transparent;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    &--duty {
+      background-color: #e7f1ff;
+      border-left-color: #0d6efd;
+      color: #0a58ca;
+    }
+
+    &--rubbish {
+      background-color: #d1e7dd;
+      border-left-color: #198754;
+      color: #146c43;
+    }
+
+    &--cleaning {
+      background-color: #ffe5d0;
+      border-left-color: #fd7e14;
+      color: #b35409;
+    }
+  }
+
+  &__link {
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+}
+
+@media (max-width: 992px) {
+  .home {
+    &__week {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+  }
+}
+
+@media (max-width: 576px) {
+  .home {
+    &__title {
+      font-size: 1.5rem;
+    }
+
+    &__icon {
+      font-size: 1.6rem;
+    }
+
+    &__countdown {
+      font-size: 1.4rem;
+    }
+
+    &__week {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+}

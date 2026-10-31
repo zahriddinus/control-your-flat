@@ -1,16 +1,163 @@
-// import { supabase } from '../../lib/supabese';
+import "./home.scss";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "../../lib/supabese";
+import { Loading } from "../../components/Loading";
+import { addDays, formatDate, parseDate } from "../../utils/date";
+import { fetchSchedules } from "../../utils/schedule";
+import { Greeting } from "./Greeting";
+import { TodayTasks } from "./TodayTasks";
+import { DayHero } from "./DayHero";
+import { MyTurn } from "./MyTurn";
+import { CleaningCountdown } from "./CleaningCountdown";
+import { WeekView } from "./WeekView";
+import { QuickLinks } from "./QuickLinks";
 
-// const { data, error } = await supabase.from('users').select('*');
-
-// console.log('DATA:', data);
-// console.log('ERROR:', error);
+// Musor har 3 kunda bir kishiga, uborka har 7 kunda ikki kishiga beriladi.
+// Shuncha kun ichida har bir xonadoshning har bir navbati kamida bir marta keladi
+const getDaysAhead = (usersCount) => Math.max(7, usersCount * 3, 7 * Math.ceil(usersCount / 2));
 
 export const Home = () => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [schedules, setSchedules] = useState([]);
+  const [schedulesLoading, setSchedulesLoading] = useState(true);
+  const [scheduleError, setScheduleError] = useState(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
+
+  // GET USERS
+
+  useEffect(() => {
+    const getUsers = async () => {
+      const { data, error } = await supabase
+        .from("users")
+        .select("user_id, name, last_name, duty_order")
+        .order("duty_order", { ascending: true });
+
+      if (error) {
+        console.error(error);
+        setError(error);
+      } else {
+        setUsers(data);
+      }
+
+      setLoading(false);
+    };
+
+    getUsers();
+  }, []);
+
+  // CURRENT DATE UPDATE
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDate(new Date());
+    }, 60 * 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  // Faqat kun almashganda o'zgaradi, shuning uchun navbatlar har daqiqa qayta so'ralmaydi
+  const todayKey = formatDate(currentDate);
+  const today = useMemo(() => parseDate(todayKey), [todayKey]);
+
+  // GET SCHEDULES (bugundan boshlab)
+
+  useEffect(() => {
+    if (!users.length) return;
+
+    let cancelled = false;
+
+    const getSchedules = async () => {
+      setSchedulesLoading(true);
+
+      try {
+        const dates = Array.from({ length: getDaysAhead(users.length) }, (_, index) =>
+          addDays(today, index)
+        );
+
+        const result = await fetchSchedules(dates);
+
+        if (cancelled) return;
+
+        setSchedules(result);
+        setScheduleError(null);
+      } catch (error) {
+        if (cancelled) return;
+
+        console.error("Schedules error:", error);
+        setScheduleError(error);
+      } finally {
+        if (!cancelled) {
+          setSchedulesLoading(false);
+        }
+      }
+    };
+
+    getSchedules();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [today, users.length]);
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  const renderSchedules = () => {
+    if (error) {
+      return (
+        <div className="alert alert-danger">
+          Xonadoshlar ma'lumotini yuklab bo'lmadi. Sahifani yangilab ko'ring.
+        </div>
+      );
+    }
+
+    if (!users.length) {
+      return <div className="alert alert-info">Hozircha xonadoshlar qo'shilmagan.</div>;
+    }
+
+    if (scheduleError) {
+      return (
+        <div className="alert alert-danger">
+          Navbatlarni yuklab bo'lmadi. Sahifani yangilab ko'ring.
+        </div>
+      );
+    }
+
+    const scheduleProps = { users, schedules, today, loading: schedulesLoading };
+
+    return (
+      <>
+        <TodayTasks users={users} schedules={schedules} loading={schedulesLoading} />
+
+        {!schedulesLoading && <DayHero users={users} schedule={schedules[0]} />}
+
+        <div className="row g-3 mb-4">
+          <div className="col-12 col-lg-6">
+            <MyTurn {...scheduleProps} />
+          </div>
+
+          <div className="col-12 col-lg-6">
+            <CleaningCountdown {...scheduleProps} />
+          </div>
+        </div>
+
+        <WeekView {...scheduleProps} />
+      </>
+    );
+  };
+
   return (
-    <div className="container mt-5">
-      <h1>
-        Assalomu aleykum, <span>Xonadoshlar!</span>
-      </h1>
+    <div className="home">
+      <div className="container py-3 py-md-4">
+        <Greeting now={currentDate} />
+
+        {renderSchedules()}
+
+        <QuickLinks />
+      </div>
     </div>
   );
 };
