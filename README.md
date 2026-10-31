@@ -62,8 +62,35 @@ The app expects the following in your Supabase project.
 | `move_user_to_order(p_user_id, p_new_order)`     | Moves a user to a new position and shifts the others           |
 | `shift_users_for_insert(p_new_order)`            | Makes room for a new user at a given position                  |
 | `shift_users_after_delete(p_deleted_order)`      | Closes the gap after a user is deleted                         |
+| `delete_user_and_shift(p_user_id uuid)`          | Deletes a user and closes the gap in one transaction (used by the admin page) |
 
-These functions are not stored in this repository; they live in the Supabase project.
+These functions are not stored in this repository; they live in the Supabase project. `delete_user_and_shift` wraps the delete and `shift_users_after_delete`, so if shifting fails the delete is rolled back. To create it, run this in **Supabase → SQL Editor**:
+
+```sql
+create or replace function public.delete_user_and_shift(p_user_id uuid)
+returns void
+language plpgsql
+set search_path = public
+as $$
+declare
+  v_order integer;
+begin
+  delete from public.users
+  where user_id = p_user_id
+  returning duty_order into v_order;
+
+  if not found then
+    raise exception 'User topilmadi yoki o''chirishga ruxsat yo''q';
+  end if;
+
+  perform public.shift_users_after_delete(p_deleted_order => v_order);
+end;
+$$;
+
+revoke execute on function public.delete_user_and_shift(uuid) from anon;
+```
+
+It runs with the caller's permissions, so Row Level Security still decides who may delete. Keep `search_path = public`: `shift_users_after_delete` refers to `users` without the `public.` prefix and fails with an empty search path.
 
 ### Creating an admin
 
