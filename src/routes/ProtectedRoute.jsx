@@ -5,7 +5,8 @@ import { Loading } from "../components/Loading";
 
 export const ProtectedRoute = ({ children }) => {
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(window.localStorage.getItem("isAdmin") === "true");
+  // localStorage'ga ishonmaymiz: admin ekanligi faqat sessiya va bazadan tekshiriladi
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const checkAdmin = async () => {

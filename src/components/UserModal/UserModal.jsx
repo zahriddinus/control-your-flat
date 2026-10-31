@@ -1,60 +1,164 @@
+import "./userModal.scss";
 import { useEffect, useState } from "react";
+import { useModalEffects } from "../../hooks/useModalEffects";
+import { Avatar } from "../Avatar";
 
-export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
-  const [formData, setFormData] = useState({
-    role: "",
-    name: "",
-    lastName: "",
-    age: "",
-    dutyOrder: "",
-    nickname: "",
-    phoneNumber: "",
-    email: "",
-  });
+const EMPTY_FORM = {
+  role: "user",
+  name: "",
+  lastName: "",
+  age: "",
+  dutyOrder: "",
+  nickname: "",
+  phoneNumber: "",
+  email: "",
+};
+
+const ROLES = [
+  { value: "user", label: "👤 User" },
+  { value: "admin", label: "🛡️ Admin" },
+];
+
+// Telegram nickname ("@"siz): 5-32 ta lotin harfi, raqam yoki "_"
+const NICKNAME_PATTERN = /^[A-Za-z0-9_]{5,32}$/;
+const PHONE_PATTERN = /^\+?[0-9\s\-()]{7,20}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const validate = (formData) => {
+  const errors = {};
+
+  if (!formData.name.trim()) errors.name = "Ismni kiriting.";
+  if (!formData.lastName.trim()) errors.lastName = "Familiyani kiriting.";
+
+  const age = Number(formData.age);
+
+  if (!Number.isInteger(age) || age < 1 || age > 120) {
+    errors.age = "Yosh 1 dan 120 gacha bo'lishi kerak.";
+  }
+
+  if (formData.nickname.trim() && !NICKNAME_PATTERN.test(formData.nickname.trim())) {
+    errors.nickname = "5–32 ta lotin harfi, raqam yoki _ bo'lishi kerak.";
+  }
+
+  if (formData.phoneNumber.trim() && !PHONE_PATTERN.test(formData.phoneNumber.trim())) {
+    errors.phoneNumber = "Masalan: +998 90 123 45 67";
+  }
+
+  if (formData.email.trim() && !EMAIL_PATTERN.test(formData.email.trim())) {
+    errors.email = "Email noto'g'ri yozilgan.";
+  }
+
+  return errors;
+};
+
+// Navbat raqam bilan emas, kimning oldiga yoki o'rniga qo'yilishi bilan tanlanadi.
+// Qiymat - o'sha userning duty_order'i, "" - oxiriga
+const getOrderOptions = (users, selectedUser) => {
+  if (selectedUser) {
+    return users.map((user, index) => ({
+      value: String(user.duty_order),
+      label:
+        user.user_id === selectedUser.user_id
+          ? `${index + 1}. Hozirgi o'rni`
+          : `${index + 1}. ${user.name.trim()} o'rniga`,
+    }));
+  }
+
+  return [
+    ...users.map((user, index) => ({
+      value: String(user.duty_order),
+      label: `${index + 1}. ${user.name.trim()}dan oldin`,
+    })),
+    { value: "", label: `${users.length + 1}. Oxiriga` },
+  ];
+};
+
+// users: duty_order bo'yicha tartiblangan barcha userlar
+export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] }) => {
+  const [formData, setFormData] = useState(EMPTY_FORM);
+  const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+
+  useModalEffects(isOpen, onClose, !saving);
 
   // Modal ochilganda yoki user o'zgarganda
   useEffect(() => {
+    setErrors({});
+    setSaving(false);
+
     if (selectedUser) {
       setFormData({
         role: selectedUser.role || "user",
         name: selectedUser.name || "",
         lastName: selectedUser.last_name || "",
-        age: selectedUser.age || "",
-        dutyOrder: selectedUser.duty_order || "",
-        nickname: selectedUser.nickname || "",
+        age: selectedUser.age ?? "",
+        dutyOrder: String(selectedUser.duty_order ?? ""),
+        nickname: (selectedUser.nickname || "").replace(/^@/, ""),
         phoneNumber: selectedUser.phone_number || "",
         email: selectedUser.email || "",
       });
     } else {
-      setFormData({
-        role: "user",
-        name: "",
-        lastName: "",
-        age: "",
-        dutyOrder: "",
-        nickname: "",
-        phoneNumber: "",
-        email: "",
-      });
+      setFormData(EMPTY_FORM);
     }
   }, [selectedUser, isOpen]);
 
-  function handleChange(e) {
-    const { name, value } = e.target;
+  function handleChange(evt) {
+    const { name } = evt.target;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    // "@" prefiks alohida turadi, shuning uchun yozilganini olib tashlaymiz
+    const value = name === "nickname" ? evt.target.value.replace(/^@/, "") : evt.target.value;
+
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    // Yozishni boshlaganda xato yo'qoladi
+    setErrors((prev) => ({ ...prev, [name]: undefined }));
   }
 
-  function handleSubmit(e) {
-    e.preventDefault();
+  async function handleSubmit(evt) {
+    evt.preventDefault();
 
-    onSubmit(formData);
+    const newErrors = validate(formData);
+
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).some(Boolean)) return;
+
+    const nickname = formData.nickname.trim();
+
+    setSaving(true);
+
+    await onSubmit({
+      ...formData,
+      name: formData.name.trim(),
+      lastName: formData.lastName.trim(),
+      nickname: nickname ? `@${nickname}` : "",
+      phoneNumber: formData.phoneNumber.trim(),
+      email: formData.email.trim(),
+    });
+
+    setSaving(false);
   }
+
+  const handleClose = () => {
+    if (!saving) onClose();
+  };
+
+  // Har bir input uchun umumiy atributlar
+  const fieldProps = (name) => ({
+    id: `user-${name}`,
+    name,
+    value: formData[name],
+    onChange: handleChange,
+    disabled: saving,
+    className: `form-control ${errors[name] ? "is-invalid" : ""}`,
+  });
+
+  const renderError = (name) =>
+    errors[name] && <div className="invalid-feedback">{errors[name]}</div>;
 
   if (!isOpen) return null;
+
+  const fullName = `${formData.name} ${formData.lastName}`.trim();
 
   return (
     <>
@@ -64,113 +168,215 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit }) => {
         aria-labelledby="userModalLabel"
         aria-modal="true"
         role="dialog"
+        onMouseDown={(evt) => evt.target === evt.currentTarget && handleClose()}
       >
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title fw-semibold text-primary" id="userModalLabel">
-                {selectedUser ? "Edit User" : "Add New User"}
-              </h5>
+        <div className="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-sm-down">
+          <form
+            className="user-modal modal-content border-0 shadow"
+            onSubmit={handleSubmit}
+            noValidate
+          >
+            {/* SARLAVHA: yozilishi bilan avatar va ism yangilanadi */}
 
-              <button type="button" className="btn-close" onClick={onClose}></button>
+            <div className="user-modal__header modal-header border-0">
+              <div className="d-flex align-items-center gap-3 overflow-hidden">
+                <span className="user-modal__avatar">
+                  <Avatar user={{ name: formData.name, last_name: formData.lastName }} />
+                </span>
+
+                <div className="text-start overflow-hidden">
+                  <h2 className="modal-title fs-5 fw-bold" id="userModalLabel">
+                    {selectedUser ? "Userni tahrirlash" : "Yangi xonadosh"}
+                  </h2>
+
+                  <small className="user-modal__subtitle d-block text-truncate">
+                    {fullName || "Ism va familiyani kiriting"}
+                  </small>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="btn-close btn-close-white"
+                aria-label="Yopish"
+                onClick={handleClose}
+                disabled={saving}
+              ></button>
             </div>
 
-            <div className="modal-body">
-              <form onSubmit={handleSubmit}>
+            <div className="modal-body text-start">
+              {/* SHAXSIY MA'LUMOTLAR */}
+
+              <section className="user-modal__section">
+                <h3 className="user-modal__section-title">👤 Shaxsiy ma'lumotlar</h3>
+
+                <div className="row g-2">
+                  <div className="col-6">
+                    <label htmlFor="user-name" className="form-label small">
+                      Ism *
+                    </label>
+
+                    <input type="text" placeholder="Masalan: Eldor" {...fieldProps("name")} />
+                    {renderError("name")}
+                  </div>
+
+                  <div className="col-6">
+                    <label htmlFor="user-lastName" className="form-label small">
+                      Familiya *
+                    </label>
+
+                    <input type="text" placeholder="Masalan: Aliyev" {...fieldProps("lastName")} />
+                    {renderError("lastName")}
+                  </div>
+
+                  <div className="col-12 col-sm-5">
+                    <label htmlFor="user-age" className="form-label small">
+                      Yosh *
+                    </label>
+
+                    <div className="input-group has-validation">
+                      <input
+                        type="number"
+                        min="1"
+                        max="120"
+                        placeholder="20"
+                        {...fieldProps("age")}
+                      />
+
+                      <span className="input-group-text">yosh</span>
+                      {renderError("age")}
+                    </div>
+                  </div>
+
+                  <div className="col-12 col-sm-7">
+                    <span className="form-label small d-block">Rol</span>
+
+                    <div className="btn-group w-100" role="group" aria-label="Rol">
+                      {ROLES.map((role) => (
+                        <button
+                          key={role.value}
+                          type="button"
+                          className={`btn ${
+                            formData.role === role.value ? "btn-primary" : "btn-outline-primary"
+                          }`}
+                          onClick={() => setFormData((prev) => ({ ...prev, role: role.value }))}
+                          aria-pressed={formData.role === role.value}
+                          disabled={saving}
+                        >
+                          {role.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {formData.role === "admin" && (
+                  <div className="alert alert-warning small py-2 mt-3 mb-0">
+                    ⚠️ Admin login qila olishi uchun Supabase Authentication'da akkaunti bo'lishi va
+                    uning ID'si shu userning <code>user_id</code>'siga mos kelishi kerak.
+                  </div>
+                )}
+              </section>
+
+              {/* ALOQA */}
+
+              <section className="user-modal__section">
+                <h3 className="user-modal__section-title">📞 Aloqa</h3>
+
+                <label htmlFor="user-nickname" className="form-label small">
+                  Telegram nickname
+                </label>
+
+                <div className="input-group has-validation mb-2">
+                  <span className="input-group-text">@</span>
+
+                  <input type="text" placeholder="username" {...fieldProps("nickname")} />
+                  {renderError("nickname")}
+                </div>
+
+                <label htmlFor="user-phoneNumber" className="form-label small">
+                  Telefon
+                </label>
+
+                <div className="input-group has-validation mb-2">
+                  <span className="input-group-text" aria-hidden="true">
+                    📞
+                  </span>
+
+                  <input
+                    type="tel"
+                    placeholder="+998 90 123 45 67"
+                    {...fieldProps("phoneNumber")}
+                  />
+                  {renderError("phoneNumber")}
+                </div>
+
+                <label htmlFor="user-email" className="form-label small">
+                  Email
+                </label>
+
+                <div className="input-group has-validation">
+                  <span className="input-group-text" aria-hidden="true">
+                    ✉️
+                  </span>
+
+                  <input type="email" placeholder="example@gmail.com" {...fieldProps("email")} />
+                  {renderError("email")}
+                </div>
+              </section>
+
+              {/* NAVBAT */}
+
+              <section className="user-modal__section mb-0">
+                <h3 className="user-modal__section-title">📅 Navbat</h3>
+
+                <label htmlFor="user-dutyOrder" className="form-label small">
+                  {selectedUser ? "Navbatdagi o'rni" : "Qayerga qo'yamiz?"}
+                </label>
+
                 <select
-                  className="form-select mb-3"
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                >
-                  <option value="admin">Admin</option>
-
-                  <option value="user">User</option>
-                </select>
-
-                <input
-                  type="text"
-                  className="form-control mb-3"
-                  placeholder="Name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-
-                <input
-                  type="text"
-                  className="form-control mb-3"
-                  placeholder="Last Name"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleChange}
-                  required
-                />
-
-                <input
-                  type="number"
-                  className="form-control mb-3"
-                  placeholder="Age"
-                  name="age"
-                  value={formData.age}
-                  onChange={handleChange}
-                  required
-                />
-
-                <input
-                  type="text"
-                  className="form-control mb-3"
-                  name="nickname"
-                  value={formData.nickname}
-                  onChange={handleChange}
-                  placeholder="@username"
-                />
-
-                <input
-                  type="tel"
-                  className="form-control mb-3"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
-                  placeholder="+998 90 123 45 67"
-                />
-
-                <input
-                  type="email"
-                  className="form-control mb-3"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="example@gmail.com"
-                />
-
-                <input
-                  type="number"
-                  className="form-control"
-                  placeholder="Duty  order: 1, 2, 3..."
+                  id="user-dutyOrder"
+                  className="form-select"
                   name="dutyOrder"
                   value={formData.dutyOrder}
                   onChange={handleChange}
-                  min="1"
-                />
+                  disabled={saving}
+                >
+                  {getOrderOptions(users, selectedUser).map((option) => (
+                    <option key={option.label} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
 
-                <small className="text-muted d-block mt-1 ms-2" style={{ textAlign: "left" }}>
-                  Tartib raqamini bo'sh qoldirsangiz, user oxiriga qo'shiladi.
+                <small className="text-muted d-block mt-1">
+                  Boshqalar o'z-o'zidan bittaga suriladi.
                 </small>
-
-                <div className="modal-footer mt-3">
-                  <button type="button" className="btn btn-secondary" onClick={onClose}>
-                    Close
-                  </button>
-
-                  <button type="submit" className="btn btn-primary">
-                    {selectedUser ? "Save changes" : "Add User"}
-                  </button>
-                </div>
-              </form>
+              </section>
             </div>
-          </div>
+
+            <div className="modal-footer border-0">
+              <button
+                type="button"
+                className="btn btn-light"
+                onClick={handleClose}
+                disabled={saving}
+              >
+                Bekor qilish
+              </button>
+
+              <button
+                type="submit"
+                className="user-modal__submit btn btn-primary px-4"
+                disabled={saving}
+              >
+                {saving && (
+                  <span className="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                )}
+                {selectedUser ? "💾 Saqlash" : "➕ Qo'shish"}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
 

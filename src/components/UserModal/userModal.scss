@@ -1,0 +1,53 @@
+$user-modal-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+
+.user-modal {
+  border-radius: 16px;
+  overflow: hidden;
+
+  &__header {
+    color: #fff;
+    background: $user-modal-gradient;
+  }
+
+  &__subtitle {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  // Gradient fonda avatar oq ramkali, shaffof bo'ladi
+  &__avatar .avatar {
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &__section {
+    padding: 14px;
+    margin-bottom: 14px;
+    border-radius: 12px;
+    background-color: #f8f9fb;
+  }
+
+  &__section-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0d6efd;
+    margin-bottom: 0.75rem;
+  }
+
+  &__submit {
+    border: none;
+    background: $user-modal-gradient;
+
+    &:hover,
+    &:focus {
+      background: $user-modal-gradient;
+      filter: brightness(1.1);
+    }
+  }
+}
+
+// To'liq ekranda burchaklar yumaloq bo'lmaydi
+@media (max-width: 575.98px) {
+  .user-modal {
+    border-radius: 0;
+  }
+}

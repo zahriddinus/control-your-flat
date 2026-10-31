@@ -1,30 +1,41 @@
 import "./controlUsers.scss";
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabese";
-import { UserModal } from "../../components/UserModal/UserModal";
-import { formatDate } from "../../utils/date";
+import { UserModal } from "../../components/UserModal";
+import { ConfirmModal } from "../../components/ConfirmModal";
+import { Avatar } from "../../components/Avatar";
+import { Loading } from "../../components/Loading";
+import { Notice, useNotice } from "../../components/Notice";
+import { addDays, formatUzDate } from "../../utils/date";
+import { fetchSchedules } from "../../utils/schedule";
+import { StatsCards } from "./StatsCards";
+import { UsersTable } from "./UsersTable";
+import { UserCards } from "./UserCards";
 
 export const ControlUsers = () => {
-  const [data, setData] = useState([]);
-  const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState("");
+  const [weekSchedules, setWeekSchedules] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
-  // MODAL
-  const [editModal, setEditModal] = useState(false);
+  // Navbat o'zgarayotganda boshqa amallar vaqtincha o'chadi
+  const [busy, setBusy] = useState(false);
+
+  // MODALS
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
-  function handleEdit(user) {
-    setSelectedUser(user);
-    setEditModal(true);
-  }
+  const [notice, showNotice] = useNotice(3500);
 
-  function handleAddUser() {
-    setSelectedUser(null);
-    setEditModal(true);
-  }
+  const today = useMemo(() => new Date(), []);
 
   // GET USERS
-  async function addUser() {
+
+  const loadUsers = useCallback(async () => {
     const { data, error } = await supabase
       .from("users")
       .select("*")
@@ -32,36 +43,119 @@ export const ControlUsers = () => {
 
     if (error) {
       console.error(error);
-      return;
+      return error;
     }
 
-    setData(data);
+    setUsers(data);
+    return null;
+  }, []);
+
+  useEffect(() => {
+    const init = async () => {
+      setError(await loadUsers());
+      setLoading(false);
+    };
+
+    init();
+  }, [loadUsers]);
+
+  async function refreshUsers() {
+    const error = await loadUsers();
+
+    if (error) showNotice("Ro'yxatni yangilab bo'lmadi. Sahifani yangilang.", "danger");
   }
 
+  // O'zini o'chirib qo'ymasligi uchun hozirgi admin kimligini bilamiz
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setCurrentUserId(data.session?.user?.id ?? null);
+    });
+  }, []);
+
+  // Statistika va bugungi navbatchi uchun 7 kunlik navbatlar.
+  // Tartib o'zgarsa, navbatchilar ham o'zgaradi, shuning uchun users'ga bog'liq
+  useEffect(() => {
+    if (!users.length) return;
+
+    let cancelled = false;
+
+    const getWeekSchedules = async () => {
+      try {
+        const result = await fetchSchedules(
+          Array.from({ length: 7 }, (_, index) => addDays(today, index))
+        );
+
+        if (!cancelled) setWeekSchedules(result);
+      } catch (error) {
+        console.error("Schedules error:", error);
+      }
+    };
+
+    getWeekSchedules();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [users, today]);
+
+  const todayDutyId = weekSchedules[0]?.duty?.user_id;
+
+  const maxOrder = users.length ? Math.max(...users.map((user) => user.duty_order || 0)) : 0;
+
+  const filteredUsers = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) return users;
+
+    return users.filter((user) =>
+      [user.name, user.last_name, user.nickname, user.phone_number, user.email]
+        .filter(Boolean)
+        .some((value) => value.toLowerCase().includes(query))
+    );
+  }, [users, search]);
+
+  // MODAL
+
+  function handleAddUser() {
+    setSelectedUser(null);
+    setIsUserModalOpen(true);
+  }
+
+  function handleEdit(user) {
+    setSelectedUser(user);
+    setIsUserModalOpen(true);
+  }
+
+  const closeUserModal = useCallback(() => {
+    setIsUserModalOpen(false);
+    setSelectedUser(null);
+  }, []);
+
   // ADD / EDIT
+
   async function handleModalSubmit(formData) {
     const dutyOrder = Number(formData.dutyOrder);
 
+    const fields = {
+      role: formData.role,
+      name: formData.name,
+      last_name: formData.lastName,
+      age: Number(formData.age),
+      nickname: formData.nickname,
+      phone_number: formData.phoneNumber,
+      email: formData.email,
+    };
+
     // EDIT USER
     if (selectedUser) {
-      // Oddiy ma'lumotlarni update qilamiz
       const { error: userError } = await supabase
         .from("users")
-        .update({
-          role: formData.role,
-          name: formData.name,
-          last_name: formData.lastName,
-          age: Number(formData.age),
-
-          // YANGI FIELDLAR
-          nickname: formData.nickname,
-          phone_number: formData.phoneNumber,
-          email: formData.email,
-        })
+        .update(fields)
         .eq("user_id", selectedUser.user_id);
 
       if (userError) {
-        console.log(userError);
+        console.error(userError);
+        showNotice(`Saqlab bo'lmadi: ${userError.message}`, "danger");
         return;
       }
 
@@ -73,218 +167,250 @@ export const ControlUsers = () => {
         });
 
         if (orderError) {
-          console.log(orderError);
+          console.error(orderError);
+          showNotice(`Ma'lumotlar saqlandi, lekin navbatni o'zgartirib bo'lmadi.`, "warning");
+          closeUserModal();
+          await refreshUsers();
           return;
         }
       }
+
+      showNotice(`✅ ${formData.name} ma'lumotlari saqlandi`);
     }
 
     // ADD USER
     else {
-      // Hozirgi maksimal order
-      const maxOrder = data.length > 0 ? Math.max(...data.map((user) => user.duty_order || 0)) : 0;
-
-      // Admin order kiritmagan bo'lsa,
-      // oxiriga qo'shamiz
+      // Admin order kiritmagan bo'lsa, oxiriga qo'shamiz
       const newOrder = dutyOrder > 0 ? dutyOrder : maxOrder + 1;
 
-      // Agar yangi user o'rtaga kirayotgan bo'lsa,
-      // undan keyingi userlarni suramiz
+      // Agar yangi user o'rtaga kirayotgan bo'lsa, undan keyingi userlarni suramiz
       if (newOrder <= maxOrder) {
         const { error: shiftError } = await supabase.rpc("shift_users_for_insert", {
           p_new_order: newOrder,
         });
 
         if (shiftError) {
-          console.log(shiftError);
+          console.error(shiftError);
+          showNotice(`Qo'shib bo'lmadi: ${shiftError.message}`, "danger");
           return;
         }
       }
 
-      // Yangi user
-      const { error: insertError } = await supabase.from("users").insert([
-        {
-          role: formData.role,
-          name: formData.name,
-          last_name: formData.lastName,
-          age: Number(formData.age),
-          duty_order: newOrder,
-
-          // YANGI FIELDLAR
-          nickname: formData.nickname,
-          phone_number: formData.phoneNumber,
-          email: formData.email,
-        },
-      ]);
+      const { error: insertError } = await supabase
+        .from("users")
+        .insert([{ ...fields, duty_order: newOrder }]);
 
       if (insertError) {
-        console.log(insertError);
+        console.error(insertError);
+        showNotice(`Qo'shib bo'lmadi: ${insertError.message}`, "danger");
         return;
       }
+
+      showNotice(`✅ ${formData.name} qo'shildi (${newOrder}-o'rin)`);
     }
 
-    setEditModal(false);
-    setSelectedUser(null);
-
-    await addUser();
+    closeUserModal();
+    await refreshUsers();
   }
 
-  // DELETE
-  async function handleDelete(user) {
-    const confirmDelete = window.confirm(
-      `Are we sure we want to delete ${user.name} ${user.last_name}?`
-    );
+  // MOVE (sudrash yoki ↑ ↓)
 
-    if (!confirmDelete) return;
+  // Raqamlar ketma-ket bo'lmasligi mumkin (masalan 1, 21, 22),
+  // shuning uchun ↑ ↓ qo'shni userning o'rniga suradi
+  function handleMoveStep(user, direction) {
+    const index = users.findIndex((item) => item.user_id === user.user_id);
+    const neighbor = users[index + direction];
 
-    const { error } = await supabase.from("users").delete().eq("user_id", user.user_id);
+    if (neighbor) handleMove(user, neighbor.duty_order);
+  }
 
-    if (error) {
-      console.log(error);
-      return;
-    }
+  async function handleMove(user, newOrder) {
+    if (busy || newOrder === user.duty_order || newOrder < 1 || newOrder > maxOrder) return;
 
-    // O'chirilgan odamdan keyingilarni
-    // 1 pog'ona yuqoriga suramiz
-    const { error: shiftError } = await supabase.rpc("shift_users_after_delete", {
-      p_deleted_order: user.duty_order,
+    setBusy(true);
+
+    const { error } = await supabase.rpc("move_user_to_order", {
+      p_user_id: user.user_id,
+      p_new_order: newOrder,
     });
-
-    if (shiftError) {
-      console.log(shiftError);
-      return;
-    }
-
-    await addUser();
-  }
-
-  const checkAdmin = window.localStorage.getItem("isAdmin");
-
-  async function handleExit() {
-    // Supabase sessiyasini ham yopamiz, aks holda admin tizimda qolib ketadi
-    const { error } = await supabase.auth.signOut();
 
     if (error) {
       console.error(error);
+      showNotice(`Navbatni o'zgartirib bo'lmadi: ${error.message}`, "danger");
+    } else {
+      showNotice(`↕️ ${user.name} endi ${newOrder}-o'rinda`);
     }
 
-    window.localStorage.removeItem("isAdmin");
-
-    navigate(0);
+    await refreshUsers();
+    setBusy(false);
   }
 
-  useEffect(() => {
-    if (!checkAdmin) {
-      navigate("/");
-    }
-  }, [checkAdmin, navigate]);
+  // DELETE
 
-  useEffect(() => {
-    addUser();
-  }, []);
+  async function handleDeleteConfirm() {
+    const user = userToDelete;
+
+    setDeleting(true);
+
+    // O'chirish va keyingilarni surish bitta tranzaksiyada bajariladi:
+    // biri xato bersa, ikkalasi ham bekor bo'ladi
+    const { error } = await supabase.rpc("delete_user_and_shift", {
+      p_user_id: user.user_id,
+    });
+
+    if (error) {
+      console.error(error);
+      showNotice(`O'chirib bo'lmadi: ${error.message}`, "danger");
+      setDeleting(false);
+      return;
+    }
+
+    showNotice(`🗑️ ${user.name} ${user.last_name} o'chirildi`);
+
+    setDeleting(false);
+    setUserToDelete(null);
+    await refreshUsers();
+  }
+
+  const cancelDelete = useCallback(() => setUserToDelete(null), []);
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (error) {
+    return (
+      <div className="container pt-3">
+        <div className="alert alert-danger">
+          Userlarni yuklab bo'lmadi. Sahifani yangilab ko'ring.
+        </div>
+      </div>
+    );
+  }
+
+  const renderUsers = () => {
+    if (!users.length) {
+      return (
+        <div className="alert alert-info">
+          Hali hech kim qo'shilmagan. "+ Add User" tugmasini bosing.
+        </div>
+      );
+    }
+
+    if (!filteredUsers.length) {
+      return <div className="alert alert-secondary">"{search}" bo'yicha hech kim topilmadi.</div>;
+    }
+
+    const listProps = {
+      users: filteredUsers,
+      todayDutyId,
+      currentUserId,
+      busy,
+      onMove: handleMove,
+      onEdit: handleEdit,
+      onDelete: setUserToDelete,
+    };
+
+    return (
+      <>
+        <UsersTable {...listProps} />
+        <UserCards
+          {...listProps}
+          firstUserId={users[0]?.user_id}
+          lastUserId={users[users.length - 1]?.user_id}
+          onMoveStep={handleMoveStep}
+        />
+      </>
+    );
+  };
 
   return (
-    <div className="container">
-      <div className="control">
-        <div className="pt-3 d-flex justify-content-between align-items-center mb-3">
-          <button
-            className="control__btn py-1 btn btn-primary"
-            type="button"
-            onClick={handleAddUser}
-          >
-            Add User
-          </button>
+    <div className="control">
+      <div className="container py-3 py-md-4">
+        <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
+          <div className="text-start">
+            <h1 className="control__title fw-bold m-0">⚙️ Control Users</h1>
 
-          <h3 className="control__title m-0 text-primary fw-semibold">{formatDate(new Date())}</h3>
+            <small className="text-muted">{formatUzDate(today)}</small>
+          </div>
 
-          <button className="control__btn py-1 btn btn-danger" type="button" onClick={handleExit}>
-            Exit
-          </button>
+          <div className="d-flex gap-2">
+            <input
+              type="search"
+              className="control__search form-control"
+              placeholder="Qidirish..."
+              aria-label="Userlarni qidirish"
+              value={search}
+              onChange={(evt) => setSearch(evt.target.value)}
+            />
+
+            <button
+              className="control__add-btn btn btn-primary text-nowrap"
+              type="button"
+              onClick={handleAddUser}
+            >
+              + Add User
+            </button>
+          </div>
         </div>
 
-        <div className="table-responsive">
-          <table className="table table-info table-striped border">
-            <thead>
-              <tr className="control__cell" style={{ whiteSpace: "nowrap" }}>
-                <th>#</th>
-                <th>First</th>
-                <th>Last</th>
-                <th>Age</th>
-                <th>Nickname</th>
-                <th>Phone Number</th>
-                <th>Email</th>
-                <th>Changes</th>
-              </tr>
-            </thead>
+        <StatsCards users={users} schedules={weekSchedules} />
 
-            <tbody style={{ whiteSpace: "nowrap" }}>
-              {data.map((user) => (
-                <tr className="control__cell align-middle" key={user.user_id}>
-                  <th>{user.duty_order}</th>
+        <div className="d-flex justify-content-between align-items-center mb-2 small text-muted">
+          <span className="d-none d-md-inline">
+            💡 Navbatni o'zgartirish uchun qatorni sudrab, boshqa qator ustiga qo'ying.
+          </span>
 
-                  <td>{user.name}</td>
+          <span className="d-md-none">💡 Navbatni ↑ ↓ tugmalari bilan o'zgartiring.</span>
 
-                  <td>{user.last_name}</td>
-
-                  <td>{user.age}</td>
-
-                  <td>
-                    {user.nickname ? (
-                      <a
-                        href={`https://t.me/${user.nickname.replace("@", "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {user.nickname}
-                      </a>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-
-                  <td>
-                    {user.phone_number ? (
-                      <a href={`tel:${user.phone_number}`}>{user.phone_number}</a>
-                    ) : (
-                      "—"
-                    )}
-                  </td>
-
-                  <td>{user.email ? <a href={`mailto:${user.email}`}>{user.email}</a> : "—"}</td>
-
-                  <td>
-                    <button
-                      className="control__user-btn btn btn-primary py-1 me-2"
-                      type="button"
-                      onClick={() => handleEdit(user)}
-                    >
-                      Edit
-                    </button>
-
-                    <button
-                      className="control__user-btn btn btn-danger py-1"
-                      type="button"
-                      onClick={() => handleDelete(user)}
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {busy && (
+            <span className="text-primary text-nowrap ms-2">
+              <span className="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+              Saqlanmoqda...
+            </span>
+          )}
         </div>
+
+        {renderUsers()}
       </div>
 
       <UserModal
-        isOpen={editModal}
-        onClose={() => {
-          setEditModal(false);
-          setSelectedUser(null);
-        }}
+        isOpen={isUserModalOpen}
+        onClose={closeUserModal}
         selectedUser={selectedUser}
         onSubmit={handleModalSubmit}
+        users={users}
       />
+
+      <ConfirmModal
+        isOpen={!!userToDelete}
+        title="🗑️ Userni o'chirish"
+        confirmLabel="O'chirish"
+        loading={deleting}
+        onConfirm={handleDeleteConfirm}
+        onCancel={cancelDelete}
+      >
+        {userToDelete && (
+          <div className="d-flex align-items-center gap-3">
+            <Avatar user={userToDelete} />
+
+            <div>
+              <p className="m-0">
+                <strong>
+                  {userToDelete.name} {userToDelete.last_name}
+                </strong>
+                ni o'chirasizmi?
+              </p>
+
+              <small className="text-muted">
+                Bu amalni ortga qaytarib bo'lmaydi. Undan keyingilarning navbati bittaga suriladi.
+              </small>
+            </div>
+          </div>
+        )}
+      </ConfirmModal>
+
+      <Notice notice={notice} />
     </div>
   );
 };
