@@ -1,70 +1,92 @@
-# Getting Started with Create React App
+# Control Your Flat
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A small web app for flatmates to share household duties. It shows who is on duty each day of the month, who takes out the rubbish, and who does the general cleaning. An admin can add, edit, reorder and remove residents.
 
-## Available Scripts
+Built with React 19, React Router 7, Bootstrap 5, Sass and [Supabase](https://supabase.com) (database and authentication).
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- **Duties schedule** (`/duties-schedule`): three monthly tables, one each for daily duty (*navbatchilik*), rubbish (*musor tashlash*) and general cleaning (*generalniy uborka*). Today's column and today's person are highlighted, and the date refreshes every minute.
+- **Users** (`/users`): a public list of residents with Telegram links and phone numbers.
+- **Control Users** (`/control-users`, admins only): add, edit and delete residents and set their duty order. Positions shift automatically when someone is inserted, moved or deleted.
+- **Login**: email and password sign-in through Supabase Auth, from the "Log in" button in the header. Only users whose `role` is `admin` get access to the admin page.
+- Responsive layout with a hamburger menu on small screens.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Getting started
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Requirements: Node.js 18+ and npm.
 
-### `npm test`
+```bash
+git clone https://github.com/zahriddinus/control-your-flat.git
+cd control-your-flat
+npm install
+npm start
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The app runs at <http://localhost:3000>.
 
-### `npm run build`
+### Scripts
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+| Command         | What it does                                  |
+| --------------- | --------------------------------------------- |
+| `npm start`     | Start the development server                  |
+| `npm run build` | Create a production build in `build/`         |
+| `npm test`      | Run tests in watch mode                       |
+| `npx prettier --write src` | Format the code using `.prettierrc` |
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Supabase setup
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+The Supabase client is configured in [src/lib/supabese.jsx](src/lib/supabese.jsx). To use your own project, replace `supabaseUrl` and `supabaseKey` there with your project URL and **publishable (anon)** key. Never put a service-role key in this file; it is shipped to the browser.
 
-### `npm run eject`
+The app expects the following in your Supabase project.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### `users` table
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+| Column         | Type        | Notes                                              |
+| -------------- | ----------- | -------------------------------------------------- |
+| `user_id`      | uuid        | Primary key; matches `auth.users.id` for anyone who logs in |
+| `role`         | text        | `admin` or `user`                                  |
+| `name`         | text        |                                                    |
+| `last_name`    | text        |                                                    |
+| `age`          | int         |                                                    |
+| `duty_order`   | int         | Position in the rotation (1, 2, 3, …)              |
+| `nickname`     | text        | Telegram username, e.g. `@username`                |
+| `phone_number` | text        |                                                    |
+| `email`        | text        |                                                    |
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Database functions (RPC)
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+| Function                                         | Used for                                                       |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| `get_duty_schedule(target_date date)`            | Returns `{ duty, rubbish, cleaning[] }` for a given day; each entry has a `user_id` |
+| `move_user_to_order(p_user_id, p_new_order)`     | Moves a user to a new position and shifts the others           |
+| `shift_users_for_insert(p_new_order)`            | Makes room for a new user at a given position                  |
+| `shift_users_after_delete(p_deleted_order)`      | Closes the gap after a user is deleted                         |
 
-## Learn More
+These functions are not stored in this repository; they live in the Supabase project.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+### Creating an admin
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+1. Create a user in **Supabase → Authentication → Users**.
+2. Add a row to `users` with the same `user_id` and `role = 'admin'`.
+3. Log in from the app's header; you will be redirected to `/control-users`.
 
-### Code Splitting
+> Access control in the browser is only a convenience. Protect the `users` table and RPC functions with Row Level Security so that only admins can modify data.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Project structure
 
-### Analyzing the Bundle Size
+```
+src/
+├── assits/styles/     # Global Sass: variables, mixins, main.scss
+├── components/        # Header (nav + login modal), Loading, UserModal
+├── lib/supabese.jsx   # Supabase client
+├── pages/             # Home, DutiesSchedule, Users, ControlUsers, Error (404)
+├── panels/            # UserPanel (placeholder)
+├── routes/            # AppRoutes and ProtectedRoute (admin guard)
+├── App.js
+└── index.js           # Entry point: router, Bootstrap, global styles
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Deployment
 
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Run `npm run build` and host the `build/` folder on any static host (Vercel, Netlify, GitHub Pages, …). Since the app uses client-side routing, configure the host to serve `index.html` for unknown paths.
