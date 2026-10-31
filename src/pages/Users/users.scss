@@ -1,19 +1,46 @@
-.users__input-label {
-  cursor: pointer;
-
-  &:hover {
-    background-color: rgb(221, 221, 221);
-  }
-}
-
-.active-user {
-  background-color: rgb(244, 213, 213) !important;
-  color: red !important;
-}
-
-.schedule {
+.users {
   &__title {
-    font-size: 1.8rem;
+    font-size: 2rem;
+  }
+
+  &__search {
+    width: 100%;
+    max-width: 320px;
+  }
+
+  &__card {
+    border-radius: 12px;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+
+    &--today {
+      border-width: 2px;
+      background-color: #f3f8ff;
+    }
+  }
+
+  &__avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #0d6efd;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  &__name {
+    font-size: 1.1rem;
+    font-weight: 600;
   }
 }
 
@@ -23,20 +50,18 @@
       font-size: 1.5rem;
     }
 
-    &__cell {
-      font-size: 0.8rem;
+    &__search {
+      max-width: none;
     }
   }
 }
 
 @media (max-width: 480px) {
-  .schedule {
-    &__title {
-      font-size: 1.2rem;
-    }
-
-    &__cell {
-      font-size: 0.7rem;
+  .users {
+    &__avatar {
+      width: 42px;
+      height: 42px;
+      font-size: 1rem;
     }
   }
 }
