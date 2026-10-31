@@ -43,6 +43,7 @@ export const Header = () => {
     console.log(profileError);
 
     if (profileError) {
+      await supabase.auth.signOut();
       setMessage("Foydalanuvchi maʼlumotlari topilmadi");
       console.log(profileError);
       handleDarkMode();
@@ -59,6 +60,8 @@ export const Header = () => {
       setIsAdmin(true);
       navigate("/control-users");
     } else {
+      // Admin bo'lmagan userning sessiyasini ochiq qoldirmaymiz
+      await supabase.auth.signOut();
       setIsAdmin(false);
       setMessage("Kechirasiz, siz usersiz");
       handleDarkMode();

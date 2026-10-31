@@ -159,10 +159,15 @@ export const ControlUsers = () => {
 
   const checkAdmin = window.localStorage.getItem("isAdmin");
 
-  function handleExit() {
-    if (checkAdmin) {
-      window.localStorage.removeItem("isAdmin");
+  async function handleExit() {
+    // Supabase sessiyasini ham yopamiz, aks holda admin tizimda qolib ketadi
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+      console.error(error);
     }
+
+    window.localStorage.removeItem("isAdmin");
 
     navigate(0);
   }
