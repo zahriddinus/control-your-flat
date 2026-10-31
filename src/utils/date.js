@@ -40,6 +40,24 @@ export const formatUzDate = (date) =>
 
 export const getShortWeekday = (date) => WEEKDAYS_SHORT[date.getDay()];
 
+// Kalendar varag'i uchun: "NOY"
+const MONTHS_SHORT = [
+  "YAN",
+  "FEV",
+  "MAR",
+  "APR",
+  "MAY",
+  "IYN",
+  "IYL",
+  "AVG",
+  "SEN",
+  "OKT",
+  "NOY",
+  "DEK",
+];
+
+export const getShortMonth = (date) => MONTHS_SHORT[date.getMonth()];
+
 export const getDayOfYear = (date) => {
   const startOfYear = new Date(date.getFullYear(), 0, 0);
   const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());

@@ -1,5 +1,6 @@
+import { TaskIcon } from "../../components/TaskIcon";
 import { addDays, formatDate, getShortWeekday } from "../../utils/date";
-import { TASKS, getAssignedUsers } from "../../utils/schedule";
+import { TASKS, getAssignedNames } from "../../utils/schedule";
 
 export const WeekView = ({ users, schedules, today, loading }) => {
   const week = Array.from({ length: 7 }, (_, index) => ({
@@ -28,9 +29,7 @@ export const WeekView = ({ users, schedules, today, loading }) => {
                 <span className="placeholder col-10"></span>
               ) : (
                 TASKS.map((task) => {
-                  const names = getAssignedUsers(users, task, schedule)
-                    .map((user) => user.name)
-                    .join(", ");
+                  const names = getAssignedNames(users, task, schedule);
 
                   if (!names) return null;
 
@@ -40,7 +39,9 @@ export const WeekView = ({ users, schedules, today, loading }) => {
                       key={task.key}
                       title={`${task.label}: ${names}`}
                     >
-                      {task.icon} {names}
+                      <TaskIcon taskKey={task.key} />
+
+                      <span className="text-truncate">{names}</span>
                     </div>
                   );
                 })

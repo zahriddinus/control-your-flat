@@ -1,0 +1,229 @@
+.weather-icon {
+  flex-shrink: 0;
+  overflow: visible;
+
+  &--md {
+    width: 44px;
+    height: 44px;
+  }
+
+  &--lg {
+    width: 84px;
+    height: 84px;
+  }
+
+  // Quyosh: nurlar sekin aylanadi
+  .wi-sun-core {
+    fill: #fbbf24;
+    stroke: #f59e0b;
+    stroke-width: 1.5;
+  }
+
+  .wi-sun-rays {
+    stroke: #fbbf24;
+    stroke-width: 3;
+    stroke-linecap: round;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: wi-spin 14s linear infinite;
+  }
+
+  // Oy va yulduzlar
+  .wi-moon-body {
+    fill: #fde68a;
+    stroke: #fbbf24;
+    stroke-width: 1.5;
+  }
+
+  .wi-star {
+    fill: #fef3c7;
+    animation: wi-twinkle 2s ease-in-out infinite;
+
+    &--late {
+      animation-delay: 1s;
+    }
+  }
+
+  // Bulutlar
+  .wi-cloud {
+    stroke-width: 1.5;
+    stroke-linejoin: round;
+
+    &--front {
+      fill: #fff;
+      stroke: #cbd5e1;
+    }
+
+    &--back {
+      fill: #94a3b8;
+      stroke: #64748b;
+    }
+  }
+
+  .wi-drift {
+    animation: wi-drift 4s ease-in-out infinite alternate;
+
+    &--slow {
+      animation-duration: 6s;
+    }
+  }
+
+  // Yomg'ir, qor, chaqmoq, tuman
+  .wi-drop {
+    stroke: #3b82f6;
+    stroke-width: 3;
+    stroke-linecap: round;
+    animation: wi-fall 1.1s linear infinite;
+  }
+
+  .wi-flake {
+    fill: #fff;
+    stroke: #93c5fd;
+    stroke-width: 1.2;
+    animation: wi-snow 2.2s linear infinite;
+  }
+
+  .wi-bolt {
+    fill: #facc15;
+    stroke: #eab308;
+    stroke-width: 1;
+    stroke-linejoin: round;
+    animation: wi-flash 2.4s ease-in-out infinite;
+  }
+
+  .wi-fog-line {
+    stroke: #94a3b8;
+    stroke-width: 3;
+    stroke-linecap: round;
+    animation: wi-drift 3s ease-in-out infinite alternate;
+  }
+
+  // Tong va kech: quyosh ufqda ohista ko'tarilib-tushib turadi
+  .wi-horizon-sun {
+    animation: wi-bob 3s ease-in-out infinite alternate;
+
+    &--evening {
+      .wi-sun-core {
+        fill: #fb923c;
+        stroke: #f97316;
+      }
+
+      .wi-sun-rays {
+        stroke: #fdba74;
+      }
+    }
+  }
+
+  .wi-horizon {
+    stroke: rgba(255, 255, 255, 0.85);
+    stroke-width: 3;
+    stroke-linecap: round;
+
+    &--short {
+      stroke-width: 2;
+      opacity: 0.6;
+    }
+  }
+
+  // Tomchilar va parchalar navbat bilan tushadi
+  .wi-delay-1 {
+    animation-delay: 0.35s;
+  }
+
+  .wi-delay-2 {
+    animation-delay: 0.7s;
+  }
+}
+
+@keyframes wi-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes wi-bob {
+  from {
+    transform: translateY(3px);
+  }
+
+  to {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes wi-twinkle {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes wi-drift {
+  from {
+    transform: translateX(-2px);
+  }
+
+  to {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes wi-fall {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes wi-snow {
+  0% {
+    opacity: 0;
+    transform: translate(0, -4px);
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(3px, 10px);
+  }
+}
+
+@keyframes wi-flash {
+  0%,
+  40%,
+  100% {
+    opacity: 1;
+  }
+
+  45%,
+  55% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+// Animatsiyani o'chirib qo'ygan foydalanuvchilar uchun
+@media (prefers-reduced-motion: reduce) {
+  .weather-icon * {
+    animation: none !important;
+  }
+}

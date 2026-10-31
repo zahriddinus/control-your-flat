@@ -155,7 +155,9 @@ export const DutiesSchedule = () => {
   const selectedSchedule = monthSchedules[selectedDay];
 
   const getAssignedNames = (task) =>
-    data.filter((user) => task.isAssigned(selectedSchedule, user.user_id)).map((user) => user.name);
+    data
+      .filter((user) => task.isAssigned(selectedSchedule, user.user_id))
+      .map((user) => user.name.trim());
 
   if (loading) {
     return <Loading />;

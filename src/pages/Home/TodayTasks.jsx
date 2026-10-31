@@ -1,9 +1,5 @@
-import { TASKS, getAssignedUsers } from "../../utils/schedule";
-
-const getNames = (users, task, schedule) =>
-  getAssignedUsers(users, task, schedule)
-    .map((user) => user.name)
-    .join(", ");
+import { TaskIcon } from "../../components/TaskIcon";
+import { TASKS, getAssignedNames } from "../../utils/schedule";
 
 export const TodayTasks = ({ users, schedules, loading }) => {
   const [todaySchedule, tomorrowSchedule] = schedules;
@@ -11,7 +7,7 @@ export const TodayTasks = ({ users, schedules, loading }) => {
   // Ertaga faqat kimgadir vazifa berilgan bandlar ko'rsatiladi
   const tomorrowTasks = TASKS.map((task) => ({
     task,
-    names: getNames(users, task, tomorrowSchedule),
+    names: getAssignedNames(users, task, tomorrowSchedule),
   })).filter(({ names }) => names);
 
   return (
@@ -23,7 +19,7 @@ export const TodayTasks = ({ users, schedules, loading }) => {
           <div className="col-12 col-md-4" key={task.key}>
             <div className={`home__task home__task--${task.key} card h-100 border-0 shadow-sm`}>
               <div className="card-body d-flex align-items-center gap-3">
-                <span className="home__icon">{task.icon}</span>
+                <TaskIcon taskKey={task.key} size="lg" />
 
                 <div className="flex-grow-1 overflow-hidden">
                   <small className="text-muted d-block">{task.label}</small>
@@ -32,7 +28,7 @@ export const TodayTasks = ({ users, schedules, loading }) => {
                     {loading ? (
                       <span className="placeholder col-8"></span>
                     ) : (
-                      getNames(users, task, todaySchedule) || "—"
+                      getAssignedNames(users, task, todaySchedule) || "—"
                     )}
                   </span>
                 </div>
@@ -43,10 +39,15 @@ export const TodayTasks = ({ users, schedules, loading }) => {
       </div>
 
       {!loading && tomorrowTasks.length > 0 && (
-        <p className="home__tomorrow mt-3 mb-0">
-          <span className="fw-semibold">Ertaga: </span>
+        <p className="home__tomorrow d-flex flex-wrap align-items-center gap-2 mt-3 mb-0">
+          <span className="fw-semibold">Ertaga:</span>
 
-          {tomorrowTasks.map(({ task, names }) => `${task.icon} ${names}`).join("  ·  ")}
+          {tomorrowTasks.map(({ task, names }) => (
+            <span className="d-inline-flex align-items-center gap-1" key={task.key}>
+              <TaskIcon taskKey={task.key} />
+              {names}
+            </span>
+          ))}
         </p>
       )}
     </section>

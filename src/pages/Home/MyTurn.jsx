@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { addDays, formatDaysLeft, formatUzDate } from "../../utils/date";
 import { TASKS } from "../../utils/schedule";
+import { TaskIcon } from "../../components/TaskIcon";
 
 const STORAGE_KEY = "myUserId";
 
@@ -73,8 +74,9 @@ export const MyTurn = ({ users, schedules, today, loading }) => {
                   className="home__turn d-flex justify-content-between align-items-center gap-2 py-2"
                   key={task.key}
                 >
-                  <span>
-                    {task.icon} {task.label}
+                  <span className="d-flex align-items-center gap-2">
+                    <TaskIcon taskKey={task.key} size="md" />
+                    {task.label}
                   </span>
 
                   {loading ? (

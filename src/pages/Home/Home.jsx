@@ -5,6 +5,7 @@ import { Loading } from "../../components/Loading";
 import { addDays, formatDate, parseDate } from "../../utils/date";
 import { fetchSchedules } from "../../utils/schedule";
 import { Greeting } from "./Greeting";
+import { WeatherCard } from "./WeatherCard";
 import { TodayTasks } from "./TodayTasks";
 import { DayHero } from "./DayHero";
 import { MyTurn } from "./MyTurn";
@@ -154,9 +155,11 @@ export const Home = () => {
       <div className="container py-3 py-md-4">
         <Greeting now={currentDate} />
 
+        <WeatherCard users={users} schedules={schedules} />
+
         {renderSchedules()}
 
-        <QuickLinks />
+        <QuickLinks users={users} today={today} />
       </div>
     </div>
   );

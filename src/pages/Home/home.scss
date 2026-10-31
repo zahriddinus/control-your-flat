@@ -14,10 +14,53 @@
     font-size: 2rem;
   }
 
+  // Vaqtga mos osmon manzarasi (quyosh/oy)
+  &__greeting-scene {
+    flex-shrink: 0;
+
+    .weather-icon {
+      width: 96px;
+      height: 96px;
+      filter: drop-shadow(0 4px 14px rgba(255, 255, 255, 0.25));
+    }
+  }
+
   &__tip {
     background-color: rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
+    border-radius: 12px;
     padding: 10px 14px;
+  }
+
+  // Maslahat belgisi oq doira ichida
+  &__tip-badge {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6f42c1;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &__tip-label {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+  }
+
+  // Lampochka ohista yonib-o'chib turadi
+  &__tip-bulb {
+    width: 13px;
+    height: 13px;
+    color: #fde047;
+    animation: tip-glow 2s ease-in-out infinite;
   }
 
   &__section-title {
@@ -59,12 +102,160 @@
     color: #6c757d;
   }
 
+  // Bugungi qahramon: oltin rangli kartochka
   &__hero {
-    background-color: #fff8e1;
+    position: relative;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+
+    // Fonda ohista yaltirab turadigan uchqunlar
+    &::before,
+    &::after {
+      content: "✦";
+      position: absolute;
+      color: #fbbf24;
+      pointer-events: none;
+      animation: hero-twinkle 2.4s ease-in-out infinite;
+    }
+
+    &::before {
+      top: 10px;
+      right: 18%;
+      font-size: 1rem;
+    }
+
+    &::after {
+      bottom: 8px;
+      right: 34%;
+      font-size: 0.7rem;
+      animation-delay: 1.2s;
+    }
+  }
+
+  &__hero-avatar {
+    position: relative;
+    flex-shrink: 0;
+    padding: 4px;
+    border-radius: 50%;
+
+    // Aylanuvchi oltin halqa
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: conic-gradient(#fbbf24, #f59e0b, #fde68a, #fbbf24);
+      animation: hero-spin 4s linear infinite;
+    }
+
+    .avatar {
+      position: relative;
+      border: 3px solid #fffbeb;
+    }
+  }
+
+  &__hero-badge {
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+    color: #fff;
+    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+    box-shadow: 0 2px 6px rgba(217, 119, 6, 0.4);
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
+  }
+
+  &__hero-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 10px;
+    margin-bottom: 4px;
+    border-radius: 999px;
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #fbbf24 0%, #d97706 100%);
+  }
+
+  &__hero-label-icon {
+    width: 11px;
+    height: 11px;
   }
 
   &__hero-name {
     font-size: 1.4rem;
+  }
+
+  // "Rahmat aytish" tugmasi
+  &__hero-thanks {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border: 1px solid #fecdd3;
+    border-radius: 999px;
+    color: #e11d48;
+    font-weight: 600;
+    background-color: #fff;
+    transition:
+      transform 0.2s ease,
+      background-color 0.2s ease;
+
+    &:hover {
+      color: #e11d48;
+      background-color: #fff1f2;
+      transform: scale(1.04);
+    }
+
+    &.thanked {
+      color: #fff;
+      border-color: transparent;
+      background: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
+    }
+  }
+
+  &__hero-heart {
+    width: 14px;
+    height: 14px;
+  }
+
+  // Bosilganda uchib chiqadigan yuraklar
+  &__hero-burst {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  &__hero-burst-heart {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    color: #f43f5e;
+    opacity: 0;
+    animation: hero-heart-fly 0.9s ease-out forwards;
+
+    @for $i from 0 through 5 {
+      &.heart-#{$i} {
+        --heart-x: #{($i - 2.5) * 16}px;
+        animation-delay: #{$i * 0.05}s;
+      }
+    }
   }
 
   &__turn {
@@ -73,6 +264,11 @@
     &:last-child {
       border-bottom: none;
     }
+  }
+
+  // Uborka ikonkasi bilan bir xil gradient
+  &__progress-bar {
+    background: linear-gradient(90deg, #fbbf24 0%, #fd7e14 100%);
   }
 
   &__countdown {
@@ -94,16 +290,27 @@
 
   // Har bir vazifa o'z rangida: navbatchi ko'k, musor yashil, uborka to'q sariq
   &__day-task {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    padding: 2px 6px;
+    padding: 2px 8px 2px 2px;
     margin-bottom: 4px;
-    border-radius: 6px;
-    border-left: 3px solid transparent;
+    border-radius: 999px;
+    border-left: none !important;
+    transition: transform 0.2s ease;
 
     &:last-child {
       margin-bottom: 0;
+    }
+
+    &:hover {
+      transform: translateX(2px);
+    }
+
+    &:hover .task-icon {
+      animation: task-icon-wiggle 0.4s ease;
     }
 
     &--duty {
@@ -125,6 +332,177 @@
     }
   }
 
+  // Ob-havo: kunduzi och osmon, kechasi to'q rang
+  &__weather {
+    border-radius: 16px;
+    color: #0f172a;
+    background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 100%);
+
+    &--night {
+      color: #fff;
+      background: linear-gradient(135deg, #1e293b 0%, #312e81 100%);
+
+      .home__weather-muted {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .home__weather-muted a {
+        color: #93c5fd;
+      }
+
+      .home__weather-day,
+      .home__weather-tips li {
+        background-color: rgba(255, 255, 255, 0.08);
+      }
+
+      .home__weather-btn {
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.4);
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+
+      // To'q fonda belgilar ochroq bo'ladi
+      .home__small-icon--home {
+        color: #93c5fd;
+      }
+
+      .home__small-icon--pin {
+        color: #fca5a5;
+      }
+
+      .home__small-icon--drop {
+        color: #7dd3fc;
+      }
+
+      .home__small-icon--wind {
+        color: #cbd5e1;
+      }
+    }
+  }
+
+  // Uzun manzil tugmani surib yubormasligi uchun
+  &__weather-place {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  // Kichik belgilar: uy ko'k, joylashuv qizil, tomchi havorang, shamol kulrang
+  &__small-icon {
+    flex-shrink: 0;
+    width: 1em;
+    height: 1em;
+
+    &--home {
+      color: #3b82f6;
+    }
+
+    &--pin {
+      color: #ef4444;
+    }
+
+    &--drop {
+      color: #0ea5e9;
+    }
+
+    &--wind {
+      color: #64748b;
+    }
+  }
+
+  &__weather-temp {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  &__weather-muted {
+    color: #64748b;
+  }
+
+  &__weather-day {
+    padding: 8px;
+    border-radius: 10px;
+    text-align: center;
+    background-color: rgba(255, 255, 255, 0.7);
+  }
+
+  &__weather-tips li {
+    padding: 6px 10px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.7);
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__weather-btn {
+    border: 1px solid #bae6fd;
+    background-color: #fff;
+  }
+
+  // Tezkor havolalar: kalendar varag'i
+  &__calendar {
+    flex-shrink: 0;
+    width: 48px;
+    overflow: hidden;
+    border-radius: 10px;
+    text-align: center;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    transition: transform 0.3s ease;
+  }
+
+  &__calendar-month {
+    display: block;
+    padding: 2px 0;
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+  }
+
+  &__calendar-day {
+    display: block;
+    padding: 2px 0 4px;
+    color: #212529;
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 1.1;
+  }
+
+  // Tezkor havolalar: ustma-ust avatarlar
+  &__avatars {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+
+    .avatar,
+    .home__avatars-more {
+      border: 2px solid #fff;
+      transition: transform 0.3s ease;
+    }
+
+    > * + * {
+      margin-left: -10px;
+    }
+  }
+
+  &__avatars-more {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+  }
+
   &__link {
     transition:
       transform 0.2s ease,
@@ -133,6 +511,15 @@
     &:hover {
       transform: translateY(-3px);
       box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+    }
+
+    &:hover .home__calendar {
+      transform: rotate(-6deg);
+    }
+
+    // Avatarlar yelpig'ichdek ochiladi
+    &:hover .home__avatars > * + * {
+      transform: translateX(4px);
     }
   }
 }
@@ -162,5 +549,70 @@
     &__week {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+  }
+}
+
+@keyframes hero-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hero-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
+@keyframes hero-heart-fly {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate(calc(-50% + var(--heart-x)), -60px) scale(1.2);
+  }
+}
+
+// Animatsiyani o'chirib qo'ygan foydalanuvchilar uchun
+@media (prefers-reduced-motion: reduce) {
+  .home__hero::before,
+  .home__hero::after,
+  .home__hero-avatar::before,
+  .home__hero-burst-heart {
+    animation: none;
+  }
+}
+
+@keyframes tip-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 0 0 rgba(253, 224, 71, 0));
+  }
+
+  50% {
+    filter: drop-shadow(0 0 4px rgba(253, 224, 71, 0.9));
+  }
+}
+
+@media (max-width: 576px) {
+  .home__greeting-scene .weather-icon {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home__tip-bulb {
+    animation: none;
   }
 }

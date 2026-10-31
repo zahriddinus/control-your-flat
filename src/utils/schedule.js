@@ -30,6 +30,12 @@ export const TASKS = [
 export const getAssignedUsers = (users, task, schedule) =>
   users.filter((user) => task.isAssigned(schedule, user.user_id));
 
+// "Eldor, Odilbek". Bazadagi ismlar oxirida bo'sh joy bo'lishi mumkin, shuning uchun trim
+export const getAssignedNames = (users, task, schedule) =>
+  getAssignedUsers(users, task, schedule)
+    .map((user) => user.name.trim())
+    .join(", ");
+
 // Berilgan sanalar uchun get_duty_schedule'ni parallel chaqiradi.
 // Natija sanalar bilan bir xil tartibda qaytadi
 export const fetchSchedules = (dates) =>
