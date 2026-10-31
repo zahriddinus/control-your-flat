@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabese";
 import { UserModal } from "../../components/UserModal/UserModal";
+import { formatDate } from "../../utils/date";
 
 export const ControlUsers = () => {
   const [data, setData] = useState([]);
@@ -181,14 +182,6 @@ export const ControlUsers = () => {
   useEffect(() => {
     addUser();
   }, []);
-
-  const formatDate = (date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-
-    return `${y}-${m}-${d}`;
-  };
 
   return (
     <div className="container">

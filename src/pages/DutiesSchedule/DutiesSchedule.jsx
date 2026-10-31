@@ -3,39 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabese";
 import { Loading } from "../../components/Loading";
 import { ScheduleTable } from "./ScheduleTable";
-
-// FORMAT DATE
-
-const formatDate = (date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-
-  return `${y}-${m}-${d}`;
-};
-
-// Har bir jadval uchun: sarlavha va user o'sha kuni shu vazifadami
-const TASKS = [
-  {
-    key: "duty",
-    title: "Navbatchilik kunlari",
-    label: "Navbatchi",
-    isAssigned: (schedule, userId) => schedule?.duty?.user_id === userId,
-  },
-  {
-    key: "rubbish",
-    title: "Musor tashlash",
-    label: "Musor tashlaydi",
-    isAssigned: (schedule, userId) => schedule?.rubbish?.user_id === userId,
-  },
-  {
-    key: "cleaning",
-    title: "Generalniy uborka",
-    label: "Generalniy uborka",
-    isAssigned: (schedule, userId) =>
-      schedule?.cleaning?.some((cleaningUser) => cleaningUser.user_id === userId) ?? false,
-  },
-];
+import { formatDate } from "../../utils/date";
+import { TASKS, fetchSchedules } from "../../utils/schedule";
 
 export const DutiesSchedule = () => {
   const [monthSchedules, setMonthSchedules] = useState({});
@@ -118,31 +87,14 @@ export const DutiesSchedule = () => {
         const currentDays = Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1);
 
         // Barcha kunlar uchun RPC'larni parallel yuboramiz
-        const results = await Promise.all(
-          currentDays.map(async (day) => {
-            const dateString = formatDate(new Date(year, month, day));
-
-            const { data: scheduleData, error } = await supabase.rpc("get_duty_schedule", {
-              target_date: dateString,
-            });
-
-            if (error) {
-              throw new Error(`Schedule error ${dateString}: ${error.message}`);
-            }
-
-            return {
-              day,
-              schedule: scheduleData,
-            };
-          })
-        );
+        const results = await fetchSchedules(currentDays.map((day) => new Date(year, month, day)));
 
         if (cancelled) return;
 
         const schedules = {};
 
-        results.forEach(({ day, schedule }) => {
-          schedules[day] = schedule;
+        results.forEach((schedule, index) => {
+          schedules[currentDays[index]] = schedule;
         });
 
         setMonthSchedules(schedules);

@@ -2,17 +2,9 @@ import "./users.scss";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabese";
 import { Loading } from "../../components/Loading";
-
-const formatDate = (date) => {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-
-  return `${y}-${m}-${d}`;
-};
-
-const getInitials = (user) =>
-  `${user.name?.[0] || ""}${user.last_name?.[0] || ""}`.toUpperCase() || "?";
+import { Avatar } from "../../components/Avatar";
+import { formatDate } from "../../utils/date";
+import { TASKS } from "../../utils/schedule";
 
 export const Users = () => {
   const [data, setData] = useState([]);
@@ -69,19 +61,8 @@ export const Users = () => {
     );
   }, [data, search]);
 
-  const getTodayTasks = (user) => {
-    if (!todaySchedule) return [];
-
-    const tasks = [];
-
-    if (todaySchedule.duty?.user_id === user.user_id) tasks.push("Navbatchi");
-    if (todaySchedule.rubbish?.user_id === user.user_id) tasks.push("Musor");
-    if (todaySchedule.cleaning?.some((cleaningUser) => cleaningUser.user_id === user.user_id)) {
-      tasks.push("Generalniy uborka");
-    }
-
-    return tasks;
-  };
+  const getTodayTasks = (user) =>
+    TASKS.filter((task) => task.isAssigned(todaySchedule, user.user_id)).map((task) => task.label);
 
   if (loading) {
     return <Loading />;
@@ -142,7 +123,7 @@ export const Users = () => {
                 >
                   <div className="card-body d-flex flex-column text-start">
                     <div className="d-flex align-items-center gap-3 mb-3">
-                      <div className="users__avatar flex-shrink-0">{getInitials(user)}</div>
+                      <Avatar user={user} />
 
                       <div className="flex-grow-1 overflow-hidden">
                         <h5 className="users__name card-title m-0 text-truncate">
