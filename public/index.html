@@ -1,10 +1,26 @@
 <!doctype html>
-<html lang="en">
+<html lang="uz">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <!-- SVG zamonaviy brauzerlar uchun, ICO eski brauzerlar uchun -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" sizes="32x32" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.svg" type="image/svg+xml" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#ffffff" />
+    <!-- Mavzu React yuklanishidan oldin qo'llanadi, aks holda bir lahza oq ekran yaltiraydi.
+         Keyin src/hooks/useTheme.js boshqaradi. Avto: 06:00-18:00 yorug', qolgan vaqt qorong'i -->
+    <script>
+      (function () {
+        try {
+          var theme = localStorage.getItem("theme");
+          var hour = new Date().getHours();
+          var isNight = hour < 6 || hour >= 18;
+          var isDark = theme === "dark" || (theme !== "light" && isNight);
+
+          document.documentElement.setAttribute("data-bs-theme", isDark ? "dark" : "light");
+        } catch (error) {}
+      })();
+    </script>
     <meta name="description" content="Web site created using create-react-app" />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
@@ -21,7 +37,7 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>Control Your Flat</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
