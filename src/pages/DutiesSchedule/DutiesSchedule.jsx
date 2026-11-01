@@ -2,11 +2,37 @@ import "./dutiesSchedule.scss";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabese";
 import { Loading } from "../../components/Loading";
-import { ScheduleTable } from "./ScheduleTable";
-import { formatDate } from "../../utils/date";
+import { AppIcon } from "../../components/AppIcon";
+import { TaskIcon } from "../../components/TaskIcon";
+import { useI18n } from "../../i18n";
+import { useMyUser } from "../../hooks/useMyUser";
+import { formatDate, formatLongDate, getMonthName } from "../../utils/date";
 import { TASKS, fetchSchedules } from "../../utils/schedule";
+import { buildIcs, downloadFile } from "../../utils/ics";
+import { ScheduleTable } from "./ScheduleTable";
+import { MonthCalendar } from "./MonthCalendar";
+import { MonthStats } from "./MonthStats";
+
+// Jadval yoki kalendar: tanlov brauzerda eslab qolinadi
+const VIEW_STORAGE_KEY = "scheduleView";
+
+const readView = () => {
+  try {
+    return window.localStorage.getItem(VIEW_STORAGE_KEY) === "calendar" ? "calendar" : "table";
+  } catch {
+    return "table";
+  }
+};
+
+const VIEWS = [
+  { value: "table", icon: "table" },
+  { value: "calendar", icon: "calendar" },
+];
 
 export const DutiesSchedule = () => {
+  const { t, lang } = useI18n();
+  const [myUserId, setMyUserId] = useMyUser();
+
   const [monthSchedules, setMonthSchedules] = useState({});
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,6 +40,10 @@ export const DutiesSchedule = () => {
   const [schedulesLoading, setSchedulesLoading] = useState(true);
   const [scheduleError, setScheduleError] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [view, setView] = useState(readView);
+
+  // "Kimniki" filtri. Boshida o'zim (Home'dagi "Mening navbatim" tanlovi)
+  const [filterUserId, setFilterUserId] = useState(myUserId);
 
   // null bo'lsa bugungi kun ko'rsatiladi
   const [selectedDate, setSelectedDate] = useState(null);
@@ -24,10 +54,10 @@ export const DutiesSchedule = () => {
 
   useEffect(() => {
     const getUsers = async () => {
-      // Jadval uchun faqat id va ism kerak
+      // Jadval va avatarlar uchun id, ism va familiya kerak
       const { data, error } = await supabase
         .from("users")
-        .select("user_id, name")
+        .select("user_id, name, last_name")
         .order("duty_order", { ascending: true });
 
       if (error) {
@@ -63,8 +93,7 @@ export const DutiesSchedule = () => {
   const isCurrentMonth = year === currentDate.getFullYear() && month === currentDate.getMonth();
   const todayDay = isCurrentMonth ? currentDate.getDate() : null;
 
-  const monthName = viewDate.toLocaleString("en-US", { month: "long" });
-  const monthLabel = `${monthName} ${year}`;
+  const monthLabel = `${getMonthName(viewDate, lang)} ${year}`;
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
@@ -150,6 +179,65 @@ export const DutiesSchedule = () => {
     }
   }
 
+  // VIEW VA FILTR
+
+  function changeView(nextView) {
+    setView(nextView);
+
+    try {
+      window.localStorage.setItem(VIEW_STORAGE_KEY, nextView);
+    } catch {
+      // Saqlab bo'lmasa, tanlov faqat shu sahifada qoladi
+    }
+  }
+
+  function handleFilterChange(evt) {
+    const userId = evt.target.value;
+
+    setFilterUserId(userId);
+
+    // Ism tanlansa, Home'dagi "Mening navbatim" ham shu odamni eslab qoladi
+    if (userId) setMyUserId(userId);
+  }
+
+  const filterUser = data.find((user) => user.user_id === filterUserId);
+
+  // KALENDARGA QO'SHISH (.ics)
+
+  const myEvents = filterUser
+    ? days.flatMap((day) =>
+        TASKS.filter((task) => task.isAssigned(monthSchedules[day], filterUserId)).map((task) => ({
+          day,
+          task,
+        }))
+      )
+    : [];
+
+  function handleDownloadIcs() {
+    const events = myEvents.map(({ day, task }) => ({
+      date: new Date(year, month, day),
+      taskKey: task.key,
+      title: t(`schedule.ics.${task.key}`),
+      reminder: t("schedule.ics.reminder", { task: t(`tasks.${task.key}.label`) }),
+    }));
+
+    const content = buildIcs({
+      calendarName: t("schedule.ics.calendarName"),
+      events,
+      userId: filterUserId,
+    });
+
+    const monthNumber = String(month + 1).padStart(2, "0");
+
+    downloadFile(content, `control-your-flat-${year}-${monthNumber}.ics`, "text/calendar");
+  }
+
+  const icsTitle = !filterUser
+    ? t("schedule.ics.needUser")
+    : !myEvents.length && !schedulesLoading
+      ? t("schedule.ics.empty")
+      : t("schedule.ics.button");
+
   // SELECTED DAY SUMMARY
 
   const selectedSchedule = monthSchedules[selectedDay];
@@ -166,9 +254,7 @@ export const DutiesSchedule = () => {
   if (error) {
     return (
       <div className="container pt-3">
-        <div className="alert alert-danger">
-          Jadvalni yuklab bo'lmadi. Sahifani yangilab ko'ring.
-        </div>
+        <div className="alert alert-danger">{t("schedule.loadError")}</div>
       </div>
     );
   }
@@ -176,10 +262,21 @@ export const DutiesSchedule = () => {
   if (!data.length) {
     return (
       <div className="container pt-3">
-        <div className="alert alert-info">Hozircha foydalanuvchilar yo'q.</div>
+        <div className="alert alert-info">{t("common.noUsers")}</div>
       </div>
     );
   }
+
+  const viewProps = {
+    users: data,
+    year,
+    month,
+    monthSchedules,
+    todayDay,
+    selectedDay,
+    filterUserId,
+    onSelectDay: selectDate,
+  };
 
   return (
     <div className="container">
@@ -192,7 +289,7 @@ export const DutiesSchedule = () => {
               className="btn btn-outline-primary btn-sm"
               type="button"
               onClick={() => changeMonth(-1)}
-              aria-label="Oldingi oy"
+              aria-label={t("schedule.prevMonth")}
             >
               ‹
             </button>
@@ -203,7 +300,7 @@ export const DutiesSchedule = () => {
               className="btn btn-outline-primary btn-sm"
               type="button"
               onClick={() => changeMonth(1)}
-              aria-label="Keyingi oy"
+              aria-label={t("schedule.nextMonth")}
             >
               ›
             </button>
@@ -216,7 +313,7 @@ export const DutiesSchedule = () => {
               onClick={() => setSelectedDate(null)}
               disabled={isTodaySelected}
             >
-              Bugun
+              {t("common.today")}
             </button>
 
             <button
@@ -224,24 +321,78 @@ export const DutiesSchedule = () => {
               type="button"
               onClick={openDatePicker}
             >
-              Sanani tanla
+              {t("schedule.pickDate")}
             </button>
 
             <input
               ref={dateRef}
               className="visually-hidden"
               type="date"
-              aria-label="Sanani tanla"
+              aria-label={t("schedule.pickDate")}
               value={formatDate(viewDate)}
               onChange={handleDateChange}
             />
           </div>
         </div>
 
+        {/* KO'RINISH, FILTR VA KALENDARGA QO'SHISH */}
+
+        <div className="schedule__toolbar d-flex flex-wrap align-items-center gap-2 mb-4">
+          <div className="btn-group btn-group-sm" role="group" aria-label={t("schedule.viewLabel")}>
+            {VIEWS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className={`btn d-inline-flex align-items-center gap-1 ${
+                  view === option.value ? "btn-primary" : "btn-outline-primary"
+                }`}
+                onClick={() => changeView(option.value)}
+                aria-pressed={view === option.value}
+              >
+                <AppIcon name={option.icon} />
+                {option.value === "table" ? t("schedule.viewTable") : t("schedule.viewCalendar")}
+              </button>
+            ))}
+          </div>
+
+          <select
+            className="schedule__filter form-select form-select-sm"
+            value={filterUser ? filterUserId : ""}
+            onChange={handleFilterChange}
+            aria-label={t("schedule.filterLabel")}
+          >
+            <option value="">
+              {t("schedule.filterLabel")}: {t("schedule.filterAll")}
+            </option>
+
+            {data.map((user) => (
+              <option key={user.user_id} value={user.user_id}>
+                {user.name.trim()} {user.last_name}
+              </option>
+            ))}
+          </select>
+
+          <button
+            type="button"
+            className="schedule__ics-btn btn btn-sm d-inline-flex align-items-center gap-1 ms-md-auto"
+            onClick={handleDownloadIcs}
+            disabled={!filterUser || schedulesLoading || !myEvents.length}
+            title={icsTitle}
+          >
+            <AppIcon name="calendarPlus" />
+            {t("schedule.ics.button")}
+
+            {filterUser && myEvents.length > 0 && (
+              <span className="badge rounded-pill text-bg-light">{myEvents.length}</span>
+            )}
+          </button>
+        </div>
+
         {/* TANLANGAN KUN XULOSASI */}
 
         <h3 className="schedule__summary-title text-start fw-semibold mb-2">
-          {isTodaySelected ? "Bugun" : "Tanlangan kun"}: {formatDate(viewDate)}
+          {isTodaySelected ? t("common.today") : t("schedule.selectedDay")}:{" "}
+          {formatLongDate(viewDate, lang)}
         </h3>
 
         <div className="row g-3 mb-4">
@@ -253,18 +404,22 @@ export const DutiesSchedule = () => {
                 <div
                   className={`schedule__summary schedule__summary--${task.key} card h-100 border-0 shadow-sm`}
                 >
-                  <div className="card-body text-start">
-                    <small className="text-muted">{task.label}</small>
+                  <div className="card-body d-flex align-items-center gap-3 text-start">
+                    <TaskIcon taskKey={task.key} size="md" />
 
-                    <p className="schedule__summary-name m-0 mt-1 fw-semibold">
-                      {schedulesLoading ? (
-                        <span className="placeholder col-6"></span>
-                      ) : names.length ? (
-                        names.join(", ")
-                      ) : (
-                        "—"
-                      )}
-                    </p>
+                    <div className="overflow-hidden">
+                      <small className="text-muted">{t(`tasks.${task.key}.label`)}</small>
+
+                      <p className="schedule__summary-name m-0 fw-semibold">
+                        {schedulesLoading ? (
+                          <span className="placeholder col-6"></span>
+                        ) : names.length ? (
+                          names.join(", ")
+                        ) : (
+                          "—"
+                        )}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -272,34 +427,39 @@ export const DutiesSchedule = () => {
           })}
         </div>
 
-        {scheduleError && (
-          <div className="alert alert-danger">
-            Navbatlarni yuklab bo'lmadi. Sahifani yangilab ko'ring.
-          </div>
-        )}
+        {scheduleError && <div className="alert alert-danger">{t("schedule.schedulesError")}</div>}
 
         {schedulesLoading && (
           <div className="d-flex align-items-center gap-2 text-primary mb-3">
             <div className="spinner-border spinner-border-sm" role="status"></div>
-            <span>Navbatlar yuklanmoqda...</span>
+            <span>{t("schedule.schedulesLoading")}</span>
           </div>
         )}
 
-        {/* JADVALLAR */}
+        {/* JADVAL YOKI KALENDAR */}
 
-        {TASKS.map((task) => (
-          <ScheduleTable
-            key={task.key}
-            title={task.title}
-            users={data}
-            days={days}
-            monthLabel={monthLabel}
-            monthSchedules={monthSchedules}
-            isAssigned={task.isAssigned}
-            todayDay={todayDay}
-            selectedDay={selectedDay}
-          />
-        ))}
+        {view === "calendar" ? (
+          <MonthCalendar {...viewProps} />
+        ) : (
+          TASKS.map((task) => (
+            <ScheduleTable
+              key={task.key}
+              taskKey={task.key}
+              days={days}
+              isAssigned={task.isAssigned}
+              {...viewProps}
+            />
+          ))
+        )}
+
+        {/* OYLIK STATISTIKA */}
+
+        <MonthStats
+          users={data}
+          monthSchedules={monthSchedules}
+          filterUserId={filterUserId}
+          loading={schedulesLoading}
+        />
       </div>
     </div>
   );

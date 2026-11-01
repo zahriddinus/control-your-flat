@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Avatar } from "../../components/Avatar";
+import { useI18n } from "../../i18n";
 import { EmailLink, NicknameLink, PhoneLink, RoleBadges, UserActions } from "./UserParts";
 
 // Katta ekran uchun: qatorni sudrab navbatni o'zgartirish mumkin
@@ -12,6 +13,7 @@ export const UsersTable = ({
   onEdit,
   onDelete,
 }) => {
+  const { t } = useI18n();
   const [draggedId, setDraggedId] = useState(null);
   const [overId, setOverId] = useState(null);
 
@@ -45,14 +47,14 @@ export const UsersTable = ({
       <table className="control__table table align-middle m-0">
         <thead>
           <tr>
-            <th aria-label="Sudrash"></th>
+            <th aria-label={t("control.table.drag")}></th>
             <th>#</th>
-            <th>User</th>
-            <th>Yosh</th>
-            <th>Nickname</th>
-            <th>Telefon</th>
-            <th>Email</th>
-            <th className="text-end">Amallar</th>
+            <th>{t("control.table.user")}</th>
+            <th>{t("control.table.age")}</th>
+            <th>{t("control.table.nickname")}</th>
+            <th>{t("control.table.phone")}</th>
+            <th>{t("control.table.email")}</th>
+            <th className="text-end">{t("control.table.actions")}</th>
           </tr>
         </thead>
 
@@ -79,7 +81,7 @@ export const UsersTable = ({
               }}
               onDragEnd={resetDrag}
             >
-              <td className="control__handle" title="Sudrab navbatni o'zgartiring">
+              <td className="control__handle" title={t("control.table.dragTitle")}>
                 ⠿
               </td>
 

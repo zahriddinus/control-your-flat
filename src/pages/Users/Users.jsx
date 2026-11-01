@@ -2,11 +2,13 @@ import "./users.scss";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabese";
 import { Loading } from "../../components/Loading";
+import { useI18n } from "../../i18n";
 import { Avatar } from "../../components/Avatar";
 import { formatDate } from "../../utils/date";
 import { TASKS } from "../../utils/schedule";
 
 export const Users = () => {
+  const { t } = useI18n();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -62,7 +64,9 @@ export const Users = () => {
   }, [data, search]);
 
   const getTodayTasks = (user) =>
-    TASKS.filter((task) => task.isAssigned(todaySchedule, user.user_id)).map((task) => task.label);
+    TASKS.filter((task) => task.isAssigned(todaySchedule, user.user_id)).map((task) =>
+      t(`tasks.${task.key}.label`)
+    );
 
   if (loading) {
     return <Loading />;
@@ -71,9 +75,7 @@ export const Users = () => {
   if (error) {
     return (
       <div className="container pt-3">
-        <div className="alert alert-danger">
-          Ma'lumotlarni yuklab bo'lmadi. Sahifani yangilab ko'ring.
-        </div>
+        <div className="alert alert-danger">{t("common.loadError")}</div>
       </div>
     );
   }
@@ -83,7 +85,7 @@ export const Users = () => {
       <div className="container py-3 py-md-4">
         <div className="users__head d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
           <h1 className="users__title text-primary fw-semibold m-0">
-            Users
+            {t("users.title")}
             <span className="badge rounded-pill text-bg-primary ms-2 align-middle">
               {data.length}
             </span>
@@ -94,8 +96,8 @@ export const Users = () => {
               <input
                 type="search"
                 className="form-control"
-                placeholder="Ism, nickname yoki telefon..."
-                aria-label="Foydalanuvchilarni qidirish"
+                placeholder={t("users.searchPlaceholder")}
+                aria-label={t("users.searchAria")}
                 value={search}
                 onChange={(evt) => setSearch(evt.target.value)}
               />
@@ -103,10 +105,10 @@ export const Users = () => {
           )}
         </div>
 
-        {!data.length && <div className="alert alert-info">Hozircha foydalanuvchilar yo'q.</div>}
+        {!data.length && <div className="alert alert-info">{t("common.noUsers")}</div>}
 
         {data.length > 0 && !filteredUsers.length && (
-          <div className="alert alert-secondary">"{search}" bo'yicha hech kim topilmadi.</div>
+          <div className="alert alert-secondary">{t("users.notFound", { query: search })}</div>
         )}
 
         <div className="row g-3">
@@ -130,7 +132,9 @@ export const Users = () => {
                           {user.name} {user.last_name}
                         </h5>
 
-                        <small className="text-muted">Navbat: #{user.duty_order ?? "—"}</small>
+                        <small className="text-muted">
+                          {t("users.order", { order: user.duty_order ?? "—" })}
+                        </small>
                       </div>
                     </div>
 
@@ -138,7 +142,7 @@ export const Users = () => {
                       <div className="d-flex flex-wrap gap-1 mb-3">
                         {todayTasks.map((task) => (
                           <span className="badge text-bg-warning" key={task}>
-                            Bugun: {task}
+                            {t("users.todayTask", { task })}
                           </span>
                         ))}
                       </div>
@@ -157,7 +161,7 @@ export const Users = () => {
                         </a>
                       ) : (
                         <button className="btn btn-sm btn-outline-secondary flex-fill" disabled>
-                          Telegram yo'q
+                          {t("users.noTelegram")}
                         </button>
                       )}
 
@@ -165,13 +169,13 @@ export const Users = () => {
                         <a
                           className="btn btn-sm btn-outline-success flex-fill text-truncate"
                           href={`tel:${user.phone_number}`}
-                          title="Qo'ng'iroq qilish"
+                          title={t("users.call")}
                         >
                           {user.phone_number}
                         </a>
                       ) : (
                         <button className="btn btn-sm btn-outline-secondary flex-fill" disabled>
-                          Telefon yo'q
+                          {t("users.noPhone")}
                         </button>
                       )}
                     </div>

@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Avatar } from "../../components/Avatar";
 import { getShortMonth } from "../../utils/date";
+import { useI18n } from "../../i18n";
 
 // Uy Telegram guruhining havolasini shu yerga yozing, masalan "https://t.me/+abc123".
 // Bo'sh bo'lsa, Telegram kartochkasi ko'rinmaydi
@@ -13,27 +14,27 @@ const LINKS = [
   {
     to: "/duties-schedule",
     icon: "calendar",
-    title: "Navbatchilik jadvali",
-    text: "Butun oy bo'yicha navbatlar",
+    titleKey: "home.links.schedule",
+    textKey: "home.links.scheduleText",
   },
   {
     to: "/users",
     icon: "people",
-    title: "Xonadoshlar",
-    text: "Telefon raqamlar va Telegram",
+    titleKey: "home.links.users",
+    textKey: "home.links.usersText",
   },
   TELEGRAM_GROUP_URL && {
     href: TELEGRAM_GROUP_URL,
     icon: "💬",
-    title: "Telegram guruh",
-    text: "Uy chatiga o'tish",
+    titleKey: "home.links.telegram",
+    textKey: "home.links.telegramText",
   },
 ].filter(Boolean);
 
 // Bugungi sana yozilgan kalendar varag'i
-const CalendarIcon = ({ today }) => (
+const CalendarIcon = ({ today, lang }) => (
   <span className="home__calendar" aria-hidden="true">
-    <span className="home__calendar-month">{getShortMonth(today)}</span>
+    <span className="home__calendar-month">{getShortMonth(today, lang)}</span>
     <span className="home__calendar-day">{today.getDate()}</span>
   </span>
 );
@@ -54,8 +55,10 @@ const PeopleIcon = ({ users }) => {
 };
 
 const LinkContent = ({ link, users, today }) => {
+  const { t, lang } = useI18n();
+
   const renderIcon = () => {
-    if (link.icon === "calendar") return <CalendarIcon today={today} />;
+    if (link.icon === "calendar") return <CalendarIcon today={today} lang={lang} />;
     if (link.icon === "people" && users.length) return <PeopleIcon users={users} />;
     if (link.icon === "people") return <span className="home__icon">👥</span>;
 
@@ -67,22 +70,24 @@ const LinkContent = ({ link, users, today }) => {
       {renderIcon()}
 
       <div>
-        <span className="fw-semibold d-block text-body">{link.title}</span>
+        <span className="fw-semibold d-block text-body">{t(link.titleKey)}</span>
 
-        <small className="text-muted">{link.text}</small>
+        <small className="text-muted">{t(link.textKey)}</small>
       </div>
     </div>
   );
 };
 
 export const QuickLinks = ({ users = [], today = new Date() }) => {
+  const { t } = useI18n();
+
   return (
     <section className="text-start">
-      <h2 className="home__section-title">Tezkor havolalar</h2>
+      <h2 className="home__section-title">{t("home.links.title")}</h2>
 
       <div className="row g-3">
         {LINKS.map((link) => (
-          <div className="col-12 col-sm-6 col-lg-4" key={link.title}>
+          <div className="col-12 col-sm-6 col-lg-4" key={link.titleKey}>
             {link.href ? (
               <a
                 className="home__link card border-0 shadow-sm h-100 text-decoration-none"

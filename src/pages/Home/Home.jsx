@@ -2,6 +2,7 @@ import "./home.scss";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabese";
 import { Loading } from "../../components/Loading";
+import { useI18n } from "../../i18n";
 import { addDays, formatDate, parseDate } from "../../utils/date";
 import { fetchSchedules } from "../../utils/schedule";
 import { Greeting } from "./Greeting";
@@ -18,6 +19,7 @@ import { QuickLinks } from "./QuickLinks";
 const getDaysAhead = (usersCount) => Math.max(7, usersCount * 3, 7 * Math.ceil(usersCount / 2));
 
 export const Home = () => {
+  const { t } = useI18n();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -108,23 +110,15 @@ export const Home = () => {
 
   const renderSchedules = () => {
     if (error) {
-      return (
-        <div className="alert alert-danger">
-          Xonadoshlar ma'lumotini yuklab bo'lmadi. Sahifani yangilab ko'ring.
-        </div>
-      );
+      return <div className="alert alert-danger">{t("home.usersError")}</div>;
     }
 
     if (!users.length) {
-      return <div className="alert alert-info">Hozircha xonadoshlar qo'shilmagan.</div>;
+      return <div className="alert alert-info">{t("home.noUsers")}</div>;
     }
 
     if (scheduleError) {
-      return (
-        <div className="alert alert-danger">
-          Navbatlarni yuklab bo'lmadi. Sahifani yangilab ko'ring.
-        </div>
-      );
+      return <div className="alert alert-danger">{t("home.schedulesError")}</div>;
     }
 
     const scheduleProps = { users, schedules, today, loading: schedulesLoading };

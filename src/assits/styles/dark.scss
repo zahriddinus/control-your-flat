@@ -1,0 +1,265 @@
+// Qorong'i mavzu (<html data-bs-theme="dark">).
+// Bootstrap komponentlari (kartochka, forma, modal, jadval) o'zi moslashadi,
+// bu yerda faqat bizning stillardagi qattiq kodlangan ranglar o'zgartiriladi
+
+[data-bs-theme="dark"] {
+  body {
+    color: #dee2e6;
+    background-color: #13171c;
+  }
+
+  // Bootstrap'da btn-light qorong'ida ham oq qoladi
+  .btn-light {
+    --bs-btn-color: #dee2e6;
+    --bs-btn-bg: #343a40;
+    --bs-btn-border-color: #343a40;
+    --bs-btn-hover-color: #fff;
+    --bs-btn-hover-bg: #495057;
+    --bs-btn-hover-border-color: #495057;
+    --bs-btn-active-bg: #495057;
+    --bs-btn-disabled-bg: #343a40;
+    --bs-btn-disabled-color: #adb5bd;
+  }
+
+  // HEADER
+
+  .header {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+
+    &::before {
+      background-color: #1b1f24;
+    }
+
+    &--scrolled::before {
+      background-color: rgba(27, 31, 36, 0.75);
+    }
+  }
+
+  .header__link {
+    color: #dee2e6;
+
+    &:hover,
+    &.active-link {
+      color: #6ea8fe;
+    }
+  }
+
+  .header__link-icon {
+    color: #adb5bd;
+    background-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .header__link:not(.active-link):hover .header__link-icon {
+    color: #6ea8fe;
+    background-color: rgba(13, 110, 253, 0.2);
+  }
+
+  .header__admin-btn {
+    color: #dee2e6;
+    border-color: #495057;
+    background-color: #2b3035;
+
+    &:hover {
+      background-color: #343a40;
+    }
+  }
+
+  .header__caret {
+    color: #adb5bd;
+  }
+
+  .header__hamburger {
+    color: #dee2e6;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  @media (max-width: 991.98px) {
+    .header__nav {
+      background-color: #1b1f24;
+    }
+
+    .header__nav-item {
+      border-bottom-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .header__admin-menu {
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  // HOME
+
+  .home__tomorrow {
+    color: #adb5bd;
+  }
+
+  .home__hero {
+    background: linear-gradient(135deg, #2a2312 0%, #3a2e10 100%);
+  }
+
+  .home__hero-avatar .avatar,
+  .home__hero-badge {
+    border-color: #2a2312;
+  }
+
+  .home__hero-thanks:not(.thanked) {
+    color: #fda4af;
+    border-color: rgba(251, 113, 133, 0.4);
+    background-color: rgba(225, 29, 72, 0.12);
+
+    &:hover {
+      color: #fecdd3;
+      background-color: rgba(225, 29, 72, 0.22);
+    }
+  }
+
+  .home__turn {
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .home__day--today {
+    outline-color: #6ea8fe;
+  }
+
+  .task-chip {
+    &--duty {
+      color: #9ec5fe;
+      background-color: rgba(13, 110, 253, 0.18);
+    }
+
+    &--rubbish {
+      color: #75b798;
+      background-color: rgba(25, 135, 84, 0.2);
+    }
+
+    &--cleaning {
+      color: #feb272;
+      background-color: rgba(253, 126, 20, 0.18);
+    }
+  }
+
+  .home__calendar {
+    background-color: #2b3035;
+  }
+
+  .home__calendar-day {
+    color: #f8f9fa;
+  }
+
+  .home__avatars .avatar,
+  .home__avatars-more {
+    border-color: #212529;
+  }
+
+  // Ob-havo: kunduzi ham to'q osmon, kechasi o'zining gradienti qoladi
+  .home__weather {
+    color: #fff;
+
+    &:not(.home__weather--night) {
+      background: linear-gradient(135deg, #0c4a6e 0%, #1e3a8a 100%);
+    }
+
+    .home__weather-muted {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .home__weather-day,
+    .home__weather-tips li {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .home__weather-btn {
+      color: #fff;
+      border-color: rgba(255, 255, 255, 0.35);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .home__small-icon--home {
+      color: #93c5fd;
+    }
+
+    .home__small-icon--pin {
+      color: #fca5a5;
+    }
+
+    .home__small-icon--drop {
+      color: #7dd3fc;
+    }
+
+    .home__small-icon--wind {
+      color: #cbd5e1;
+    }
+  }
+
+  // USERS
+
+  .users__card--today {
+    background-color: rgba(13, 110, 253, 0.12);
+  }
+
+  // DUTIES SCHEDULE
+
+  .active-user {
+    color: #ff8a95 !important;
+    background-color: rgba(220, 53, 69, 0.25) !important;
+  }
+
+  .schedule__cell--selected {
+    background-color: rgba(13, 110, 253, 0.2) !important;
+  }
+
+  // CONTROL USERS
+
+  .control__table-wrapper {
+    background-color: var(--bs-body-bg);
+  }
+
+  .control__row--today > * {
+    background-color: rgba(255, 193, 7, 0.12) !important;
+  }
+
+  .control__card--today {
+    background-color: rgba(255, 193, 7, 0.12);
+  }
+
+  .control__handle {
+    color: #6c757d;
+  }
+
+  .control__order {
+    color: #6ea8fe;
+  }
+
+  // USER MODAL
+
+  .user-modal__section {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+
+  .user-modal__section-title {
+    color: #6ea8fe;
+  }
+}
+
+// DUTIES SCHEDULE: dam olish kunlari va kalendar (qorong'i)
+[data-bs-theme="dark"] {
+  .schedule__cell--weekend {
+    background-color: rgba(255, 255, 255, 0.04) !important;
+  }
+
+  .schedule__row--mine > * {
+    background-color: rgba(13, 110, 253, 0.18) !important;
+  }
+
+  .schedule-cal__day--weekend {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  .schedule-cal__day--mine,
+  .schedule-stats__row--mine {
+    background-color: rgba(13, 110, 253, 0.16);
+  }
+}

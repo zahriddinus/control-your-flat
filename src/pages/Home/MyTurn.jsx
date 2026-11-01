@@ -1,18 +1,8 @@
-import { useState } from "react";
-import { addDays, formatDaysLeft, formatUzDate } from "../../utils/date";
+import { useI18n } from "../../i18n";
+import { useMyUser } from "../../hooks/useMyUser";
+import { addDays, formatDaysLeft, formatLongDate } from "../../utils/date";
 import { TASKS } from "../../utils/schedule";
 import { TaskIcon } from "../../components/TaskIcon";
-
-const STORAGE_KEY = "myUserId";
-
-// Tanlangan ism brauzerda eslab qolinadi. Xotira yopiq bo'lsa ham sahifa ishlayveradi
-const readSavedUserId = () => {
-  try {
-    return window.localStorage.getItem(STORAGE_KEY) || "";
-  } catch {
-    return "";
-  }
-};
 
 const getBadgeClass = (days) => {
   if (days === 0) return "text-bg-danger";
@@ -22,32 +12,27 @@ const getBadgeClass = (days) => {
 };
 
 export const MyTurn = ({ users, schedules, today, loading }) => {
-  const [userId, setUserId] = useState(readSavedUserId);
+  const { t, lang } = useI18n();
+  const [userId, setUserId] = useMyUser();
 
   const user = users.find((item) => item.user_id === userId);
 
   function handleChange(evt) {
     setUserId(evt.target.value);
-
-    try {
-      window.localStorage.setItem(STORAGE_KEY, evt.target.value);
-    } catch {
-      // Saqlab bo'lmasa, tanlov faqat shu sahifada qoladi
-    }
   }
 
   return (
     <section className="home__panel card border-0 shadow-sm h-100 text-start">
       <div className="card-body">
-        <h2 className="home__section-title">Mening navbatim</h2>
+        <h2 className="home__section-title">{t("home.myTurn.title")}</h2>
 
         <select
           className="form-select mb-2"
           value={user ? userId : ""}
           onChange={handleChange}
-          aria-label="Ismingizni tanlang"
+          aria-label={t("home.myTurn.selectAria")}
         >
-          <option value="">Ismingizni tanlang...</option>
+          <option value="">{t("home.myTurn.select")}</option>
 
           {users.map((item) => (
             <option key={item.user_id} value={item.user_id}>
@@ -56,11 +41,7 @@ export const MyTurn = ({ users, schedules, today, loading }) => {
           ))}
         </select>
 
-        {!user && (
-          <small className="text-muted">
-            Ismingizni tanlasangiz, keyingi navbatlaringiz chiqadi.
-          </small>
-        )}
+        {!user && <small className="text-muted">{t("home.myTurn.hint")}</small>}
 
         {user && (
           <ul className="list-unstyled m-0">
@@ -76,19 +57,23 @@ export const MyTurn = ({ users, schedules, today, loading }) => {
                 >
                   <span className="d-flex align-items-center gap-2">
                     <TaskIcon taskKey={task.key} size="md" />
-                    {task.label}
+                    {t(`tasks.${task.key}.label`)}
                   </span>
 
                   {loading ? (
                     <span className="placeholder col-3"></span>
                   ) : days === -1 ? (
-                    <small className="text-muted">Yaqin {schedules.length} kunda yo'q</small>
+                    <small className="text-muted">
+                      {t("home.myTurn.notSoon", { count: schedules.length })}
+                    </small>
                   ) : (
                     <span className="text-end">
-                      <span className={`badge ${getBadgeClass(days)}`}>{formatDaysLeft(days)}</span>
+                      <span className={`badge ${getBadgeClass(days)}`}>
+                        {formatDaysLeft(days, t)}
+                      </span>
 
                       <small className="d-block text-muted">
-                        {formatUzDate(addDays(today, days))}
+                        {formatLongDate(addDays(today, days), lang)}
                       </small>
                     </span>
                   )}

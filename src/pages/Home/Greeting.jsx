@@ -1,5 +1,6 @@
 import { WeatherIcon } from "../../components/WeatherIcon";
-import { formatUzDate, getDayOfYear } from "../../utils/date";
+import { useI18n } from "../../i18n";
+import { formatLongDate, getDayOfYear } from "../../utils/date";
 
 // Maslahat belgilari (16x16). Ba'zilari to'ldirilgan, ba'zilari chiziqli
 const TIP_ICONS = {
@@ -54,18 +55,18 @@ const TIP_ICONS = {
   ),
 };
 
-// Har kuni bittasi navbat bilan chiqadi
+// Har kuni bittasi navbat bilan chiqadi. Matnlari tarjimada: home.tips.<icon>
 const TIPS = [
-  { icon: "dishes", text: "Idishlarni o'sha kuni yuving, ertaga ular ikki barobar ko'p bo'ladi!" },
-  { icon: "sparkles", text: "Oshxonadan chiqishdan oldin stolni artib qo'ying." },
-  { icon: "trash", text: "Musor paketi to'lsa, navbatni kutmasdan tashlab yuboring!" },
-  { icon: "moon", text: "Kechqurun shovqinni kamaytiring, kimdir dam olayotgan bo'lishi mumkin." },
-  { icon: "fridge", text: "Muzlatgichdagi eski ovqatlarni bir kunda bir marta tekshiring." },
-  { icon: "heart", text: "Boshqalarning narsasini so'ramasdan olmang!" },
-  { icon: "drop", text: "Hammom va hojatxonani o'zingizdan keyin toza qoldiring!" },
-  { icon: "bulb", text: "Chiroq va suvni behuda yoqib qoldirmang!" },
-  { icon: "swap", text: "Navbatni almashtirmoqchi bo'lsangiz, oldindan kelishib oling." },
-  { icon: "shirt", text: "Yuvilgan kiyimlarni quritgichda uzoq qoldirmang." },
+  { icon: "dishes" },
+  { icon: "sparkles" },
+  { icon: "trash" },
+  { icon: "moon" },
+  { icon: "fridge" },
+  { icon: "heart" },
+  { icon: "drop" },
+  { icon: "bulb" },
+  { icon: "swap" },
+  { icon: "shirt" },
 ];
 
 const TipIcon = ({ name, className }) => (
@@ -82,14 +83,15 @@ const TipIcon = ({ name, className }) => (
 
 // Salomlashish va unga mos osmon manzarasi
 const getGreeting = (hour) => {
-  if (hour >= 5 && hour < 11) return { text: "Xayrli tong", scene: "sunrise", isDay: true };
-  if (hour >= 11 && hour < 17) return { text: "Xayrli kun", scene: "clear", isDay: true };
-  if (hour >= 17 && hour < 22) return { text: "Xayrli kech", scene: "sunset", isDay: true };
+  if (hour >= 5 && hour < 11) return { key: "morning", scene: "sunrise", isDay: true };
+  if (hour >= 11 && hour < 17) return { key: "day", scene: "clear", isDay: true };
+  if (hour >= 17 && hour < 22) return { key: "evening", scene: "sunset", isDay: true };
 
-  return { text: "Xayrli tun", scene: "clear", isDay: false };
+  return { key: "night", scene: "clear", isDay: false };
 };
 
 export const Greeting = ({ now }) => {
+  const { t, lang } = useI18n();
   const tip = TIPS[getDayOfYear(now) % TIPS.length];
   const greeting = getGreeting(now.getHours());
 
@@ -98,11 +100,13 @@ export const Greeting = ({ now }) => {
       <div className="card-body p-3 p-md-4">
         <div className="d-flex align-items-center gap-3 mb-3">
           <div className="flex-grow-1">
-            <p className="home__date mb-1">{formatUzDate(now)}</p>
+            <p className="home__date mb-1">{formatLongDate(now, lang)}</p>
 
-            <h1 className="home__title fw-bold mb-1">{greeting.text}, xonadoshlar!</h1>
+            <h1 className="home__title fw-bold mb-1">
+              {t("home.greeting.title", { greeting: t(`home.greeting.${greeting.key}`) })}
+            </h1>
 
-            <p className="home__subtitle m-0">Uydagi barcha navbatlar bir joyda.</p>
+            <p className="home__subtitle m-0">{t("home.greeting.subtitle")}</p>
           </div>
 
           <div className="home__greeting-scene">
@@ -118,10 +122,10 @@ export const Greeting = ({ now }) => {
           <div>
             <small className="home__tip-label d-flex align-items-center gap-1 mb-1">
               <TipIcon name="bulb" className="home__tip-bulb" />
-              Kun maslahati
+              {t("home.greeting.tipLabel")}
             </small>
 
-            <span>{tip.text}</span>
+            <span>{t(`home.tips.${tip.icon}`)}</span>
           </div>
         </div>
       </div>

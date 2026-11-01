@@ -2,11 +2,12 @@ import "./header.scss";
 import { useCallback, useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabese";
-import { formatDate } from "../../utils/date";
+import { useI18n } from "../../i18n";
 import { NAV_LINKS } from "../../utils/navigation";
 import { AppIcon, LogoIcon } from "../AppIcon";
 import { Notice, useNotice } from "../Notice";
-import { TaskIcon } from "../TaskIcon";
+import { ThemeToggle } from "../ThemeToggle";
+import { LanguageSwitcher } from "../LanguageSwitcher";
 import { AdminMenu } from "./AdminMenu";
 import { LoginModal } from "./LoginModal";
 
@@ -20,6 +21,7 @@ const removeAdminFlag = () => {
 
 export const Header = () => {
   const navigate = useNavigate();
+  const { t } = useI18n();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -29,9 +31,6 @@ export const Header = () => {
   // undefined - hali tekshirilmagan, null - yo'q
   const [session, setSession] = useState(undefined);
   const [profile, setProfile] = useState(undefined);
-
-  const [todayKey, setTodayKey] = useState(() => formatDate(new Date()));
-  const [todayDuty, setTodayDuty] = useState(null);
 
   const closeMenu = () => setIsMenuOpen(false);
   const closeLogin = useCallback(() => setIsLoginOpen(false), []);
@@ -87,39 +86,6 @@ export const Header = () => {
   const authReady = session !== undefined && profile !== undefined;
   const isAdmin = profile?.role === "admin";
 
-  // TODAY DUTY
-
-  useEffect(() => {
-    const timer = setInterval(() => setTodayKey(formatDate(new Date())), 60 * 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const getTodayDuty = async () => {
-      const { data, error } = await supabase.rpc("get_duty_schedule", {
-        target_date: todayKey,
-      });
-
-      if (cancelled) return;
-
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      setTodayDuty(data?.duty ?? null);
-    };
-
-    getTodayDuty();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [todayKey]);
-
   // SCROLL
 
   useEffect(() => {
@@ -152,7 +118,7 @@ export const Header = () => {
 
   // Ekran kattalashsa, mobil menyu yopiladi
   useEffect(() => {
-    const desktopQuery = window.matchMedia("(min-width: 769px)");
+    const desktopQuery = window.matchMedia("(min-width: 992px)");
 
     const handleChange = (evt) => {
       if (evt.matches) setIsMenuOpen(false);
@@ -172,7 +138,7 @@ export const Header = () => {
 
   function handleLoginSuccess(loggedProfile) {
     closeLogin();
-    showNotice(`Xush kelibsiz, ${loggedProfile.name}! 👋`);
+    showNotice(t("header.welcome", { name: loggedProfile.name }));
     navigate("/control-users");
   }
 
@@ -183,26 +149,14 @@ export const Header = () => {
 
     if (error) {
       console.error(error);
-      showNotice("Chiqishda xatolik yuz berdi. Qayta urinib ko'ring.", "danger");
+      showNotice(t("header.logoutError"), "danger");
       return;
     }
 
     removeAdminFlag();
-    showNotice("Tizimdan chiqdingiz. Xayr! 👋");
+    showNotice(t("header.logoutSuccess"));
     navigate("/");
   }
-
-  const dutyChip = todayDuty && (
-    <Link
-      to="/duties-schedule"
-      className="header__duty"
-      onClick={closeMenu}
-      title="Bugungi navbatchi"
-    >
-      <TaskIcon taskKey="duty" />
-      Bugun: <strong>{todayDuty.name?.trim()}</strong>
-    </Link>
-  );
 
   return (
     <>
@@ -220,15 +174,12 @@ export const Header = () => {
             </span>
           </Link>
 
-          {/* Bugungi navbatchi (katta ekranda) */}
-          {dutyChip && <div className="d-none d-lg-block">{dutyChip}</div>}
-
           {/* Hamburger */}
           <button
             className={`header__hamburger ${isMenuOpen ? "open" : ""} rounded-circle`}
             type="button"
             onClick={() => setIsMenuOpen((prev) => !prev)}
-            aria-label={isMenuOpen ? "Menyuni yopish" : "Menyuni ochish"}
+            aria-label={isMenuOpen ? t("header.closeMenu") : t("header.openMenu")}
             aria-controls="main-navigation"
             aria-expanded={isMenuOpen}
           >
@@ -265,7 +216,7 @@ export const Header = () => {
           <nav
             id="main-navigation"
             className={`header__nav ${isMenuOpen ? "show" : ""}`}
-            aria-label="Asosiy menyu"
+            aria-label={t("header.mainMenu")}
           >
             <ul className="header__nav-list">
               {NAV_LINKS.map((link) => (
@@ -278,10 +229,18 @@ export const Header = () => {
                     <span className="header__link-icon">
                       <AppIcon name={link.icon} />
                     </span>
-                    {link.label}
+                    {t(link.labelKey)}
                   </NavLink>
                 </li>
               ))}
+
+              <li className="header__nav-item">
+                <ThemeToggle />
+              </li>
+
+              <li className="header__nav-item">
+                <LanguageSwitcher />
+              </li>
 
               {authReady && (
                 <li className="header__nav-item">
@@ -293,15 +252,12 @@ export const Header = () => {
                       className="header__login-btn btn btn-primary"
                       onClick={openLogin}
                     >
-                      Log in
+                      {t("header.login")}
                     </button>
                   )}
                 </li>
               )}
             </ul>
-
-            {/* Bugungi navbatchi (mobil menyuda) */}
-            {dutyChip && <div className="header__mobile-duty">{dutyChip}</div>}
           </nav>
         </div>
       </header>

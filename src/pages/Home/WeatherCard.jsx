@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { WeatherIcon } from "../../components/WeatherIcon";
+import { useI18n } from "../../i18n";
 import { fetchAddress } from "../../utils/geocode";
 import {
   FLAT_LOCATION,
@@ -13,9 +14,9 @@ import {
 const REFRESH_INTERVAL = 30 * 60 * 1000;
 
 const GEO_ERRORS = {
-  1: "Joylashuvga ruxsat berilmadi.",
-  2: "Joylashuvni aniqlab bo'lmadi.",
-  3: "Joylashuvni aniqlash juda uzoq davom etdi.",
+  1: "weather.geoDenied",
+  2: "weather.geoUnavailable",
+  3: "weather.geoTimeout",
 };
 
 // Kichik belgilar: uy, joylashuv, yomg'ir tomchisi, shamol
@@ -49,6 +50,7 @@ const SmallIcon = ({ name }) => (
 );
 
 export const WeatherCard = ({ users, schedules }) => {
+  const { t, lang } = useI18n();
   const [location, setLocation] = useState(FLAT_LOCATION);
   const [weather, setWeather] = useState(null);
   const [error, setError] = useState(null);
@@ -103,10 +105,10 @@ export const WeatherCard = ({ users, schedules }) => {
         setLocating(false);
         setWeather(null);
         setAddress(null);
-        setLocation({ name: "Sizning joylashuvingiz", latitude, longitude, isFlat: false });
+        setLocation({ latitude, longitude, isFlat: false });
 
         // Ob-havo darhol chiqadi, manzil tayyor bo'lgach sarlavha almashadi
-        fetchAddress(latitude, longitude)
+        fetchAddress(latitude, longitude, lang)
           .then((result) => {
             if (requestId === addressRequest.current) setAddress(result);
           })
@@ -134,18 +136,18 @@ export const WeatherCard = ({ users, schedules }) => {
 
   const days = weather
     ? [0, 1].map((index) => ({
-        label: index === 0 ? "Bugun" : "Ertaga",
+        label: index === 0 ? t("common.today") : t("common.tomorrow"),
         ...getDailyWeather(weather, index),
       }))
     : [];
 
   const tips = weather
-    ? getWeatherTips({ weather, users, schedules, isFlat: location.isFlat })
+    ? getWeatherTips({ weather, users, schedules, isFlat: location.isFlat, t })
     : [];
 
   const renderContent = () => {
     if (error) {
-      return <p className="m-0">Ob-havo ma'lumotini yuklab bo'lmadi. Keyinroq urinib ko'ring.</p>;
+      return <p className="m-0">{t("weather.error")}</p>;
     }
 
     if (!weather) {
@@ -166,12 +168,12 @@ export const WeatherCard = ({ users, schedules }) => {
             <div>
               <div className="home__weather-temp">{Math.round(current.temperature_2m)}°</div>
 
-              <div className="fw-semibold">{currentInfo.label}</div>
+              <div className="fw-semibold">{t(currentInfo.labelKey)}</div>
 
               <small className="home__weather-muted d-flex flex-wrap align-items-center gap-1">
-                His qilinadi: {Math.round(current.apparent_temperature)}° ·
+                {t("weather.feelsLike", { temp: Math.round(current.apparent_temperature) })} ·
                 <SmallIcon name="wind" />
-                {Math.round(current.wind_speed_10m)} km/soat
+                {t("weather.wind", { speed: Math.round(current.wind_speed_10m) })}
               </small>
             </div>
           </div>
@@ -225,7 +227,10 @@ export const WeatherCard = ({ users, schedules }) => {
               title={address ? `${address.title}, ${address.subtitle}` : undefined}
             >
               <SmallIcon name={location.isFlat ? "home" : "pin"} />
-              <span className="text-truncate">{address?.title ?? location.name}</span>
+              <span className="text-truncate">
+                {address?.title ??
+                  (location.isFlat ? t("weather.flatName") : t("weather.myLocation"))}
+              </span>
             </h2>
 
             {address?.subtitle && (
@@ -249,12 +254,12 @@ export const WeatherCard = ({ users, schedules }) => {
                       className="spinner-border spinner-border-sm me-1"
                       aria-hidden="true"
                     ></span>
-                    Aniqlanmoqda...
+                    {t("weather.locating")}
                   </>
                 ) : (
                   <>
                     <SmallIcon name="pin" />
-                    Mening joylashuvim
+                    {t("weather.myLocationButton")}
                   </>
                 )}
               </button>
@@ -265,14 +270,14 @@ export const WeatherCard = ({ users, schedules }) => {
                 onClick={handleFlatLocation}
               >
                 <SmallIcon name="home" />
-                Uy ob-havosi
+                {t("weather.flatButton")}
               </button>
             ))}
         </div>
 
         {geoError && (
           <div className="alert alert-warning small py-2">
-            {geoError} Uy ob-havosi ko'rsatilmoqda.
+            {t(geoError)} {t("weather.geoFallback")}
           </div>
         )}
 

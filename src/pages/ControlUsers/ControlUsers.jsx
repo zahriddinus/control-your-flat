@@ -6,13 +6,15 @@ import { ConfirmModal } from "../../components/ConfirmModal";
 import { Avatar } from "../../components/Avatar";
 import { Loading } from "../../components/Loading";
 import { Notice, useNotice } from "../../components/Notice";
-import { addDays, formatUzDate } from "../../utils/date";
+import { useI18n } from "../../i18n";
+import { addDays, formatLongDate } from "../../utils/date";
 import { fetchSchedules } from "../../utils/schedule";
 import { StatsCards } from "./StatsCards";
 import { UsersTable } from "./UsersTable";
 import { UserCards } from "./UserCards";
 
 export const ControlUsers = () => {
+  const { t, lang } = useI18n();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -62,7 +64,7 @@ export const ControlUsers = () => {
   async function refreshUsers() {
     const error = await loadUsers();
 
-    if (error) showNotice("Ro'yxatni yangilab bo'lmadi. Sahifani yangilang.", "danger");
+    if (error) showNotice(t("control.refreshError"), "danger");
   }
 
   // O'zini o'chirib qo'ymasligi uchun hozirgi admin kimligini bilamiz
@@ -155,7 +157,7 @@ export const ControlUsers = () => {
 
       if (userError) {
         console.error(userError);
-        showNotice(`Saqlab bo'lmadi: ${userError.message}`, "danger");
+        showNotice(t("control.notices.saveError", { error: userError.message }), "danger");
         return;
       }
 
@@ -168,14 +170,14 @@ export const ControlUsers = () => {
 
         if (orderError) {
           console.error(orderError);
-          showNotice(`Ma'lumotlar saqlandi, lekin navbatni o'zgartirib bo'lmadi.`, "warning");
+          showNotice(t("control.notices.savedButOrder"), "warning");
           closeUserModal();
           await refreshUsers();
           return;
         }
       }
 
-      showNotice(`✅ ${formData.name} ma'lumotlari saqlandi`);
+      showNotice(t("control.notices.saved", { name: formData.name }));
     }
 
     // ADD USER
@@ -191,7 +193,7 @@ export const ControlUsers = () => {
 
         if (shiftError) {
           console.error(shiftError);
-          showNotice(`Qo'shib bo'lmadi: ${shiftError.message}`, "danger");
+          showNotice(t("control.notices.addError", { error: shiftError.message }), "danger");
           return;
         }
       }
@@ -202,11 +204,11 @@ export const ControlUsers = () => {
 
       if (insertError) {
         console.error(insertError);
-        showNotice(`Qo'shib bo'lmadi: ${insertError.message}`, "danger");
+        showNotice(t("control.notices.addError", { error: insertError.message }), "danger");
         return;
       }
 
-      showNotice(`✅ ${formData.name} qo'shildi (${newOrder}-o'rin)`);
+      showNotice(t("control.notices.added", { name: formData.name, order: newOrder }));
     }
 
     closeUserModal();
@@ -236,9 +238,9 @@ export const ControlUsers = () => {
 
     if (error) {
       console.error(error);
-      showNotice(`Navbatni o'zgartirib bo'lmadi: ${error.message}`, "danger");
+      showNotice(t("control.notices.moveError", { error: error.message }), "danger");
     } else {
-      showNotice(`↕️ ${user.name} endi ${newOrder}-o'rinda`);
+      showNotice(t("control.notices.moved", { name: user.name, order: newOrder }));
     }
 
     await refreshUsers();
@@ -260,12 +262,12 @@ export const ControlUsers = () => {
 
     if (error) {
       console.error(error);
-      showNotice(`O'chirib bo'lmadi: ${error.message}`, "danger");
+      showNotice(t("control.notices.deleteError", { error: error.message }), "danger");
       setDeleting(false);
       return;
     }
 
-    showNotice(`🗑️ ${user.name} ${user.last_name} o'chirildi`);
+    showNotice(t("control.notices.deleted", { name: `${user.name} ${user.last_name}` }));
 
     setDeleting(false);
     setUserToDelete(null);
@@ -281,9 +283,7 @@ export const ControlUsers = () => {
   if (error) {
     return (
       <div className="container pt-3">
-        <div className="alert alert-danger">
-          Userlarni yuklab bo'lmadi. Sahifani yangilab ko'ring.
-        </div>
+        <div className="alert alert-danger">{t("control.loadError")}</div>
       </div>
     );
   }
@@ -291,14 +291,14 @@ export const ControlUsers = () => {
   const renderUsers = () => {
     if (!users.length) {
       return (
-        <div className="alert alert-info">
-          Hali hech kim qo'shilmagan. "+ Add User" tugmasini bosing.
-        </div>
+        <div className="alert alert-info">{t("control.empty", { add: t("control.add") })}</div>
       );
     }
 
     if (!filteredUsers.length) {
-      return <div className="alert alert-secondary">"{search}" bo'yicha hech kim topilmadi.</div>;
+      return (
+        <div className="alert alert-secondary">{t("control.notFound", { query: search })}</div>
+      );
     }
 
     const listProps = {
@@ -329,17 +329,17 @@ export const ControlUsers = () => {
       <div className="container py-3 py-md-4">
         <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
           <div className="text-start">
-            <h1 className="control__title fw-bold m-0">⚙️ Control Users</h1>
+            <h1 className="control__title fw-bold m-0">⚙️ {t("nav.controlUsers")}</h1>
 
-            <small className="text-muted">{formatUzDate(today)}</small>
+            <small className="text-muted">{formatLongDate(today, lang)}</small>
           </div>
 
           <div className="d-flex gap-2">
             <input
               type="search"
               className="control__search form-control"
-              placeholder="Qidirish..."
-              aria-label="Userlarni qidirish"
+              placeholder={t("control.searchPlaceholder")}
+              aria-label={t("control.searchAria")}
               value={search}
               onChange={(evt) => setSearch(evt.target.value)}
             />
@@ -349,7 +349,7 @@ export const ControlUsers = () => {
               type="button"
               onClick={handleAddUser}
             >
-              + Add User
+              {t("control.add")}
             </button>
           </div>
         </div>
@@ -357,16 +357,14 @@ export const ControlUsers = () => {
         <StatsCards users={users} schedules={weekSchedules} />
 
         <div className="d-flex justify-content-between align-items-center mb-2 small text-muted">
-          <span className="d-none d-md-inline">
-            💡 Navbatni o'zgartirish uchun qatorni sudrab, boshqa qator ustiga qo'ying.
-          </span>
+          <span className="d-none d-md-inline">{t("control.dragHint")}</span>
 
-          <span className="d-md-none">💡 Navbatni ↑ ↓ tugmalari bilan o'zgartiring.</span>
+          <span className="d-md-none">{t("control.arrowsHint")}</span>
 
           {busy && (
             <span className="text-primary text-nowrap ms-2">
               <span className="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-              Saqlanmoqda...
+              {t("control.saving")}
             </span>
           )}
         </div>
@@ -384,8 +382,8 @@ export const ControlUsers = () => {
 
       <ConfirmModal
         isOpen={!!userToDelete}
-        title="🗑️ Userni o'chirish"
-        confirmLabel="O'chirish"
+        title={t("control.deleteModal.title")}
+        confirmLabel={t("control.deleteModal.confirm")}
         loading={deleting}
         onConfirm={handleDeleteConfirm}
         onCancel={cancelDelete}
@@ -395,16 +393,13 @@ export const ControlUsers = () => {
             <Avatar user={userToDelete} />
 
             <div>
-              <p className="m-0">
-                <strong>
-                  {userToDelete.name} {userToDelete.last_name}
-                </strong>
-                ni o'chirasizmi?
+              <p className="m-0 fw-semibold">
+                {t("control.deleteModal.question", {
+                  name: `${userToDelete.name} ${userToDelete.last_name}`,
+                })}
               </p>
 
-              <small className="text-muted">
-                Bu amalni ortga qaytarib bo'lmaydi. Undan keyingilarning navbati bittaga suriladi.
-              </small>
+              <small className="text-muted">{t("control.deleteModal.warning")}</small>
             </div>
           </div>
         )}

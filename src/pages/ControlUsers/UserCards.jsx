@@ -1,4 +1,5 @@
 import { Avatar } from "../../components/Avatar";
+import { useI18n } from "../../i18n";
 import { EmailLink, NicknameLink, PhoneLink, RoleBadges, UserActions } from "./UserParts";
 
 // Telefon uchun: navbat ↑ ↓ tugmalari bilan o'zgaradi
@@ -13,6 +14,8 @@ export const UserCards = ({
   onEdit,
   onDelete,
 }) => {
+  const { t } = useI18n();
+
   return (
     <div className="d-md-none d-flex flex-column gap-3">
       {users.map((user) => {
@@ -43,7 +46,7 @@ export const UserCards = ({
                     type="button"
                     onClick={() => onMoveStep(user, -1)}
                     disabled={busy || user.user_id === firstUserId}
-                    aria-label={`${user.name}ni yuqoriga surish`}
+                    aria-label={t("control.moveUp", { name: user.name })}
                   >
                     ↑
                   </button>
@@ -53,7 +56,7 @@ export const UserCards = ({
                     type="button"
                     onClick={() => onMoveStep(user, 1)}
                     disabled={busy || user.user_id === lastUserId}
-                    aria-label={`${user.name}ni pastga surish`}
+                    aria-label={t("control.moveDown", { name: user.name })}
                   >
                     ↓
                   </button>
@@ -61,7 +64,7 @@ export const UserCards = ({
               </div>
 
               <ul className="control__info list-unstyled small mb-3">
-                <li>🎂 {user.age ? `${user.age} yosh` : "—"}</li>
+                <li>🎂 {user.age ? t("control.age", { count: user.age }) : "—"}</li>
                 <li>
                   💬 <NicknameLink nickname={user.nickname} />
                 </li>

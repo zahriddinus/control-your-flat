@@ -1,19 +1,21 @@
+import { useI18n } from "../../i18n";
 import { formatDaysLeft } from "../../utils/date";
 
 export const StatsCards = ({ users, schedules }) => {
+  const { t } = useI18n();
   const adminsCount = users.filter((user) => user.role === "admin").length;
   const todayDuty = users.find((user) => user.user_id === schedules[0]?.duty?.user_id);
   const cleaningDays = schedules.findIndex((schedule) => schedule?.cleaning?.length > 0);
 
   const stats = [
-    { key: "users", icon: "👥", label: "Jami xonadoshlar", value: users.length },
-    { key: "admins", icon: "🛡️", label: "Adminlar", value: adminsCount },
-    { key: "duty", icon: "⭐", label: "Bugungi navbatchi", value: todayDuty?.name ?? "—" },
+    { key: "users", icon: "👥", label: t("control.stats.users"), value: users.length },
+    { key: "admins", icon: "🛡️", label: t("control.stats.admins"), value: adminsCount },
+    { key: "duty", icon: "⭐", label: t("control.stats.duty"), value: todayDuty?.name ?? "—" },
     {
       key: "cleaning",
       icon: "🧹",
-      label: "Keyingi uborka",
-      value: cleaningDays === -1 ? "—" : formatDaysLeft(cleaningDays),
+      label: t("control.stats.cleaning"),
+      value: cleaningDays === -1 ? "—" : formatDaysLeft(cleaningDays, t),
     },
   ];
 

@@ -1,27 +1,19 @@
 import { supabase } from "../lib/supabese";
 import { formatDate } from "./date";
 
-// Har bir vazifa uchun: sarlavha va user o'sha kuni shu vazifadami
+// Har bir vazifa: user o'sha kuni shu vazifadami.
+// Nomlari tarjimada: t(`tasks.${task.key}.title`) va t(`tasks.${task.key}.label`)
 export const TASKS = [
   {
     key: "duty",
-    icon: "⭐",
-    title: "Navbatchilik kunlari",
-    label: "Navbatchi",
     isAssigned: (schedule, userId) => schedule?.duty?.user_id === userId,
   },
   {
     key: "rubbish",
-    icon: "🗑️",
-    title: "Musor tashlash",
-    label: "Musor tashlaydi",
     isAssigned: (schedule, userId) => schedule?.rubbish?.user_id === userId,
   },
   {
     key: "cleaning",
-    icon: "🧹",
-    title: "Generalniy uborka",
-    label: "Generalniy uborka",
     isAssigned: (schedule, userId) =>
       schedule?.cleaning?.some((cleaningUser) => cleaningUser.user_id === userId) ?? false,
   },

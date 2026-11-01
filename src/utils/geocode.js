@@ -3,13 +3,13 @@
 // Natija: { title: "Ko'cha, mahalla", subtitle: "Tuman, shahar" } yoki null
 
 // 1) OpenStreetMap Nominatim: ko'cha darajasigacha aniq
-const fetchNominatimAddress = async (latitude, longitude) => {
+const fetchNominatimAddress = async (latitude, longitude, lang) => {
   const params = new URLSearchParams({
     format: "jsonv2",
     lat: latitude,
     lon: longitude,
     zoom: "17",
-    "accept-language": "uz",
+    "accept-language": lang,
   });
 
   const response = await fetch(`https://nominatim.openstreetmap.org/reverse?${params}`);
@@ -34,8 +34,8 @@ const fetchNominatimAddress = async (latitude, longitude) => {
 };
 
 // 2) Zaxira - BigDataCloud: faqat tuman va shahar
-const fetchBigDataCloudAddress = async (latitude, longitude) => {
-  const params = new URLSearchParams({ latitude, longitude, localityLanguage: "uz" });
+const fetchBigDataCloudAddress = async (latitude, longitude, lang) => {
+  const params = new URLSearchParams({ latitude, longitude, localityLanguage: lang });
 
   const response = await fetch(
     `https://api.bigdatacloud.net/data/reverse-geocode-client?${params}`
@@ -55,14 +55,15 @@ const fetchBigDataCloudAddress = async (latitude, longitude) => {
   return title ? { title, subtitle } : null;
 };
 
-export const fetchAddress = async (latitude, longitude) => {
+// lang - manzil qaysi tilda qaytishi: "uz" | "ru" | "en"
+export const fetchAddress = async (latitude, longitude, lang) => {
   try {
-    const address = await fetchNominatimAddress(latitude, longitude);
+    const address = await fetchNominatimAddress(latitude, longitude, lang);
 
     if (address) return address;
   } catch (error) {
     console.error(error);
   }
 
-  return fetchBigDataCloudAddress(latitude, longitude);
+  return fetchBigDataCloudAddress(latitude, longitude, lang);
 };

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabese";
 import { useModalEffects } from "../../hooks/useModalEffects";
+import { useI18n } from "../../i18n";
 
 export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
+  const { t } = useI18n();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -38,7 +40,7 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
 
     if (error) {
       console.error(error);
-      setError("Email yoki parol noto‘g‘ri.");
+      setError("login.wrongCredentials");
       setLoading(false);
       return;
     }
@@ -55,11 +57,7 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
       // Admin bo'lmagan userning sessiyasini ochiq qoldirmaymiz
       await supabase.auth.signOut();
 
-      setError(
-        profileError
-          ? "Foydalanuvchi maʼlumotlari topilmadi."
-          : "Kechirasiz, bu bo'lim faqat adminlar uchun."
-      );
+      setError(profileError ? "login.profileNotFound" : "login.adminsOnly");
       setLoading(false);
       return;
     }
@@ -95,16 +93,16 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
               <div className="modal-header border-0 pb-0">
                 <div className="text-start">
                   <h1 className="modal-title fs-4 fw-bold" id="loginModalLabel">
-                    🔐 Admin kirishi
+                    {t("login.title")}
                   </h1>
 
-                  <small className="text-muted">Bu bo'lim faqat adminlar uchun</small>
+                  <small className="text-muted">{t("login.subtitle")}</small>
                 </div>
 
                 <button
                   type="button"
                   className="btn-close"
-                  aria-label="Yopish"
+                  aria-label={t("common.close")}
                   onClick={handleClose}
                   disabled={loading}
                 ></button>
@@ -113,12 +111,12 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
               <div className="modal-body text-start">
                 {error && (
                   <div className="alert alert-danger py-2" role="alert">
-                    {error}
+                    {t(error)}
                   </div>
                 )}
 
                 <label htmlFor="loginEmail" className="form-label">
-                  Email
+                  {t("login.email")}
                 </label>
 
                 <input
@@ -135,7 +133,7 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
                 />
 
                 <label htmlFor="loginPassword" className="form-label">
-                  Parol
+                  {t("login.password")}
                 </label>
 
                 <div className="input-group">
@@ -155,7 +153,7 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
                     type="button"
                     className="btn btn-outline-secondary"
                     onClick={() => setShowPassword((prev) => !prev)}
-                    aria-label={showPassword ? "Parolni yashirish" : "Parolni ko'rsatish"}
+                    aria-label={showPassword ? t("login.hidePassword") : t("login.showPassword")}
                     disabled={loading}
                   >
                     {showPassword ? "🙈" : "👁️"}
@@ -170,7 +168,7 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
                   onClick={handleClose}
                   disabled={loading}
                 >
-                  Bekor qilish
+                  {t("common.cancel")}
                 </button>
 
                 <button type="submit" className="btn btn-primary px-4" disabled={loading}>
@@ -180,10 +178,10 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
                         className="spinner-border spinner-border-sm me-2"
                         aria-hidden="true"
                       ></span>
-                      Tekshirilmoqda...
+                      {t("login.checking")}
                     </>
                   ) : (
-                    "Kirish"
+                    t("login.submit")
                   )}
                 </button>
               </div>

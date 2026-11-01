@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Avatar } from "../../components/Avatar";
+import { useI18n } from "../../i18n";
 
 // Bootstrap Icons
 const TROPHY_PATH =
@@ -24,6 +25,7 @@ const HEARTS_COUNT = 6;
 // Bugungi navbatchiga kichik minnatdorchilik.
 // "Rahmat" faqat animatsiya: hech qayerga saqlanmaydi
 export const DayHero = ({ users, schedule }) => {
+  const { t } = useI18n();
   const [thanked, setThanked] = useState(false);
   const [burstKey, setBurstKey] = useState(0);
 
@@ -52,14 +54,14 @@ export const DayHero = ({ users, schedule }) => {
         <div className="flex-grow-1 overflow-hidden">
           <span className="home__hero-label">
             <Icon path={TROPHY_PATH} className="home__hero-label-icon" />
-            Bugungi qahramon
+            {t("home.hero.label")}
           </span>
 
           <h3 className="home__hero-name fw-bold m-0 text-truncate">
             {hero.name.trim()} {hero.last_name}
           </h3>
 
-          <span className="text-muted">Bugun uy tartibi uning qo'lida.</span>
+          <span className="text-muted">{t("home.hero.text")}</span>
         </div>
 
         <button
@@ -68,7 +70,7 @@ export const DayHero = ({ users, schedule }) => {
           onClick={handleThanks}
         >
           <Icon path={HEART_PATH} className="home__hero-heart" />
-          {thanked ? "Rahmat aytildi!" : "Rahmat aytish"}
+          {thanked ? t("home.hero.thanked") : t("home.hero.thank")}
 
           {burstKey > 0 && (
             <span className="home__hero-burst" key={burstKey} aria-hidden="true">

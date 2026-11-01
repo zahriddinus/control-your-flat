@@ -1,14 +1,17 @@
 import { useModalEffects } from "../../hooks/useModalEffects";
+import { useI18n } from "../../i18n";
 
 export const ConfirmModal = ({
   isOpen,
   title,
   children,
-  confirmLabel = "Tasdiqlash",
+  confirmLabel,
   loading = false,
   onConfirm,
   onCancel,
 }) => {
+  const { t } = useI18n();
+
   useModalEffects(isOpen, onCancel, !loading);
 
   if (!isOpen) return null;
@@ -37,7 +40,7 @@ export const ConfirmModal = ({
               <button
                 type="button"
                 className="btn-close"
-                aria-label="Yopish"
+                aria-label={t("common.close")}
                 onClick={handleCancel}
                 disabled={loading}
               ></button>
@@ -52,7 +55,7 @@ export const ConfirmModal = ({
                 onClick={handleCancel}
                 disabled={loading}
               >
-                Bekor qilish
+                {t("common.cancel")}
               </button>
 
               <button
@@ -64,7 +67,7 @@ export const ConfirmModal = ({
                 {loading && (
                   <span className="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
                 )}
-                {confirmLabel}
+                {confirmLabel ?? t("common.confirm")}
               </button>
             </div>
           </div>

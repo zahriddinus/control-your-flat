@@ -1,6 +1,7 @@
 import "./userModal.scss";
 import { useEffect, useState } from "react";
 import { useModalEffects } from "../../hooks/useModalEffects";
+import { useI18n } from "../../i18n";
 import { Avatar } from "../Avatar";
 
 const EMPTY_FORM = {
@@ -15,10 +16,11 @@ const EMPTY_FORM = {
 };
 
 const ROLES = [
-  { value: "user", label: "👤 User" },
-  { value: "admin", label: "🛡️ Admin" },
+  { value: "user", labelKey: "userModal.roleUser" },
+  { value: "admin", labelKey: "userModal.roleAdmin" },
 ];
 
+// Xatolar tarjima kaliti sifatida qaytadi: userModal.errors.*
 // Telegram nickname ("@"siz): 5-32 ta lotin harfi, raqam yoki "_"
 const NICKNAME_PATTERN = /^[A-Za-z0-9_]{5,32}$/;
 const PHONE_PATTERN = /^\+?[0-9\s\-()]{7,20}$/;
@@ -27,25 +29,25 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const validate = (formData) => {
   const errors = {};
 
-  if (!formData.name.trim()) errors.name = "Ismni kiriting.";
-  if (!formData.lastName.trim()) errors.lastName = "Familiyani kiriting.";
+  if (!formData.name.trim()) errors.name = "userModal.errors.name";
+  if (!formData.lastName.trim()) errors.lastName = "userModal.errors.lastName";
 
   const age = Number(formData.age);
 
   if (!Number.isInteger(age) || age < 1 || age > 120) {
-    errors.age = "Yosh 1 dan 120 gacha bo'lishi kerak.";
+    errors.age = "userModal.errors.age";
   }
 
   if (formData.nickname.trim() && !NICKNAME_PATTERN.test(formData.nickname.trim())) {
-    errors.nickname = "5–32 ta lotin harfi, raqam yoki _ bo'lishi kerak.";
+    errors.nickname = "userModal.errors.nickname";
   }
 
   if (formData.phoneNumber.trim() && !PHONE_PATTERN.test(formData.phoneNumber.trim())) {
-    errors.phoneNumber = "Masalan: +998 90 123 45 67";
+    errors.phoneNumber = "userModal.errors.phone";
   }
 
   if (formData.email.trim() && !EMAIL_PATTERN.test(formData.email.trim())) {
-    errors.email = "Email noto'g'ri yozilgan.";
+    errors.email = "userModal.errors.email";
   }
 
   return errors;
@@ -53,28 +55,29 @@ const validate = (formData) => {
 
 // Navbat raqam bilan emas, kimning oldiga yoki o'rniga qo'yilishi bilan tanlanadi.
 // Qiymat - o'sha userning duty_order'i, "" - oxiriga
-const getOrderOptions = (users, selectedUser) => {
+const getOrderOptions = (users, selectedUser, t) => {
   if (selectedUser) {
     return users.map((user, index) => ({
       value: String(user.duty_order),
       label:
         user.user_id === selectedUser.user_id
-          ? `${index + 1}. Hozirgi o'rni`
-          : `${index + 1}. ${user.name.trim()} o'rniga`,
+          ? t("userModal.optionCurrent", { number: index + 1 })
+          : t("userModal.optionReplace", { number: index + 1, name: user.name.trim() }),
     }));
   }
 
   return [
     ...users.map((user, index) => ({
       value: String(user.duty_order),
-      label: `${index + 1}. ${user.name.trim()}dan oldin`,
+      label: t("userModal.optionBefore", { number: index + 1, name: user.name.trim() }),
     })),
-    { value: "", label: `${users.length + 1}. Oxiriga` },
+    { value: "", label: t("userModal.optionLast", { number: users.length + 1 }) },
   ];
 };
 
 // users: duty_order bo'yicha tartiblangan barcha userlar
 export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] }) => {
+  const { t } = useI18n();
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
@@ -154,7 +157,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
   });
 
   const renderError = (name) =>
-    errors[name] && <div className="invalid-feedback">{errors[name]}</div>;
+    errors[name] && <div className="invalid-feedback">{t(errors[name])}</div>;
 
   if (!isOpen) return null;
 
@@ -186,11 +189,11 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
 
                 <div className="text-start overflow-hidden">
                   <h2 className="modal-title fs-5 fw-bold" id="userModalLabel">
-                    {selectedUser ? "Userni tahrirlash" : "Yangi xonadosh"}
+                    {selectedUser ? t("userModal.editTitle") : t("userModal.addTitle")}
                   </h2>
 
                   <small className="user-modal__subtitle d-block text-truncate">
-                    {fullName || "Ism va familiyani kiriting"}
+                    {fullName || t("userModal.enterName")}
                   </small>
                 </div>
               </div>
@@ -198,7 +201,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
               <button
                 type="button"
                 className="btn-close btn-close-white"
-                aria-label="Yopish"
+                aria-label={t("common.close")}
                 onClick={handleClose}
                 disabled={saving}
               ></button>
@@ -208,30 +211,38 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
               {/* SHAXSIY MA'LUMOTLAR */}
 
               <section className="user-modal__section">
-                <h3 className="user-modal__section-title">👤 Shaxsiy ma'lumotlar</h3>
+                <h3 className="user-modal__section-title">{t("userModal.personal")}</h3>
 
                 <div className="row g-2">
                   <div className="col-6">
                     <label htmlFor="user-name" className="form-label small">
-                      Ism *
+                      {t("userModal.name")}
                     </label>
 
-                    <input type="text" placeholder="Masalan: Eldor" {...fieldProps("name")} />
+                    <input
+                      type="text"
+                      placeholder={t("userModal.namePlaceholder")}
+                      {...fieldProps("name")}
+                    />
                     {renderError("name")}
                   </div>
 
                   <div className="col-6">
                     <label htmlFor="user-lastName" className="form-label small">
-                      Familiya *
+                      {t("userModal.lastName")}
                     </label>
 
-                    <input type="text" placeholder="Masalan: Aliyev" {...fieldProps("lastName")} />
+                    <input
+                      type="text"
+                      placeholder={t("userModal.lastNamePlaceholder")}
+                      {...fieldProps("lastName")}
+                    />
                     {renderError("lastName")}
                   </div>
 
                   <div className="col-12 col-sm-5">
                     <label htmlFor="user-age" className="form-label small">
-                      Yosh *
+                      {t("userModal.age")}
                     </label>
 
                     <div className="input-group has-validation">
@@ -243,15 +254,15 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                         {...fieldProps("age")}
                       />
 
-                      <span className="input-group-text">yosh</span>
+                      <span className="input-group-text">{t("userModal.ageSuffix")}</span>
                       {renderError("age")}
                     </div>
                   </div>
 
                   <div className="col-12 col-sm-7">
-                    <span className="form-label small d-block">Rol</span>
+                    <span className="form-label small d-block">{t("userModal.role")}</span>
 
-                    <div className="btn-group w-100" role="group" aria-label="Rol">
+                    <div className="btn-group w-100" role="group" aria-label={t("userModal.role")}>
                       {ROLES.map((role) => (
                         <button
                           key={role.value}
@@ -263,7 +274,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                           aria-pressed={formData.role === role.value}
                           disabled={saving}
                         >
-                          {role.label}
+                          {t(role.labelKey)}
                         </button>
                       ))}
                     </div>
@@ -272,8 +283,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
 
                 {formData.role === "admin" && (
                   <div className="alert alert-warning small py-2 mt-3 mb-0">
-                    ⚠️ Admin login qila olishi uchun Supabase Authentication'da akkaunti bo'lishi va
-                    uning ID'si shu userning <code>user_id</code>'siga mos kelishi kerak.
+                    {t("userModal.adminWarning")}
                   </div>
                 )}
               </section>
@@ -281,10 +291,10 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
               {/* ALOQA */}
 
               <section className="user-modal__section">
-                <h3 className="user-modal__section-title">📞 Aloqa</h3>
+                <h3 className="user-modal__section-title">{t("userModal.contact")}</h3>
 
                 <label htmlFor="user-nickname" className="form-label small">
-                  Telegram nickname
+                  {t("userModal.nickname")}
                 </label>
 
                 <div className="input-group has-validation mb-2">
@@ -295,7 +305,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                 </div>
 
                 <label htmlFor="user-phoneNumber" className="form-label small">
-                  Telefon
+                  {t("userModal.phone")}
                 </label>
 
                 <div className="input-group has-validation mb-2">
@@ -312,7 +322,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                 </div>
 
                 <label htmlFor="user-email" className="form-label small">
-                  Email
+                  {t("userModal.email")}
                 </label>
 
                 <div className="input-group has-validation">
@@ -328,10 +338,10 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
               {/* NAVBAT */}
 
               <section className="user-modal__section mb-0">
-                <h3 className="user-modal__section-title">📅 Navbat</h3>
+                <h3 className="user-modal__section-title">{t("userModal.order")}</h3>
 
                 <label htmlFor="user-dutyOrder" className="form-label small">
-                  {selectedUser ? "Navbatdagi o'rni" : "Qayerga qo'yamiz?"}
+                  {selectedUser ? t("userModal.orderEdit") : t("userModal.orderAdd")}
                 </label>
 
                 <select
@@ -342,16 +352,14 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                   onChange={handleChange}
                   disabled={saving}
                 >
-                  {getOrderOptions(users, selectedUser).map((option) => (
+                  {getOrderOptions(users, selectedUser, t).map((option) => (
                     <option key={option.label} value={option.value}>
                       {option.label}
                     </option>
                   ))}
                 </select>
 
-                <small className="text-muted d-block mt-1">
-                  Boshqalar o'z-o'zidan bittaga suriladi.
-                </small>
+                <small className="text-muted d-block mt-1">{t("userModal.orderHint")}</small>
               </section>
             </div>
 
@@ -362,7 +370,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                 onClick={handleClose}
                 disabled={saving}
               >
-                Bekor qilish
+                {t("common.cancel")}
               </button>
 
               <button
@@ -373,7 +381,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                 {saving && (
                   <span className="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
                 )}
-                {selectedUser ? "💾 Saqlash" : "➕ Qo'shish"}
+                {selectedUser ? t("userModal.save") : t("userModal.add")}
               </button>
             </div>
           </form>

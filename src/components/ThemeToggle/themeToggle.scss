@@ -1,0 +1,96 @@
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid var(--bs-border-color);
+  border-radius: 999px;
+  background-color: var(--bs-tertiary-bg);
+
+  &__thumb {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: calc((100% - 6px) / 3);
+    height: calc(100% - 6px);
+    border-radius: 999px;
+    background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+    box-shadow: 0 2px 6px rgba(13, 110, 253, 0.35);
+    transition: transform 0.3s ease;
+  }
+
+  &__btn {
+    position: relative;
+    z-index: 1;
+    width: 32px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: var(--bs-secondary-color);
+    font-size: 0.95rem;
+    background: transparent;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: var(--bs-emphasis-color);
+    }
+
+    &.active {
+      color: #fff;
+    }
+
+    &:focus-visible {
+      outline: 2px solid #0d6efd;
+      outline-offset: 1px;
+    }
+  }
+
+  // Yozuvlar faqat mobil menyuda ko'rinadi
+  &__label {
+    display: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+}
+
+// Mobil yon menyuda: to'liq kenglikda, yozuvlar bilan
+@media (max-width: 991.98px) {
+  .header__nav .theme-toggle {
+    display: flex;
+    width: 100%;
+    padding: 4px;
+
+    // Tashqi bo'shliq kattalashgani uchun gradient fon ham moslashadi
+    &__thumb {
+      top: 4px;
+      left: 4px;
+      width: calc((100% - 8px) / 3);
+      height: calc(100% - 8px);
+    }
+
+    // Matn gradient fon chetiga yopishmasligi uchun ichki bo'shliq
+    &__btn {
+      flex: 1;
+      min-width: 0;
+      height: 38px;
+      padding: 0 12px;
+    }
+
+    &__label {
+      display: inline;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-toggle__thumb {
+    transition: none;
+  }
+}

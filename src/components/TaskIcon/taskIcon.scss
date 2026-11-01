@@ -67,3 +67,60 @@
     transform: rotate(10deg) scale(1.1);
   }
 }
+
+// Vazifa yorlig'i: chapda ikonka, yonida ism. Navbatchi ko'k, musor yashil, uborka to'q sariq
+.task-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 2px 8px 2px 2px;
+  margin-bottom: 4px;
+  border-radius: 999px;
+  white-space: nowrap;
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:hover {
+    transform: translateX(2px);
+  }
+
+  &:hover .task-icon {
+    animation: task-icon-wiggle 0.4s ease;
+  }
+
+  &__name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &--duty {
+    color: #0a58ca;
+    background-color: #e7f1ff;
+  }
+
+  &--rubbish {
+    color: #146c43;
+    background-color: #d1e7dd;
+  }
+
+  &--cleaning {
+    color: #b35409;
+    background-color: #ffe5d0;
+  }
+
+  // "Faqat menikini" filtrida: meniki ajraladi, boshqalari xiralashadi
+  &--mine {
+    font-weight: 700;
+    box-shadow: 0 0 0 2px currentColor;
+  }
+
+  &--dim {
+    opacity: 0.35;
+  }
+}

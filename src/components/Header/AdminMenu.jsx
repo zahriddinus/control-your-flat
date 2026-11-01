@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { useI18n } from "../../i18n";
 import { AppIcon } from "../AppIcon";
 import { Avatar } from "../Avatar";
 
 export const AdminMenu = ({ profile, onNavigate, onLogout }) => {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
 
   const menuRef = useRef(null);
@@ -43,7 +45,7 @@ export const AdminMenu = ({ profile, onNavigate, onLogout }) => {
         <span className="text-start lh-sm">
           <span className="d-block fw-semibold">{profile.name}</span>
 
-          <span className="badge text-bg-primary">Admin</span>
+          <span className="badge text-bg-primary">{t("header.adminBadge")}</span>
         </span>
 
         <AppIcon name="chevron" className={`header__caret ${isOpen ? "open" : ""}`} />
@@ -60,7 +62,7 @@ export const AdminMenu = ({ profile, onNavigate, onLogout }) => {
             }}
           >
             <AppIcon name="sliders" className="header__menu-icon" />
-            Control Users
+            {t("nav.controlUsers")}
           </Link>
         </li>
 
@@ -78,7 +80,7 @@ export const AdminMenu = ({ profile, onNavigate, onLogout }) => {
             }}
           >
             <AppIcon name="logout" className="header__menu-icon" />
-            Chiqish
+            {t("header.logout")}
           </button>
         </li>
       </ul>

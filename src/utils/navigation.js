@@ -1,6 +1,6 @@
-// Header va Footer'dagi asosiy havolalar. icon - AppIcon nomi
+// Header va Footer'dagi asosiy havolalar. icon - AppIcon nomi, labelKey - tarjima kaliti
 export const NAV_LINKS = [
-  { to: "/", icon: "home", label: "Home" },
-  { to: "/duties-schedule", icon: "calendar", label: "Duties schedule" },
-  { to: "/users", icon: "users", label: "Users" },
+  { to: "/", icon: "home", labelKey: "nav.home" },
+  { to: "/duties-schedule", icon: "calendar", labelKey: "nav.schedule" },
+  { to: "/users", icon: "users", labelKey: "nav.users" },
 ];

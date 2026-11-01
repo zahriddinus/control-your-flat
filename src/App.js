@@ -1,7 +1,8 @@
-import './App.css';
-import { Header } from './components/Header';
-import { Footer } from './components/Footer';
-import { AppRoutes } from './routes';
+import "./App.css";
+import { Header } from "./components/Header";
+import { Footer } from "./components/Footer";
+import { ScrollTopButton } from "./components/ScrollTopButton";
+import { AppRoutes } from "./routes";
 
 function App() {
   return (
@@ -11,6 +12,8 @@ function App() {
       <AppRoutes />
 
       <Footer />
+
+      <ScrollTopButton />
     </div>
   );
 }

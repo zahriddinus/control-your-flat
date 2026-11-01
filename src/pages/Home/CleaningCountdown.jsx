@@ -1,4 +1,5 @@
-import { addDays, formatUzDate } from "../../utils/date";
+import { useI18n } from "../../i18n";
+import { addDays, formatLongDate } from "../../utils/date";
 import { TASKS, getAssignedNames } from "../../utils/schedule";
 import { TaskIcon } from "../../components/TaskIcon";
 
@@ -8,6 +9,7 @@ const CLEANING_INTERVAL = 7;
 const cleaningTask = TASKS.find((task) => task.key === "cleaning");
 
 export const CleaningCountdown = ({ users, schedules, today, loading }) => {
+  const { t, lang } = useI18n();
   const days = schedules.findIndex((schedule) => schedule?.cleaning?.length > 0);
 
   const names = getAssignedNames(users, cleaningTask, schedules[days]);
@@ -19,7 +21,7 @@ export const CleaningCountdown = ({ users, schedules, today, loading }) => {
       <div className="card-body">
         <h2 className="home__section-title d-flex align-items-center gap-2">
           <TaskIcon taskKey="cleaning" size="md" />
-          Generalniy uborka
+          {t("home.cleaning.title")}
         </h2>
 
         {loading ? (
@@ -27,22 +29,22 @@ export const CleaningCountdown = ({ users, schedules, today, loading }) => {
             <span className="placeholder col-6"></span>
           </p>
         ) : days === -1 ? (
-          <p className="text-muted m-0">Yaqin kunlarda generalniy uborka yo'q.</p>
+          <p className="text-muted m-0">{t("home.cleaning.none")}</p>
         ) : (
           <>
             <p className="home__countdown fw-bold mb-1">
-              {days === 0 ? "Bugun! 💪" : `${days} kun qoldi`}
+              {days === 0 ? t("home.cleaning.today") : t("home.cleaning.daysLeft", { count: days })}
             </p>
 
             <p className="text-muted mb-3">
-              {formatUzDate(addDays(today, days))}
+              {formatLongDate(addDays(today, days), lang)}
               {names && ` · ${names}`}
             </p>
 
             <div
               className="progress"
               role="progressbar"
-              aria-label="Generalniy uborkagacha qolgan vaqt"
+              aria-label={t("home.cleaning.progress")}
               aria-valuenow={Math.round(progress)}
               aria-valuemin="0"
               aria-valuemax="100"

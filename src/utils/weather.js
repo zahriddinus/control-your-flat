@@ -1,46 +1,47 @@
-// Xonadon joylashuvi: Toshkent, Sergeli tumani
+// Xonadon joylashuvi: Toshkent, Sergeli tumani. Nomi tarjimada: weather.flatName
 export const FLAT_LOCATION = {
-  name: "Toshkent, Sergeli",
   latitude: 41.22,
   longitude: 69.22,
   isFlat: true,
 };
 
 // WMO ob-havo kodlari: https://open-meteo.com/en/docs
-// type - WeatherIcon qaysi rasmni chizishi
-const WEATHER_CODES = {
-  0: { type: "clear", label: "Ochiq osmon" },
-  1: { type: "partly", label: "Asosan ochiq" },
-  2: { type: "partly", label: "Qisman bulutli" },
-  3: { type: "cloudy", label: "Bulutli" },
-  45: { type: "fog", label: "Tuman" },
-  48: { type: "fog", label: "Qirovli tuman" },
-  51: { type: "rain", label: "Mayda yomg'ir" },
-  53: { type: "rain", label: "Mayda yomg'ir" },
-  55: { type: "rain", label: "Kuchli mayda yomg'ir" },
-  56: { type: "rain", label: "Muzlagan mayda yomg'ir" },
-  57: { type: "rain", label: "Muzlagan mayda yomg'ir" },
-  61: { type: "rain", label: "Yengil yomg'ir" },
-  63: { type: "rain", label: "Yomg'ir" },
-  65: { type: "rain", label: "Kuchli yomg'ir" },
-  66: { type: "rain", label: "Muzlagan yomg'ir" },
-  67: { type: "rain", label: "Muzlagan yomg'ir" },
-  71: { type: "snow", label: "Yengil qor" },
-  73: { type: "snow", label: "Qor" },
-  75: { type: "snow", label: "Kuchli qor" },
-  77: { type: "snow", label: "Qor donalari" },
-  80: { type: "rain", label: "Jala" },
-  81: { type: "rain", label: "Kuchli jala" },
-  82: { type: "thunder", label: "Juda kuchli jala" },
-  85: { type: "snow", label: "Qor yog'ishi" },
-  86: { type: "snow", label: "Kuchli qor yog'ishi" },
-  95: { type: "thunder", label: "Momaqaldiroq" },
-  96: { type: "thunder", label: "Do'l bilan momaqaldiroq" },
-  99: { type: "thunder", label: "Do'l bilan momaqaldiroq" },
+// type - WeatherIcon qaysi rasmni chizishi. Nomlari tarjimada: weather.codes.<kod>
+const WEATHER_TYPES = {
+  0: "clear",
+  1: "partly",
+  2: "partly",
+  3: "cloudy",
+  45: "fog",
+  48: "fog",
+  51: "rain",
+  53: "rain",
+  55: "rain",
+  56: "rain",
+  57: "rain",
+  61: "rain",
+  63: "rain",
+  65: "rain",
+  66: "rain",
+  67: "rain",
+  71: "snow",
+  73: "snow",
+  75: "snow",
+  77: "snow",
+  80: "rain",
+  81: "rain",
+  82: "thunder",
+  85: "snow",
+  86: "snow",
+  95: "thunder",
+  96: "thunder",
+  99: "thunder",
 };
 
 export const getWeatherInfo = (code) =>
-  WEATHER_CODES[code] ?? { type: "cloudy", label: "Noma'lum" };
+  code in WEATHER_TYPES
+    ? { type: WEATHER_TYPES[code], labelKey: `weather.codes.${code}` }
+    : { type: "cloudy", labelKey: "weather.unknown" };
 
 const isRainy = (code) => (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
 const isSnowy = (code) => (code >= 71 && code <= 77) || code === 85 || code === 86;
@@ -75,9 +76,9 @@ export const getDailyWeather = (weather, index) => ({
 
 const isWetDay = (day) => isRainy(day.code) || (day.rain ?? 0) >= 50;
 
-// Ob-havoni navbatlar bilan bog'laydigan maslahatlar.
+// Ob-havoni navbatlar bilan bog'laydigan maslahatlar (t - useI18n()'dan).
 // Navbatga oid maslahatlar faqat uy ob-havosi ko'rsatilganda chiqadi
-export const getWeatherTips = ({ weather, users, schedules, isFlat }) => {
+export const getWeatherTips = ({ weather, users, schedules, isFlat, t }) => {
   const today = getDailyWeather(weather, 0);
   const tomorrow = getDailyWeather(weather, 1);
   const tips = [];
@@ -90,29 +91,23 @@ export const getWeatherTips = ({ weather, users, schedules, isFlat }) => {
     const rubbishTomorrow = getName(schedules[1], "rubbish");
 
     if (rubbishToday && isWetDay(today)) {
-      tips.push(`☔ Bugun yomg'ir ehtimoli bor. ${rubbishToday}, musorga soyabon bilan chiqing.`);
+      tips.push(t("weather.tips.rubbishTodayRain", { name: rubbishToday }));
     }
 
     if (rubbishTomorrow && isWetDay(tomorrow)) {
-      tips.push(
-        `🌧️ Ertaga yomg'ir kutilmoqda. ${rubbishTomorrow}, musorni bugun kechqurun tashlab qo'ysangiz ham bo'ladi.`
-      );
+      tips.push(t("weather.tips.rubbishTomorrowRain", { name: rubbishTomorrow }));
     }
 
     const cleaningIndex = [0, 1].find((index) => schedules[index]?.cleaning?.length > 0);
 
     if (cleaningIndex !== undefined) {
       const day = cleaningIndex === 0 ? today : tomorrow;
-      const when = cleaningIndex === 0 ? "Bugun" : "Ertaga";
+      const when = cleaningIndex === 0 ? "Today" : "Tomorrow";
 
       if (isWetDay(day)) {
-        tips.push(
-          `🌂 ${when} generalniy uborka, lekin yomg'ir kutilmoqda. Gilamlarni tashqariga chiqarmang.`
-        );
+        tips.push(t(`weather.tips.cleaningRain${when}`));
       } else if (!isSnowy(day.code) && day.max >= 12) {
-        tips.push(
-          `☀️ ${when} generalniy uborka va havo yaxshi (${day.max}°). Derazalarni ochib, uyni shamollating.`
-        );
+        tips.push(t(`weather.tips.cleaningGood${when}`, { temp: day.max }));
       }
     }
   }
@@ -120,14 +115,13 @@ export const getWeatherTips = ({ weather, users, schedules, isFlat }) => {
   const temperature = Math.round(weather.current.temperature_2m);
 
   if (temperature <= 0) {
-    tips.push(`🥶 Hozir ${temperature}°. Tashqariga chiqishda issiq kiyining.`);
+    tips.push(t("weather.tips.cold", { temp: temperature }));
   } else if (today.max >= 35) {
-    tips.push(`🥵 Bugun ${today.max}° gacha isiydi. Ko'proq suv iching.`);
+    tips.push(t("weather.tips.hot", { temp: today.max }));
   }
 
-  if (isSnowy(today.code)) tips.push("❄️ Bugun qor yog'adi. Yo'lda ehtiyot bo'ling.");
-  if (weather.current.wind_speed_10m >= 40)
-    tips.push("💨 Kuchli shamol. Derazalarni yopiq tuting.");
+  if (isSnowy(today.code)) tips.push(t("weather.tips.snow"));
+  if (weather.current.wind_speed_10m >= 40) tips.push(t("weather.tips.wind"));
 
   return tips.slice(0, 3);
 };

@@ -160,23 +160,6 @@ $footer-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
     height: 30px;
     color: #fff;
   }
-
-  &__top-btn {
-    width: 38px;
-    height: 38px;
-    border: none;
-    border-radius: 50%;
-    color: #fff;
-    font-size: 1.1rem;
-    font-weight: 700;
-    background: $footer-gradient;
-    box-shadow: 0 4px 12px rgba(13, 110, 253, 0.35);
-    transition: transform 0.2s ease;
-
-    &:hover {
-      transform: translateY(-3px);
-    }
-  }
 }
 
 @media (max-width: 576px) {
