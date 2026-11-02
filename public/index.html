@@ -5,7 +5,8 @@
     <!-- SVG zamonaviy brauzerlar uchun, ICO eski brauzerlar uchun -->
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" sizes="32x32" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.svg" type="image/svg+xml" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- viewport-fit=cover: iPhone'da pastki menyu ekran chetigacha cho'ziladi -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#ffffff" />
     <!-- Mavzu React yuklanishidan oldin qo'llanadi, aks holda bir lahza oq ekran yaltiraydi.
          Keyin src/hooks/useTheme.js boshqaradi. Avto: 06:00-18:00 yorug', qolgan vaqt qorong'i -->
@@ -21,8 +22,16 @@
         } catch (error) {}
       })();
     </script>
-    <meta name="description" content="Web site created using create-react-app" />
+    <meta
+      name="description"
+      content="Xonadon navbatlari: navbatchilik, musor va generalniy uborka bir joyda"
+    />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!-- iPhone'da bosh ekrandan ilovadek (brauzer panelisiz) ochilishi uchun -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Your Flat" />
     <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/

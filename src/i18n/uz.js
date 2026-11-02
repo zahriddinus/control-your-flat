@@ -13,6 +13,12 @@ export const uz = {
 
   common: {
     loading: "Yuklanmoqda...",
+    loadingPhrases: [
+      "Navbatlar hisoblanmoqda",
+      "Xonadoshlar chaqirilmoqda",
+      "Kalendar varaqlanmoqda",
+      "Supurgi qidirilmoqda 🧹",
+    ],
     cancel: "Bekor qilish",
     close: "Yopish",
     confirm: "Tasdiqlash",
@@ -70,7 +76,8 @@ export const uz = {
   },
 
   footer: {
-    description: "Uydagi navbatchilik, musor va generalniy uborka bir joyda. Toshkent, Sergeli 🏙️",
+    place: "Toshkent, Sergeli",
+    description: "Uydagi navbatchilik, musor va generalniy uborka bir joyda.",
     pages: "Sahifalar",
     sources: "Ma'lumot manbalari",
     weatherSource: "Ob-havo",
@@ -83,6 +90,15 @@ export const uz = {
 
   scrollTop: "Sahifa boshiga qaytish",
 
+  install: {
+    title: "Ilovani o'rnating",
+    text: "Bosh ekranga qo'shing va ilovadek oching.",
+    button: "O'rnatish",
+    iosText: "Safari'da «Ulashish» tugmasini, keyin «Bosh ekranga qo'shish»ni bosing.",
+  },
+
+  offline: "📴 Internet yo'q. Oxirgi saqlangan ma'lumotlar ko'rsatilmoqda.",
+
   notFound: {
     title: "Sahifa topilmadi",
     text: "Siz qidirgan sahifa mavjud emas yoki ko'chirilgan.",
@@ -90,6 +106,11 @@ export const uz = {
   },
 
   home: {
+    me: {
+      today: "Bugun sizda:",
+      tomorrow: "Ertaga sizda:",
+      free: "Bugun ham, ertaga ham navbatingiz yo'q 🎉",
+    },
     greeting: {
       morning: "Xayrli tong",
       day: "Xayrli kun",
@@ -98,6 +119,7 @@ export const uz = {
       title: "{greeting}, xonadoshlar!",
       subtitle: "Uydagi barcha navbatlar bir joyda.",
       tipLabel: "Kun maslahati",
+      titleNamed: "{greeting}, {name}!",
     },
     tips: {
       dishes: "Idishlarni o'sha kuni yuving, ertaga ular ikki barobar ko'p bo'ladi!",
@@ -257,8 +279,8 @@ export const uz = {
     searchPlaceholder: "Qidirish...",
     searchAria: "Userlarni qidirish",
     add: "+ User qo'shish",
-    dragHint: "💡 Navbatni o'zgartirish uchun qatorni sudrab, boshqa qator ustiga qo'ying.",
-    arrowsHint: "💡 Navbatni ↑ ↓ tugmalari bilan o'zgartiring.",
+    dragHint: "Navbatni o'zgartirish uchun qatorni sudrab, boshqa qator ustiga qo'ying.",
+    arrowsHint: "Navbatni ↑ ↓ tugmalari bilan o'zgartiring.",
     saving: "Saqlanmoqda...",
     loadError: "Userlarni yuklab bo'lmadi. Sahifani yangilab ko'ring.",
     refreshError: "Ro'yxatni yangilab bo'lmadi. Sahifani yangilang.",
@@ -286,18 +308,20 @@ export const uz = {
     },
     todayBadge: "Bugun",
     age: "{count} yosh",
-    edit: "✏️ Tahrirlash",
-    delete: "🗑️ O'chirish",
+    edit: "Tahrirlash",
+    delete: "O'chirish",
     selfDelete: "O'zingizni o'chira olmaysiz",
     orderTabsLabel: "Qaysi vazifa tartibi",
+    pairLabel: "{number}-juftlik",
+    pairHint: "Uborka ikki kishidan: qo'shni o'rinlar bitta juftlik (1–2, 3–4, 5–6).",
     orderHint:
-      "💡 Har bir vazifaning o'z tartibi bor. O'zgarishlar ertadan kuchga kiradi: bugungi va o'tgan kunlar o'zgarmaydi.",
-    swap: "⇄ Almashtirish",
-    swapCancel: "✕ Bekor qilish",
-    swapWith: "⇄ Shu bilan",
+      "Har bir vazifaning o'z tartibi bor. O'zgarishlar ertadan kuchga kiradi: bugungi va o'tgan kunlar o'zgarmaydi.",
+    swap: "Almashtirish",
+    swapCancel: "Bekor qilish",
+    swapWith: "Shu bilan",
     swapPick: "{name} tanlandi. Kim bilan o'rin almashtirasiz?",
     swapModal: {
-      title: "⇄ O'rin almashtirish",
+      title: "O'rin almashtirish",
       question: "{a} va {b} o'rin almashadi.",
       task: "Tartib: {task}. Qolganlar joyida qoladi.",
       confirm: "Almashtirish",
@@ -318,7 +342,7 @@ export const uz = {
       swapError: "Almashtirib bo'lmadi: {error}",
     },
     deleteModal: {
-      title: "🗑️ Userni o'chirish",
+      title: "Userni o'chirish",
       confirm: "O'chirish",
       question: "{name}ni o'chirasizmi?",
       warning: "Bu amalni ortga qaytarib bo'lmaydi. Undan keyingilarning navbati bittaga suriladi.",
@@ -329,20 +353,20 @@ export const uz = {
     editTitle: "Userni tahrirlash",
     addTitle: "Yangi xonadosh",
     enterName: "Ism va familiyani kiriting",
-    personal: "👤 Shaxsiy ma'lumotlar",
-    contact: "📞 Aloqa",
-    order: "📅 Navbat",
+    personal: "Shaxsiy ma'lumotlar",
+    contact: "Aloqa",
+    order: "Navbat",
     name: "Ism *",
     lastName: "Familiya *",
     age: "Yosh *",
     ageSuffix: "yosh",
     role: "Rol",
-    roleUser: "👤 User",
-    roleAdmin: "🛡️ Admin",
+    roleUser: "User",
+    roleAdmin: "Admin",
     namePlaceholder: "Masalan: Eldor",
     lastNamePlaceholder: "Masalan: Aliyev",
     adminWarning:
-      "⚠️ Admin login qila olishi uchun Supabase Authentication'da akkaunti bo'lishi va uning ID'si shu userning user_id'siga mos kelishi kerak.",
+      "Admin login qila olishi uchun Supabase Authentication'da akkaunti bo'lishi va uning ID'si shu userning user_id'siga mos kelishi kerak.",
     nickname: "Telegram nickname",
     phone: "Telefon",
     email: "Email",
@@ -353,8 +377,8 @@ export const uz = {
     optionBefore: "{number}. {name}dan oldin",
     optionLast: "{number}. Oxiriga",
     orderHint: "Boshqalar o'z-o'zidan bittaga suriladi.",
-    save: "💾 Saqlash",
-    add: "➕ Qo'shish",
+    save: "Saqlash",
+    add: "Qo'shish",
     errors: {
       name: "Ismni kiriting.",
       lastName: "Familiyani kiriting.",

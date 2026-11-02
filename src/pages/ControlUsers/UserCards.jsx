@@ -1,4 +1,5 @@
 import { Avatar } from "../../components/Avatar";
+import { AppIcon } from "../../components/AppIcon";
 import { useI18n } from "../../i18n";
 import { EmailLink, NicknameLink, PhoneLink, RoleBadges, UserActions } from "./UserParts";
 
@@ -10,6 +11,7 @@ export const UserCards = ({
   lastUserId,
   todayIds,
   todayTaskKey,
+  pairMode,
   currentUserId,
   busy,
   swapSourceId,
@@ -24,17 +26,27 @@ export const UserCards = ({
     <div className="d-md-none d-flex flex-column gap-3">
       {users.map((user) => {
         const isToday = todayIds.includes(user.user_id);
+        // Uborka tabida qo'shni o'rinlar juftlik: 1-2, 3-4, ...
+        const pairNumber = Math.ceil((user[orderColumn] ?? 0) / 2);
+        const pairClass = pairMode ? `control__card--pair-${pairNumber % 2 ? "odd" : "even"}` : "";
 
         return (
           <div
-            className={`control__card card border-0 shadow-sm ${isToday ? "control__card--today" : ""} ${
+            className={`control__card card border-0 shadow-sm ${isToday ? "control__card--today" : ""} ${pairClass} ${
               user.user_id === swapSourceId ? "control__card--swap" : ""
             }`}
             key={user.user_id}
           >
             <div className="card-body text-start">
               <div className="d-flex align-items-center gap-3 mb-2">
-                <span className="control__order">#{user[orderColumn]}</span>
+                <span className="control__order">
+                  #{user[orderColumn]}
+                  {pairMode && (
+                    <span className="control__pair-badge d-block">
+                      {t("control.pairLabel", { number: pairNumber })}
+                    </span>
+                  )}
+                </span>
 
                 <Avatar user={user} />
 
@@ -70,15 +82,21 @@ export const UserCards = ({
               </div>
 
               <ul className="control__info list-unstyled small mb-3">
-                <li>🎂 {user.age ? t("control.age", { count: user.age }) : "—"}</li>
                 <li>
-                  💬 <NicknameLink nickname={user.nickname} />
+                  <AppIcon name="cake" className="control__info-icon" />
+                  {user.age ? t("control.age", { count: user.age }) : "—"}
                 </li>
                 <li>
-                  📞 <PhoneLink phone={user.phone_number} />
+                  <AppIcon name="send" className="control__info-icon" />
+                  <NicknameLink nickname={user.nickname} />
+                </li>
+                <li>
+                  <AppIcon name="phone" className="control__info-icon" />
+                  <PhoneLink phone={user.phone_number} />
                 </li>
                 <li className="text-truncate">
-                  ✉️ <EmailLink email={user.email} />
+                  <AppIcon name="mail" className="control__info-icon" />
+                  <EmailLink email={user.email} />
                 </li>
               </ul>
 

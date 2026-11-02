@@ -9,6 +9,7 @@ export const UsersTable = ({
   orderColumn,
   todayIds,
   todayTaskKey,
+  pairMode,
   currentUserId,
   busy,
   swapSourceId,
@@ -43,9 +44,15 @@ export const UsersTable = ({
     return user.user_id === swapSourceId ? "source" : "target";
   };
 
+  // Uborka tabida qo'shni o'rinlar juftlik: 1-2, 3-4, ... Juftliklar navbat bilan bo'yaladi
+  const getPairNumber = (user) => Math.ceil((user[orderColumn] ?? 0) / 2);
+  const isPairStart = (user) => (user[orderColumn] ?? 0) % 2 === 1;
+
   const getRowClass = (user) =>
     [
       "control__row",
+      pairMode && (getPairNumber(user) % 2 ? "control__row--pair-odd" : "control__row--pair-even"),
+      pairMode && isPairStart(user) && "control__row--pair-start",
       todayIds.includes(user.user_id) && "control__row--today",
       user.user_id === swapSourceId && "control__row--swap",
       user.user_id === draggedId && "control__row--dragging",
@@ -97,7 +104,15 @@ export const UsersTable = ({
                 ⠿
               </td>
 
-              <th>{user[orderColumn]}</th>
+              <th>
+                {user[orderColumn]}
+
+                {pairMode && isPairStart(user) && (
+                  <span className="control__pair-badge">
+                    {t("control.pairLabel", { number: getPairNumber(user) })}
+                  </span>
+                )}
+              </th>
 
               <td>
                 <div className="d-flex align-items-center gap-2">

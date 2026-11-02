@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { AppIcon } from "../../components/AppIcon";
 import { Avatar } from "../../components/Avatar";
 import { getShortMonth } from "../../utils/date";
 import { useI18n } from "../../i18n";
@@ -25,7 +26,7 @@ const LINKS = [
   },
   TELEGRAM_GROUP_URL && {
     href: TELEGRAM_GROUP_URL,
-    icon: "💬",
+    icon: "chat",
     titleKey: "home.links.telegram",
     textKey: "home.links.telegramText",
   },
@@ -60,9 +61,13 @@ const LinkContent = ({ link, users, today }) => {
   const renderIcon = () => {
     if (link.icon === "calendar") return <CalendarIcon today={today} lang={lang} />;
     if (link.icon === "people" && users.length) return <PeopleIcon users={users} />;
-    if (link.icon === "people") return <span className="home__icon">👥</span>;
+    const iconName = link.icon === "people" ? "users" : link.icon;
 
-    return <span className="home__icon">{link.icon}</span>;
+    return (
+      <span className={`home__link-icon home__link-icon--${link.icon}`} aria-hidden="true">
+        <AppIcon name={iconName} />
+      </span>
+    );
   };
 
   return (

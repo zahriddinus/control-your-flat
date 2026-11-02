@@ -189,3 +189,34 @@ $footer-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
 .footer__link-icon {
   color: #a5b4fc;
 }
+
+// Manba belgisi: yarim shaffof kvadrat ichida
+.footer__source-icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a5b4fc;
+  font-size: 1.05rem;
+  background-color: rgba(165, 180, 252, 0.12);
+}
+
+// Joylashuv belgisi
+.footer__place {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 4px 12px 4px 8px;
+  border-radius: 999px;
+  color: #cbd5e1;
+  font-size: 0.8rem;
+  background-color: rgba(255, 255, 255, 0.06);
+
+  .app-icon {
+    color: #a5b4fc;
+  }
+}

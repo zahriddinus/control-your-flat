@@ -13,6 +13,12 @@ export const en = {
 
   common: {
     loading: "Loading...",
+    loadingPhrases: [
+      "Counting the duties",
+      "Calling the flatmates",
+      "Flipping the calendar",
+      "Looking for the broom 🧹",
+    ],
     cancel: "Cancel",
     close: "Close",
     confirm: "Confirm",
@@ -70,8 +76,8 @@ export const en = {
   },
 
   footer: {
-    description:
-      "Duties, rubbish and deep cleaning for the flat in one place. Tashkent, Sergeli 🏙️",
+    place: "Tashkent, Sergeli",
+    description: "Duties, rubbish and deep cleaning for the flat in one place.",
     pages: "Pages",
     sources: "Data sources",
     weatherSource: "Weather",
@@ -84,6 +90,15 @@ export const en = {
 
   scrollTop: "Back to top",
 
+  install: {
+    title: "Install the app",
+    text: "Add it to your home screen and open it like an app.",
+    button: "Install",
+    iosText: "In Safari, tap Share, then Add to Home Screen.",
+  },
+
+  offline: "📴 You're offline. Showing the last saved data.",
+
   notFound: {
     title: "Page not found",
     text: "The page you're looking for doesn't exist or has been moved.",
@@ -91,6 +106,11 @@ export const en = {
   },
 
   home: {
+    me: {
+      today: "Today you have:",
+      tomorrow: "Tomorrow you have:",
+      free: "No duties for you today or tomorrow 🎉",
+    },
     greeting: {
       morning: "Good morning",
       day: "Good afternoon",
@@ -99,6 +119,7 @@ export const en = {
       title: "{greeting}, flatmates!",
       subtitle: "All the flat's duties in one place.",
       tipLabel: "Tip of the day",
+      titleNamed: "{greeting}, {name}!",
     },
     tips: {
       dishes: "Wash the dishes the same day, or tomorrow there will be twice as many!",
@@ -259,8 +280,8 @@ export const en = {
     searchPlaceholder: "Search...",
     searchAria: "Search users",
     add: "+ Add user",
-    dragHint: "💡 To change the order, drag a row onto another row.",
-    arrowsHint: "💡 Change the order with the ↑ ↓ buttons.",
+    dragHint: "To change the order, drag a row onto another row.",
+    arrowsHint: "Change the order with the ↑ ↓ buttons.",
     saving: "Saving...",
     loadError: "Couldn't load the users. Please refresh the page.",
     refreshError: "Couldn't refresh the list. Please reload the page.",
@@ -288,18 +309,20 @@ export const en = {
     },
     todayBadge: "Today",
     age: { one: "{count} year old", other: "{count} years old" },
-    edit: "✏️ Edit",
-    delete: "🗑️ Delete",
+    edit: "Edit",
+    delete: "Delete",
     selfDelete: "You can't delete yourself",
     orderTabsLabel: "Which task's order",
+    pairLabel: "Pair {number}",
+    pairHint: "Cleaning is done in pairs: neighbouring places form a pair (1–2, 3–4, 5–6).",
     orderHint:
-      "💡 Each task has its own order. Changes take effect from tomorrow: today and past days stay the same.",
-    swap: "⇄ Swap",
-    swapCancel: "✕ Cancel",
-    swapWith: "⇄ With this one",
+      "Each task has its own order. Changes take effect from tomorrow: today and past days stay the same.",
+    swap: "Swap",
+    swapCancel: "Cancel",
+    swapWith: "With this one",
     swapPick: "{name} selected. Who should they swap with?",
     swapModal: {
-      title: "⇄ Swap places",
+      title: "Swap places",
       question: "{a} and {b} will swap places.",
       task: "Order: {task}. Everyone else stays put.",
       confirm: "Swap",
@@ -320,7 +343,7 @@ export const en = {
       swapError: "Couldn't swap: {error}",
     },
     deleteModal: {
-      title: "🗑️ Delete user",
+      title: "Delete user",
       confirm: "Delete",
       question: "Delete {name}?",
       warning: "This can't be undone. Everyone after them moves up one place.",
@@ -331,20 +354,20 @@ export const en = {
     editTitle: "Edit user",
     addTitle: "New flatmate",
     enterName: "Enter a first and last name",
-    personal: "👤 Personal details",
-    contact: "📞 Contact",
-    order: "📅 Turn",
+    personal: "Personal details",
+    contact: "Contact",
+    order: "Turn",
     name: "First name *",
     lastName: "Last name *",
     age: "Age *",
     ageSuffix: "years",
     role: "Role",
-    roleUser: "👤 User",
-    roleAdmin: "🛡️ Admin",
+    roleUser: "User",
+    roleAdmin: "Admin",
     namePlaceholder: "e.g. Eldor",
     lastNamePlaceholder: "e.g. Aliyev",
     adminWarning:
-      "⚠️ For an admin to log in, they need an account in Supabase Authentication whose ID matches this user's user_id.",
+      "For an admin to log in, they need an account in Supabase Authentication whose ID matches this user's user_id.",
     nickname: "Telegram nickname",
     phone: "Phone",
     email: "Email",
@@ -355,8 +378,8 @@ export const en = {
     optionBefore: "{number}. Before {name}",
     optionLast: "{number}. At the end",
     orderHint: "Everyone else shifts automatically.",
-    save: "💾 Save",
-    add: "➕ Add",
+    save: "Save",
+    add: "Add",
     errors: {
       name: "Enter a first name.",
       lastName: "Enter a last name.",

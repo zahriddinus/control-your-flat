@@ -4,9 +4,10 @@ import { supabase } from "../../lib/supabese";
 import { UserModal } from "../../components/UserModal";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { Avatar } from "../../components/Avatar";
-import { Loading } from "../../components/Loading";
+import { PageSkeleton } from "../../components/Skeleton";
 import { Notice, useNotice } from "../../components/Notice";
 import { TaskIcon } from "../../components/TaskIcon";
+import { AppIcon } from "../../components/AppIcon";
 import { useI18n } from "../../i18n";
 import { addDays, formatLongDate } from "../../utils/date";
 import { TASKS, fetchSchedules, sortUsersByOrder } from "../../utils/schedule";
@@ -328,7 +329,7 @@ export const ControlUsers = () => {
   const cancelDelete = useCallback(() => setUserToDelete(null), []);
 
   if (loading) {
-    return <Loading />;
+    return <PageSkeleton variant="control" />;
   }
 
   if (error) {
@@ -357,6 +358,7 @@ export const ControlUsers = () => {
       orderColumn,
       todayIds,
       todayTaskKey: orderTask,
+      pairMode: orderTask === "cleaning",
       currentUserId,
       busy,
       swapSourceId: swapSource?.user_id,
@@ -384,7 +386,12 @@ export const ControlUsers = () => {
       <div className="container py-3 py-md-4">
         <div className="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
           <div className="text-start">
-            <h1 className="control__title fw-bold m-0">⚙️ {t("nav.controlUsers")}</h1>
+            <h1 className="control__title d-flex align-items-center gap-2 fw-bold m-0">
+              <span className="control__title-icon" aria-hidden="true">
+                <AppIcon name="sliders" />
+              </span>
+              {t("nav.controlUsers")}
+            </h1>
 
             <small className="text-muted">{formatLongDate(today, lang)}</small>
           </div>
@@ -434,7 +441,17 @@ export const ControlUsers = () => {
           ))}
         </div>
 
-        <p className="small text-muted text-start mb-3">{t("control.orderHint")}</p>
+        <p className="control__hint small text-muted text-start mb-3">
+          <AppIcon name="bulb" className="control__hint-icon" />
+          {t("control.orderHint")}
+        </p>
+
+        {orderTask === "cleaning" && (
+          <p className="control__hint control__hint--pairs small text-start mb-3">
+            <TaskIcon taskKey="cleaning" />
+            {t("control.pairHint")}
+          </p>
+        )}
 
         {swapSource && (
           <div className="control__swap-banner alert alert-primary d-flex flex-wrap align-items-center justify-content-between gap-2 py-2">
@@ -453,9 +470,15 @@ export const ControlUsers = () => {
         )}
 
         <div className="d-flex justify-content-between align-items-center mb-2 small text-muted">
-          <span className="d-none d-md-inline">{t("control.dragHint")}</span>
+          <span className="control__hint d-none d-md-inline">
+            <AppIcon name="bulb" className="control__hint-icon" />
+            {t("control.dragHint")}
+          </span>
 
-          <span className="d-md-none">{t("control.arrowsHint")}</span>
+          <span className="control__hint d-md-none">
+            <AppIcon name="bulb" className="control__hint-icon" />
+            {t("control.arrowsHint")}
+          </span>
 
           {busy && (
             <span className="text-primary text-nowrap ms-2">
@@ -479,6 +502,7 @@ export const ControlUsers = () => {
       <ConfirmModal
         isOpen={!!swapPair}
         title={t("control.swapModal.title")}
+        icon="swap"
         confirmLabel={t("control.swapModal.confirm")}
         confirmVariant="primary"
         loading={swapping}
@@ -520,6 +544,7 @@ export const ControlUsers = () => {
       <ConfirmModal
         isOpen={!!userToDelete}
         title={t("control.deleteModal.title")}
+        icon="trash"
         confirmLabel={t("control.deleteModal.confirm")}
         loading={deleting}
         onConfirm={handleDeleteConfirm}

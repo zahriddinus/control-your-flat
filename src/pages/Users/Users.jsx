@@ -1,11 +1,13 @@
 import "./users.scss";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabese";
-import { Loading } from "../../components/Loading";
+import { PageSkeleton } from "../../components/Skeleton";
 import { useI18n } from "../../i18n";
 import { Avatar } from "../../components/Avatar";
-import { formatDate } from "../../utils/date";
-import { TASKS } from "../../utils/schedule";
+import { AppIcon } from "../../components/AppIcon";
+import { TaskIcon } from "../../components/TaskIcon";
+import { TASKS, fetchSchedules } from "../../utils/schedule";
+import { queryWithCache } from "../../utils/offline";
 
 export const Users = () => {
   const { t } = useI18n();
@@ -18,10 +20,13 @@ export const Users = () => {
   useEffect(() => {
     const getUsers = async () => {
       // Faqat sahifada ko'rsatiladigan ustunlarni olamiz
-      const { data, error } = await supabase
-        .from("users")
-        .select("user_id, name, last_name, nickname, phone_number, duty_order")
-        .order("duty_order", { ascending: true });
+      // Internet bo'lmasa, oxirgi saqlangan ro'yxat ko'rsatiladi
+      const { data, error } = await queryWithCache("users:list", () =>
+        supabase
+          .from("users")
+          .select("user_id, name, last_name, nickname, phone_number, duty_order")
+          .order("duty_order", { ascending: true })
+      );
 
       if (error) {
         console.error(error);
@@ -35,16 +40,13 @@ export const Users = () => {
 
     // Bugungi navbatchilarni belgilash uchun. Xato bo'lsa, sahifa baribir ishlaydi
     const getTodaySchedule = async () => {
-      const { data, error } = await supabase.rpc("get_duty_schedule", {
-        target_date: formatDate(new Date()),
-      });
+      try {
+        const [schedule] = await fetchSchedules([new Date()]);
 
-      if (error) {
+        setTodaySchedule(schedule);
+      } catch (error) {
         console.error(error);
-        return;
       }
-
-      setTodaySchedule(data);
     };
 
     getUsers();
@@ -64,12 +66,10 @@ export const Users = () => {
   }, [data, search]);
 
   const getTodayTasks = (user) =>
-    TASKS.filter((task) => task.isAssigned(todaySchedule, user.user_id)).map((task) =>
-      t(`tasks.${task.key}.label`)
-    );
+    TASKS.filter((task) => task.isAssigned(todaySchedule, user.user_id));
 
   if (loading) {
-    return <Loading />;
+    return <PageSkeleton variant="users" />;
   }
 
   if (error) {
@@ -141,8 +141,9 @@ export const Users = () => {
                     {isOnDutyToday && (
                       <div className="d-flex flex-wrap gap-1 mb-3">
                         {todayTasks.map((task) => (
-                          <span className="badge text-bg-warning" key={task}>
-                            {t("users.todayTask", { task })}
+                          <span className="users__today-badge badge text-bg-warning" key={task.key}>
+                            <TaskIcon taskKey={task.key} />
+                            {t("users.todayTask", { task: t(`tasks.${task.key}.label`) })}
                           </span>
                         ))}
                       </div>
@@ -157,6 +158,7 @@ export const Users = () => {
                           rel="noopener noreferrer"
                           title="Telegram"
                         >
+                          <AppIcon name="send" className="me-1" />
                           {user.nickname}
                         </a>
                       ) : (
@@ -171,6 +173,7 @@ export const Users = () => {
                           href={`tel:${user.phone_number}`}
                           title={t("users.call")}
                         >
+                          <AppIcon name="phone" className="me-1" />
                           {user.phone_number}
                         </a>
                       ) : (

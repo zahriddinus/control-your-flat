@@ -1,10 +1,12 @@
 import "./home.scss";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabese";
-import { Loading } from "../../components/Loading";
+import { PageSkeleton } from "../../components/Skeleton";
 import { useI18n } from "../../i18n";
 import { addDays, formatDate, parseDate } from "../../utils/date";
 import { fetchSchedules } from "../../utils/schedule";
+import { queryWithCache } from "../../utils/offline";
+import { useMyUser } from "../../hooks/useMyUser";
 import { Greeting } from "./Greeting";
 import { WeatherCard } from "./WeatherCard";
 import { TodayTasks } from "./TodayTasks";
@@ -21,6 +23,7 @@ const getDaysAhead = (usersCount) => Math.max(7, usersCount * 3, 7 * Math.ceil(u
 export const Home = () => {
   const { t } = useI18n();
   const [users, setUsers] = useState([]);
+  const [myUserId, setMyUserId] = useMyUser();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [schedules, setSchedules] = useState([]);
@@ -32,10 +35,13 @@ export const Home = () => {
 
   useEffect(() => {
     const getUsers = async () => {
-      const { data, error } = await supabase
-        .from("users")
-        .select("user_id, name, last_name, duty_order")
-        .order("duty_order", { ascending: true });
+      // Internet bo'lmasa, oxirgi saqlangan ro'yxat ko'rsatiladi
+      const { data, error } = await queryWithCache("users:home", () =>
+        supabase
+          .from("users")
+          .select("user_id, name, last_name, duty_order")
+          .order("duty_order", { ascending: true })
+      );
 
       if (error) {
         console.error(error);
@@ -105,7 +111,7 @@ export const Home = () => {
   }, [today, users.length]);
 
   if (loading) {
-    return <Loading />;
+    return <PageSkeleton variant="home" />;
   }
 
   const renderSchedules = () => {
@@ -131,7 +137,7 @@ export const Home = () => {
 
         <div className="row g-3 mb-4">
           <div className="col-12 col-lg-6">
-            <MyTurn {...scheduleProps} />
+            <MyTurn {...scheduleProps} userId={myUserId} onUserChange={setMyUserId} />
           </div>
 
           <div className="col-12 col-lg-6">
@@ -147,7 +153,12 @@ export const Home = () => {
   return (
     <div className="home">
       <div className="container py-3 py-md-4">
-        <Greeting now={currentDate} />
+        <Greeting
+          now={currentDate}
+          me={users.find((user) => user.user_id === myUserId) ?? null}
+          schedules={schedules}
+          loading={schedulesLoading}
+        />
 
         <WeatherCard users={users} schedules={schedules} />
 

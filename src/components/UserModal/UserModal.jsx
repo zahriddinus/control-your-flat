@@ -2,6 +2,7 @@ import "./userModal.scss";
 import { useEffect, useState } from "react";
 import { useModalEffects } from "../../hooks/useModalEffects";
 import { useI18n } from "../../i18n";
+import { AppIcon } from "../AppIcon";
 import { Avatar } from "../Avatar";
 
 const EMPTY_FORM = {
@@ -16,8 +17,8 @@ const EMPTY_FORM = {
 };
 
 const ROLES = [
-  { value: "user", labelKey: "userModal.roleUser" },
-  { value: "admin", labelKey: "userModal.roleAdmin" },
+  { value: "user", icon: "user", labelKey: "userModal.roleUser" },
+  { value: "admin", icon: "shield", labelKey: "userModal.roleAdmin" },
 ];
 
 // Xatolar tarjima kaliti sifatida qaytadi: userModal.errors.*
@@ -211,7 +212,10 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
               {/* SHAXSIY MA'LUMOTLAR */}
 
               <section className="user-modal__section">
-                <h3 className="user-modal__section-title">{t("userModal.personal")}</h3>
+                <h3 className="user-modal__section-title">
+                  <AppIcon name="user" />
+                  {t("userModal.personal")}
+                </h3>
 
                 <div className="row g-2">
                   <div className="col-6">
@@ -274,6 +278,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                           aria-pressed={formData.role === role.value}
                           disabled={saving}
                         >
+                          <AppIcon name={role.icon} className="me-1" />
                           {t(role.labelKey)}
                         </button>
                       ))}
@@ -282,7 +287,8 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                 </div>
 
                 {formData.role === "admin" && (
-                  <div className="alert alert-warning small py-2 mt-3 mb-0">
+                  <div className="alert alert-warning small py-2 mt-3 mb-0 d-flex gap-2">
+                    <AppIcon name="alert" className="flex-shrink-0 mt-1" />
                     {t("userModal.adminWarning")}
                   </div>
                 )}
@@ -291,7 +297,10 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
               {/* ALOQA */}
 
               <section className="user-modal__section">
-                <h3 className="user-modal__section-title">{t("userModal.contact")}</h3>
+                <h3 className="user-modal__section-title">
+                  <AppIcon name="phone" />
+                  {t("userModal.contact")}
+                </h3>
 
                 <label htmlFor="user-nickname" className="form-label small">
                   {t("userModal.nickname")}
@@ -310,7 +319,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
 
                 <div className="input-group has-validation mb-2">
                   <span className="input-group-text" aria-hidden="true">
-                    📞
+                    <AppIcon name="phone" />
                   </span>
 
                   <input
@@ -327,7 +336,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
 
                 <div className="input-group has-validation">
                   <span className="input-group-text" aria-hidden="true">
-                    ✉️
+                    <AppIcon name="mail" />
                   </span>
 
                   <input type="email" placeholder="example@gmail.com" {...fieldProps("email")} />
@@ -338,7 +347,10 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
               {/* NAVBAT */}
 
               <section className="user-modal__section mb-0">
-                <h3 className="user-modal__section-title">{t("userModal.order")}</h3>
+                <h3 className="user-modal__section-title">
+                  <AppIcon name="calendar" />
+                  {t("userModal.order")}
+                </h3>
 
                 <label htmlFor="user-dutyOrder" className="form-label small">
                   {selectedUser ? t("userModal.orderEdit") : t("userModal.orderAdd")}
@@ -381,6 +393,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                 {saving && (
                   <span className="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
                 )}
+                {!saving && <AppIcon name={selectedUser ? "check" : "plus"} className="me-1" />}
                 {selectedUser ? t("userModal.save") : t("userModal.add")}
               </button>
             </div>

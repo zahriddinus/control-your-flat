@@ -1,5 +1,4 @@
 import { useI18n } from "../../i18n";
-import { useMyUser } from "../../hooks/useMyUser";
 import { addDays, formatDaysLeft, formatLongDate } from "../../utils/date";
 import { TASKS } from "../../utils/schedule";
 import { TaskIcon } from "../../components/TaskIcon";
@@ -11,14 +10,14 @@ const getBadgeClass = (days) => {
   return "text-bg-primary";
 };
 
-export const MyTurn = ({ users, schedules, today, loading }) => {
+// userId va onUserChange Home'dan keladi: salomlashish ham shu tanlovga qaraydi
+export const MyTurn = ({ users, schedules, today, loading, userId, onUserChange }) => {
   const { t, lang } = useI18n();
-  const [userId, setUserId] = useMyUser();
 
   const user = users.find((item) => item.user_id === userId);
 
   function handleChange(evt) {
-    setUserId(evt.target.value);
+    onUserChange(evt.target.value);
   }
 
   return (

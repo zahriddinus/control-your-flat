@@ -19,3 +19,13 @@ root.render(
     </I18nProvider>
   </React.StrictMode>
 );
+
+// Service worker: sayt ilovadek o'rnatiladi va internetsiz ham ochiladi (public/service-worker.js).
+// Dev rejimda yoqilmaydi, aks holda eski fayllar keshda qolib, o'zgarishlar ko'rinmay qoladi
+if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register(`${process.env.PUBLIC_URL}/service-worker.js`)
+      .catch((error) => console.error("Service worker error:", error));
+  });
+}

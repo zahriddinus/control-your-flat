@@ -42,3 +42,21 @@
     }
   }
 }
+
+// "Bugun: Navbatchi" belgisi: ichida vazifaning kichik ikonkasi
+.users__today-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 3px;
+
+  .task-icon {
+    width: 16px;
+    height: 16px;
+
+    svg {
+      width: 9px;
+      height: 9px;
+    }
+  }
+}

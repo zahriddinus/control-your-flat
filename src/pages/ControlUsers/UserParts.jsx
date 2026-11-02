@@ -1,3 +1,4 @@
+import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
 
@@ -41,9 +42,9 @@ export const EmailLink = ({ email }) => (email ? <a href={`mailto:${email}`}>{em
 // swapState: "idle" - hech kim tanlanmagan, "source" - shu odam tanlangan,
 // "target" - boshqasi tanlangan, shu odam bilan almashtirsa bo'ladi
 const SWAP_BUTTONS = {
-  idle: { className: "btn-outline-secondary", labelKey: "control.swap" },
-  source: { className: "btn-secondary", labelKey: "control.swapCancel" },
-  target: { className: "btn-primary", labelKey: "control.swapWith" },
+  idle: { className: "btn-outline-secondary", icon: "swap", labelKey: "control.swap" },
+  source: { className: "btn-secondary", icon: "close", labelKey: "control.swapCancel" },
+  target: { className: "btn-primary", icon: "swap", labelKey: "control.swapWith" },
 };
 
 export const UserActions = ({
@@ -67,6 +68,7 @@ export const UserActions = ({
         onClick={() => onSwap(user)}
         disabled={disabled}
       >
+        <AppIcon name={swapButton.icon} className="me-1" />
         {t(swapButton.labelKey)}
       </button>
 
@@ -76,6 +78,7 @@ export const UserActions = ({
         onClick={() => onEdit(user)}
         disabled={disabled}
       >
+        <AppIcon name="edit" className="me-1" />
         {t("control.edit")}
       </button>
 
@@ -86,6 +89,7 @@ export const UserActions = ({
         disabled={disabled || isSelf}
         title={isSelf ? t("control.selfDelete") : undefined}
       >
+        <AppIcon name="trash" className="me-1" />
         {t("control.delete")}
       </button>
     </>

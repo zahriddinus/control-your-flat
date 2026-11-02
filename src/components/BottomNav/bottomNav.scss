@@ -1,0 +1,104 @@
+// Pastki menyu balandligi: sahifa, footer va "yuqoriga" tugmasi shunga moslashadi
+$bottom-nav-height: 64px;
+
+.bottom-nav {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  .bottom-nav {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1045;
+    // iPhone'dagi pastki chiziq ustida tursin
+    padding-bottom: env(safe-area-inset-bottom);
+    border-top: 1px solid var(--bs-border-color);
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+
+    &__link {
+      position: relative;
+      flex: 1;
+      height: $bottom-nav-height;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--bs-secondary-color);
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.2s ease;
+
+      &.active {
+        color: #0d6efd;
+
+        .bottom-nav__icon {
+          color: #fff;
+          background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+          box-shadow: 0 3px 10px rgba(13, 110, 253, 0.35);
+          transform: translateY(-2px);
+        }
+
+        // Faol bo'lim ustidagi kichik nuqta
+        &::before {
+          content: "";
+          position: absolute;
+          top: 4px;
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background-color: #0d6efd;
+        }
+      }
+    }
+
+    &__icon {
+      width: 44px;
+      height: 28px;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      transition:
+        background-color 0.2s ease,
+        transform 0.2s ease;
+    }
+
+    &__label {
+      max-width: 100%;
+      padding: 0 4px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+  }
+
+  // Sahifaning oxirgi qismi menyu ostida qolib ketmasin
+  .App {
+    padding-bottom: calc(#{$bottom-nav-height} + env(safe-area-inset-bottom));
+  }
+
+  // "Yuqoriga" tugmasi menyudan yuqorida turadi
+  .scroll-top {
+    bottom: calc(#{$bottom-nav-height} + 16px + env(safe-area-inset-bottom));
+  }
+}
+
+[data-bs-theme="dark"] .bottom-nav {
+  background-color: rgba(27, 31, 36, 0.9);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-nav__icon {
+    transition: none;
+  }
+}

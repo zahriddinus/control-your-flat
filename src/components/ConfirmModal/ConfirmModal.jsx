@@ -1,9 +1,13 @@
+import "./confirmModal.scss";
 import { useModalEffects } from "../../hooks/useModalEffects";
 import { useI18n } from "../../i18n";
+import { AppIcon } from "../AppIcon";
 
 export const ConfirmModal = ({
   isOpen,
   title,
+  // AppIcon nomi: sarlavha oldida tasdiqlash rangidagi doirada chiqadi
+  icon,
   children,
   confirmLabel,
   // "danger" (o'chirish) yoki "primary" (oddiy tasdiqlash)
@@ -35,7 +39,18 @@ export const ConfirmModal = ({
         <div className="modal-dialog modal-dialog-centered">
           <div className="modal-content border-0 shadow rounded-4">
             <div className="modal-header border-0 pb-0">
-              <h2 className="modal-title fs-5 fw-bold" id="confirmModalLabel">
+              <h2
+                className="modal-title fs-5 fw-bold d-flex align-items-center gap-2"
+                id="confirmModalLabel"
+              >
+                {icon && (
+                  <span
+                    className={`confirm-modal__icon confirm-modal__icon--${confirmVariant}`}
+                    aria-hidden="true"
+                  >
+                    <AppIcon name={icon} />
+                  </span>
+                )}
                 {title}
               </h2>
 

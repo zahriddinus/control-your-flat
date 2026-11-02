@@ -1,6 +1,8 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Your Flat",
+  "name": "Control Your Flat",
+  "description": "Xonadon navbatlari: navbatchilik, musor va generalniy uborka bir joyda",
+  "lang": "uz",
   "icons": [
     {
       "src": "favicon.ico",
@@ -15,16 +17,20 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "start_url": ".",
+  "scope": ".",
   "display": "standalone",
-  "theme_color": "#000000",
+  "orientation": "portrait",
+  "theme_color": "#0d6efd",
   "background_color": "#ffffff"
 }

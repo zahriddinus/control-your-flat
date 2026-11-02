@@ -10,19 +10,19 @@ const AUTHOR_TELEGRAM = "zahriddinus";
 // Bepul API'lardan foydalanish sharti: manbalar ko'rsatilishi kerak
 const SOURCES = [
   {
-    icon: "🌦️",
+    icon: "weather",
     labelKey: "footer.weatherSource",
     name: "Open-Meteo",
     href: "https://open-meteo.com/",
   },
   {
-    icon: "🗺️",
+    icon: "map",
     labelKey: "footer.addressSource",
     name: "© OpenStreetMap",
     href: "https://www.openstreetmap.org/copyright",
   },
   {
-    icon: "📍",
+    icon: "pin",
     labelKey: "footer.fallbackAddressSource",
     name: "BigDataCloud",
     href: "https://www.bigdatacloud.com/",
@@ -62,6 +62,11 @@ export const Footer = () => {
               </Link>
 
               <p className="footer__muted mt-3 mb-0">{t("footer.description")}</p>
+
+              <span className="footer__place">
+                <AppIcon name="pin" />
+                {t("footer.place")}
+              </span>
             </div>
 
             {/* Havolalar */}
@@ -93,7 +98,9 @@ export const Footer = () => {
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      <span aria-hidden="true">{source.icon}</span>
+                      <span className="footer__source-icon" aria-hidden="true">
+                        <AppIcon name={source.icon} />
+                      </span>
                       <span>
                         <small className="footer__muted d-block">{t(source.labelKey)}</small>
                         {source.name}

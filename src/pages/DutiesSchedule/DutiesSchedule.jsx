@@ -1,7 +1,7 @@
 import "./dutiesSchedule.scss";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabese";
-import { Loading } from "../../components/Loading";
+import { PageSkeleton } from "../../components/Skeleton";
 import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
@@ -9,6 +9,7 @@ import { useMyUser } from "../../hooks/useMyUser";
 import { formatDate, formatLongDate, getMonthName } from "../../utils/date";
 import { TASKS, fetchSchedules, sortUsersByOrder } from "../../utils/schedule";
 import { buildIcs, downloadFile } from "../../utils/ics";
+import { queryWithCache } from "../../utils/offline";
 import { ScheduleTable } from "./ScheduleTable";
 import { MonthCalendar } from "./MonthCalendar";
 import { MonthStats } from "./MonthStats";
@@ -55,10 +56,12 @@ export const DutiesSchedule = () => {
   useEffect(() => {
     const getUsers = async () => {
       // Jadval va avatarlar uchun id, ism, familiya va har bir vazifaning tartibi kerak
-      const { data, error } = await supabase
-        .from("users")
-        .select("user_id, name, last_name, duty_order, rubbish_order, cleaning_order")
-        .order("duty_order", { ascending: true });
+      const { data, error } = await queryWithCache("users:schedule", () =>
+        supabase
+          .from("users")
+          .select("user_id, name, last_name, duty_order, rubbish_order, cleaning_order")
+          .order("duty_order", { ascending: true })
+      );
 
       if (error) {
         console.error(error);
@@ -248,7 +251,7 @@ export const DutiesSchedule = () => {
       .map((user) => user.name.trim());
 
   if (loading) {
-    return <Loading />;
+    return <PageSkeleton variant="schedule" />;
   }
 
   if (error) {

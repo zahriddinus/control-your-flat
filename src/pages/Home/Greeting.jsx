@@ -1,4 +1,6 @@
+import { TaskIcon } from "../../components/TaskIcon";
 import { WeatherIcon } from "../../components/WeatherIcon";
+import { TASKS } from "../../utils/schedule";
 import { useI18n } from "../../i18n";
 import { formatLongDate, getDayOfYear } from "../../utils/date";
 
@@ -90,10 +92,42 @@ const getGreeting = (hour) => {
   return { key: "night", scene: "clear", isDay: false };
 };
 
-export const Greeting = ({ now }) => {
+// me - "Mening navbatim"da tanlangan odam (bo'lmasa null)
+export const Greeting = ({ now, me, schedules, loading }) => {
   const { t, lang } = useI18n();
   const tip = TIPS[getDayOfYear(now) % TIPS.length];
   const greeting = getGreeting(now.getHours());
+  const greetingText = t(`home.greeting.${greeting.key}`);
+
+  // Shaxsiy salomlashish: ism bilan va bugun/ertaga mening vazifalarim
+  const title = me
+    ? t("home.greeting.titleNamed", { greeting: greetingText, name: me.name.trim() })
+    : t("home.greeting.title", { greeting: greetingText });
+
+  const getMyTasks = (schedule) =>
+    me ? TASKS.filter((task) => task.isAssigned(schedule, me.user_id)) : [];
+
+  const myDays = [
+    { key: "today", tasks: getMyTasks(schedules[0]) },
+    { key: "tomorrow", tasks: getMyTasks(schedules[1]) },
+  ].filter((day) => day.tasks.length);
+
+  const renderMyDuties = () => {
+    if (!myDays.length) return <span>{t("home.me.free")}</span>;
+
+    return myDays.map((day) => (
+      <span className="home__me-group" key={day.key}>
+        <span>{t(`home.me.${day.key}`)}</span>
+
+        {day.tasks.map((task) => (
+          <span className="home__me-chip" key={task.key}>
+            <TaskIcon taskKey={task.key} />
+            {t(`tasks.${task.key}.label`)}
+          </span>
+        ))}
+      </span>
+    ));
+  };
 
   return (
     <section className="home__greeting card border-0 shadow-sm mb-4 text-start">
@@ -102,11 +136,13 @@ export const Greeting = ({ now }) => {
           <div className="flex-grow-1">
             <p className="home__date mb-1">{formatLongDate(now, lang)}</p>
 
-            <h1 className="home__title fw-bold mb-1">
-              {t("home.greeting.title", { greeting: t(`home.greeting.${greeting.key}`) })}
-            </h1>
+            <h1 className="home__title fw-bold mb-1">{title}</h1>
 
-            <p className="home__subtitle m-0">{t("home.greeting.subtitle")}</p>
+            {me && !loading ? (
+              <div className="home__me">{renderMyDuties()}</div>
+            ) : (
+              <p className="home__subtitle m-0">{t("home.greeting.subtitle")}</p>
+            )}
           </div>
 
           <div className="home__greeting-scene">
