@@ -50,6 +50,7 @@ export const DutiesSchedule = () => {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const dateRef = useRef();
+  const filterRef = useRef();
 
   // GET USERS
 
@@ -217,6 +218,21 @@ export const DutiesSchedule = () => {
     : [];
 
   function handleDownloadIcs() {
+    // Ism tanlanmagan bo'lsa, "Kimniki" ro'yxatini ochib, tanlashni so'raymiz
+    if (!filterUser) {
+      const select = filterRef.current;
+
+      select?.focus();
+
+      try {
+        select?.showPicker();
+      } catch {
+        // Eski brauzerlarda showPicker yo'q, fokus yetarli
+      }
+
+      return;
+    }
+
     const events = myEvents.map(({ day, task }) => ({
       date: new Date(year, month, day),
       taskKey: task.key,
@@ -359,6 +375,7 @@ export const DutiesSchedule = () => {
           </div>
 
           <select
+            ref={filterRef}
             className="schedule__filter form-select form-select-sm"
             value={filterUser ? filterUserId : ""}
             onChange={handleFilterChange}
@@ -379,7 +396,7 @@ export const DutiesSchedule = () => {
             type="button"
             className="schedule__ics-btn btn btn-sm d-inline-flex align-items-center gap-1 ms-md-auto"
             onClick={handleDownloadIcs}
-            disabled={!filterUser || schedulesLoading || !myEvents.length}
+            disabled={filterUser && (schedulesLoading || !myEvents.length)}
             title={icsTitle}
           >
             <AppIcon name="calendarPlus" />
