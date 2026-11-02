@@ -32,7 +32,7 @@ const VIEWS = [
 
 export const DutiesSchedule = () => {
   const { t, lang } = useI18n();
-  const [myUserId, setMyUserId] = useMyUser();
+  const [, setMyUserId] = useMyUser();
 
   const [monthSchedules, setMonthSchedules] = useState({});
   const [data, setData] = useState([]);
@@ -43,8 +43,8 @@ export const DutiesSchedule = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState(readView);
 
-  // "Kimniki" filtri. Boshida o'zim (Home'dagi "Mening navbatim" tanlovi)
-  const [filterUserId, setFilterUserId] = useState(myUserId);
+  // "Kimniki" filtri. Sahifa ochilganda doim "Hammasi"
+  const [filterUserId, setFilterUserId] = useState("");
 
   // null bo'lsa bugungi kun ko'rsatiladi
   const [selectedDate, setSelectedDate] = useState(null);

@@ -13,12 +13,6 @@ export const en = {
 
   common: {
     loading: "Loading...",
-    loadingPhrases: [
-      "Counting the duties",
-      "Calling the flatmates",
-      "Flipping the calendar",
-      "Looking for the broom 🧹",
-    ],
     cancel: "Cancel",
     close: "Close",
     confirm: "Confirm",
@@ -298,9 +292,7 @@ export const en = {
       dragTitle: "Drag to change the order",
       user: "User",
       age: "Age",
-      nickname: "Nickname",
-      phone: "Phone",
-      email: "Email",
+      contact: "Contact",
       actions: "Actions",
     },
     roles: {

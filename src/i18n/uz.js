@@ -13,12 +13,6 @@ export const uz = {
 
   common: {
     loading: "Yuklanmoqda...",
-    loadingPhrases: [
-      "Navbatlar hisoblanmoqda",
-      "Xonadoshlar chaqirilmoqda",
-      "Kalendar varaqlanmoqda",
-      "Supurgi qidirilmoqda 🧹",
-    ],
     cancel: "Bekor qilish",
     close: "Yopish",
     confirm: "Tasdiqlash",
@@ -297,9 +291,7 @@ export const uz = {
       dragTitle: "Sudrab navbatni o'zgartiring",
       user: "User",
       age: "Yosh",
-      nickname: "Nickname",
-      phone: "Telefon",
-      email: "Email",
+      contact: "Aloqa",
       actions: "Amallar",
     },
     roles: {

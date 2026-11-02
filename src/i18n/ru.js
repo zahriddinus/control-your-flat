@@ -13,7 +13,6 @@ export const ru = {
 
   common: {
     loading: "Загрузка...",
-    loadingPhrases: ["Считаем дежурства", "Зовём соседей", "Листаем календарь", "Ищем веник 🧹"],
     cancel: "Отмена",
     close: "Закрыть",
     confirm: "Подтвердить",
@@ -308,9 +307,7 @@ export const ru = {
       dragTitle: "Перетащите, чтобы изменить очередь",
       user: "Пользователь",
       age: "Возраст",
-      nickname: "Ник",
-      phone: "Телефон",
-      email: "Email",
+      contact: "Контакты",
       actions: "Действия",
     },
     roles: {

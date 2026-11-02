@@ -214,7 +214,7 @@
   // CONTROL USERS
 
   .control__table-wrapper {
-    background-color: var(--bs-body-bg);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   }
 
   .control__row--today > * {
@@ -226,7 +226,7 @@
   }
 
   .control__handle {
-    color: #6c757d;
+    color: #495057;
   }
 
   .control__order {
@@ -268,5 +268,9 @@
 [data-bs-theme="dark"] {
   .control__row--swap > * {
     background-color: rgba(13, 110, 253, 0.22) !important;
+  }
+
+  .control__pair-badge {
+    color: #6ea8fe;
   }
 }

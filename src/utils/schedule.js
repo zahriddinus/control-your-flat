@@ -31,7 +31,7 @@ export const sortUsersByOrder = (users, orderColumn) =>
       (a.duty_order ?? Infinity) - (b.duty_order ?? Infinity)
   );
 
-export const getAssignedUsers = (users, task, schedule) =>
+const getAssignedUsers = (users, task, schedule) =>
   users.filter((user) => task.isAssigned(schedule, user.user_id));
 
 // "Eldor, Odilbek". Bazadagi ismlar oxirida bo'sh joy bo'lishi mumkin, shuning uchun trim

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AppIcon } from "../../components/AppIcon";
 import { Avatar } from "../../components/Avatar";
 import { useI18n } from "../../i18n";
 import { EmailLink, NicknameLink, PhoneLink, RoleBadges, UserActions } from "./UserParts";
@@ -62,17 +63,17 @@ export const UsersTable = ({
       .join(" ");
 
   return (
-    <div className="control__table-wrapper table-responsive d-none d-md-block shadow-sm">
+    <div
+      className={`control__table-wrapper control__table-wrapper--${todayTaskKey} table-responsive d-none d-md-block`}
+    >
       <table className="control__table table align-middle m-0">
         <thead>
           <tr>
             <th aria-label={t("control.table.drag")}></th>
             <th>#</th>
             <th>{t("control.table.user")}</th>
-            <th>{t("control.table.age")}</th>
-            <th>{t("control.table.nickname")}</th>
-            <th>{t("control.table.phone")}</th>
-            <th>{t("control.table.email")}</th>
+            <th className="text-center">{t("control.table.age")}</th>
+            <th>{t("control.table.contact")}</th>
             <th className="text-end">{t("control.table.actions")}</th>
           </tr>
         </thead>
@@ -101,11 +102,18 @@ export const UsersTable = ({
               onDragEnd={resetDrag}
             >
               <td className="control__handle" title={t("control.table.dragTitle")}>
-                ⠿
+                <svg viewBox="0 0 10 16" width="10" height="16" aria-hidden="true">
+                  {[3, 8, 13].map((y) => (
+                    <g key={y}>
+                      <circle cx="2.5" cy={y} r="1.4" />
+                      <circle cx="7.5" cy={y} r="1.4" />
+                    </g>
+                  ))}
+                </svg>
               </td>
 
-              <th>
-                {user[orderColumn]}
+              <th className="control__order-cell">
+                <span className="control__order-badge">{user[orderColumn]}</span>
 
                 {pairMode && isPairStart(user) && (
                   <span className="control__pair-badge">
@@ -115,12 +123,16 @@ export const UsersTable = ({
               </th>
 
               <td>
-                <div className="d-flex align-items-center gap-2">
+                <div className="d-flex align-items-center gap-3">
                   <Avatar user={user} size="sm" />
 
                   <div className="text-start lh-sm">
-                    <span className="fw-semibold d-block">
+                    <span className="control__name d-block">
                       {user.name} {user.last_name}
+                    </span>
+
+                    <span className="control__nickname">
+                      <NicknameLink nickname={user.nickname} />
                     </span>
 
                     <RoleBadges
@@ -132,22 +144,27 @@ export const UsersTable = ({
                 </div>
               </td>
 
-              <td>{user.age}</td>
-
-              <td>
-                <NicknameLink nickname={user.nickname} />
+              <td className="text-center">
+                <span className="control__age">{user.age ?? "—"}</span>
               </td>
 
-              <td>
-                <PhoneLink phone={user.phone_number} />
-              </td>
+              <td className="control__contact">
+                <span className="d-block">
+                  <AppIcon name="phone" className="control__contact-icon" />
+                  <PhoneLink phone={user.phone_number} />
+                </span>
 
-              <td>
-                <EmailLink email={user.email} />
+                {user.email && (
+                  <span className="d-block">
+                    <AppIcon name="mail" className="control__contact-icon" />
+                    <EmailLink email={user.email} />
+                  </span>
+                )}
               </td>
 
               <td className="text-end text-nowrap">
                 <UserActions
+                  compact
                   user={user}
                   isSelf={user.user_id === currentUserId}
                   disabled={busy}

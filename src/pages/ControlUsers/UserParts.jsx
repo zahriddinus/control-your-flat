@@ -47,8 +47,10 @@ const SWAP_BUTTONS = {
   target: { className: "btn-primary", icon: "swap", labelKey: "control.swapWith" },
 };
 
+// compact - jadval uchun faqat ikonkalar, nomi esa tooltip'da
 export const UserActions = ({
   user,
+  compact = false,
   isSelf,
   disabled,
   swapState = "idle",
@@ -59,6 +61,47 @@ export const UserActions = ({
   const { t } = useI18n();
 
   const swapButton = SWAP_BUTTONS[swapState];
+
+  if (compact) {
+    const deleteTitle = isSelf ? t("control.selfDelete") : t("control.delete");
+
+    return (
+      <div className="control__actions">
+        <button
+          className={`control__icon-btn control__icon-btn--swap control__icon-btn--${swapState}`}
+          type="button"
+          onClick={() => onSwap(user)}
+          disabled={disabled}
+          title={t(swapButton.labelKey)}
+          aria-label={t(swapButton.labelKey)}
+        >
+          <AppIcon name={swapButton.icon} />
+        </button>
+
+        <button
+          className="control__icon-btn control__icon-btn--edit"
+          type="button"
+          onClick={() => onEdit(user)}
+          disabled={disabled}
+          title={t("control.edit")}
+          aria-label={t("control.edit")}
+        >
+          <AppIcon name="edit" />
+        </button>
+
+        <button
+          className="control__icon-btn control__icon-btn--delete"
+          type="button"
+          onClick={() => onDelete(user)}
+          disabled={disabled || isSelf}
+          title={deleteTitle}
+          aria-label={deleteTitle}
+        >
+          <AppIcon name="trash" />
+        </button>
+      </div>
+    );
+  }
 
   return (
     <>

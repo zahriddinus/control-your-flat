@@ -81,34 +81,79 @@
     font-weight: 700;
   }
 
-  // Jadval
+  // Jadval: hamma tablarda bir xil ko'k rang (--task-accent)
   &__table-wrapper {
-    border-radius: 12px;
-    background-color: #fff;
+    --task-accent: #0d6efd;
+    --task-gradient: linear-gradient(135deg, #3b82f6 0%, #0d6efd 100%);
+    --task-soft: rgba(13, 110, 253, 0.1);
+
+    border: 1px solid var(--bs-border-color-translucent);
+    border-radius: 16px;
+    background-color: var(--bs-body-bg);
+    box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06);
   }
 
   &__table {
     th,
     td {
+      padding: 12px 10px;
+      border-color: var(--bs-border-color-translucent);
       white-space: nowrap;
     }
 
     thead th {
-      color: #6c757d;
-      font-size: 0.85rem;
-      font-weight: 600;
+      padding-top: 14px;
+      padding-bottom: 14px;
+      color: var(--bs-secondary-color);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background-color: var(--bs-tertiary-bg);
+    }
+
+    thead th:first-child {
+      border-top-left-radius: 16px;
+    }
+
+    thead th:last-child {
+      border-top-right-radius: 16px;
+    }
+
+    tbody tr:last-child > * {
+      border-bottom: 0;
     }
   }
 
   &__row {
-    transition: opacity 0.2s ease;
+    transition:
+      opacity 0.2s ease,
+      background-color 0.2s ease;
+
+    > * {
+      transition: background-color 0.2s ease;
+    }
+
+    &:hover > * {
+      background-color: var(--task-soft);
+    }
+
+    // Qatorni ushlab sudrash mumkinligini sezdirish
+    &:hover .control__handle {
+      color: var(--task-accent);
+    }
 
     &[draggable="true"] {
       cursor: grab;
     }
 
+    // Bugungi navbatchi: chapda vazifa rangidagi chiziq
     &--today > * {
       background-color: #fff8e1 !important;
+    }
+
+    &--today > :first-child {
+      box-shadow: inset 4px 0 0 #ffc107;
     }
 
     &--dragging {
@@ -117,15 +162,156 @@
 
     // Qator qayerga tushishini ko'rsatadigan chiziq
     &--over > * {
-      box-shadow: inset 0 3px 0 #0d6efd !important;
+      box-shadow: inset 0 3px 0 var(--task-accent) !important;
     }
   }
 
   &__handle {
-    width: 32px;
-    color: #adb5bd;
-    font-size: 1.1rem;
+    width: 28px;
+    color: #ced4da;
     user-select: none;
+
+    svg {
+      display: block;
+      margin: 0 auto;
+      fill: currentColor;
+    }
+  }
+
+  // Tartib raqami: vazifa rangidagi doira
+  &__order-cell {
+    width: 72px;
+    text-align: center;
+  }
+
+  &__order-badge {
+    width: 34px;
+    height: 34px;
+    margin: 0 auto;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    background: var(--task-gradient);
+    box-shadow: 0 3px 8px rgba(15, 23, 42, 0.15);
+  }
+
+  &__name {
+    font-weight: 600;
+  }
+
+  &__nickname {
+    display: block;
+    margin: 2px 0 4px;
+    font-size: 0.8rem;
+
+    a {
+      color: var(--bs-secondary-color);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--task-accent);
+      }
+    }
+  }
+
+  &__age {
+    display: inline-block;
+    min-width: 36px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background-color: var(--bs-tertiary-bg);
+  }
+
+  &__contact {
+    font-size: 0.85rem;
+    line-height: 1.6;
+
+    a {
+      color: var(--bs-body-color);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--task-accent);
+        text-decoration: underline;
+      }
+    }
+  }
+
+  &__contact-icon {
+    margin-right: 6px;
+    color: var(--bs-secondary-color);
+    vertical-align: -2px;
+  }
+
+  // Ixcham amal tugmalari
+  &__actions {
+    display: inline-flex;
+    gap: 6px;
+  }
+
+  &__icon-btn {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 1px solid var(--bs-border-color);
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--bs-secondary-color);
+    font-size: 1rem;
+    background-color: var(--bs-body-bg);
+    transition:
+      color 0.15s ease,
+      border-color 0.15s ease,
+      background-color 0.15s ease,
+      transform 0.15s ease;
+
+    &:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    &--swap:hover:not(:disabled),
+    &--edit:hover:not(:disabled) {
+      color: #0d6efd;
+      border-color: #0d6efd;
+      background-color: rgba(13, 110, 253, 0.08);
+    }
+
+    &--delete:hover:not(:disabled) {
+      color: #dc3545;
+      border-color: #dc3545;
+      background-color: rgba(220, 53, 69, 0.08);
+    }
+
+    // Almashtirish jarayoni: tanlangan odam va u bilan almashsa bo'ladiganlar
+    &--source {
+      color: #fff;
+      border-color: #6c757d;
+      background-color: #6c757d;
+    }
+
+    &--target {
+      color: #fff;
+      border-color: #0d6efd;
+      background-color: #0d6efd;
+
+      &:hover:not(:disabled) {
+        color: #fff !important;
+        background-color: #0b5ed7 !important;
+      }
+    }
   }
 
   // Mobil kartochkalar
@@ -187,6 +373,49 @@
 
   &__card--swap {
     box-shadow: 0 0 0 2px #0d6efd !important;
+  }
+
+  // Uborka juftliklari: juftlik boshida belgi va ular orasida ajratuvchi chiziq
+  &__pair-badge {
+    display: block;
+    width: fit-content;
+    margin: 4px auto 0;
+    padding: 2px 8px;
+    border: 1px solid rgba(13, 110, 253, 0.25);
+    border-radius: 999px;
+    color: #0d6efd;
+    font-size: 0.68rem;
+    font-weight: 600;
+    white-space: nowrap;
+    background-color: rgba(13, 110, 253, 0.08);
+  }
+
+  &__card &__pair-badge {
+    margin: 0 0 4px;
+  }
+
+  &__row--pair-start:not(:first-child) > * {
+    border-top: 2px solid rgba(13, 110, 253, 0.35) !important;
+  }
+
+  &__card--pair-odd {
+    border-left: 4px solid #0d6efd !important;
+  }
+
+  &__card--pair-even {
+    border-left: 4px solid #6ea8fe !important;
+  }
+
+  &__hint--pairs .task-icon {
+    width: 18px;
+    height: 18px;
+    margin-right: 6px;
+    vertical-align: middle;
+
+    svg {
+      width: 10px;
+      height: 10px;
+    }
   }
 
   &__swap-arrow {
