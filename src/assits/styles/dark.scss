@@ -263,3 +263,10 @@
     background-color: rgba(13, 110, 253, 0.16);
   }
 }
+
+// CONTROL USERS: almashtirish uchun tanlangan qator (qorong'i)
+[data-bs-theme="dark"] {
+  .control__row--swap > * {
+    background-color: rgba(13, 110, 253, 0.22) !important;
+  }
+}

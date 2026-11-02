@@ -56,7 +56,7 @@ export const uz = {
   },
 
   login: {
-    title: "🔐 Admin kirishi",
+    title: "Admin kirishi",
     subtitle: "Bu bo'lim faqat adminlar uchun",
     email: "Email",
     password: "Parol",
@@ -284,11 +284,24 @@ export const uz = {
       admin: "Admin",
       user: "User",
     },
-    todayBadge: "⭐ Bugun",
+    todayBadge: "Bugun",
     age: "{count} yosh",
     edit: "✏️ Tahrirlash",
     delete: "🗑️ O'chirish",
     selfDelete: "O'zingizni o'chira olmaysiz",
+    orderTabsLabel: "Qaysi vazifa tartibi",
+    orderHint:
+      "💡 Har bir vazifaning o'z tartibi bor. O'zgarishlar ertadan kuchga kiradi: bugungi va o'tgan kunlar o'zgarmaydi.",
+    swap: "⇄ Almashtirish",
+    swapCancel: "✕ Bekor qilish",
+    swapWith: "⇄ Shu bilan",
+    swapPick: "{name} tanlandi. Kim bilan o'rin almashtirasiz?",
+    swapModal: {
+      title: "⇄ O'rin almashtirish",
+      question: "{a} va {b} o'rin almashadi.",
+      task: "Tartib: {task}. Qolganlar joyida qoladi.",
+      confirm: "Almashtirish",
+    },
     moveUp: "{name}ni yuqoriga surish",
     moveDown: "{name}ni pastga surish",
     notices: {
@@ -301,6 +314,8 @@ export const uz = {
       moved: "↕️ {name} endi {order}-o'rinda",
       deleteError: "O'chirib bo'lmadi: {error}",
       deleted: "🗑️ {name} o'chirildi",
+      swapped: "⇄ {a} va {b} o'rin almashdi",
+      swapError: "Almashtirib bo'lmadi: {error}",
     },
     deleteModal: {
       title: "🗑️ Userni o'chirish",

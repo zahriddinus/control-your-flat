@@ -61,7 +61,7 @@ export const ru = {
   },
 
   login: {
-    title: "🔐 Вход для админа",
+    title: "Вход для админа",
     subtitle: "Этот раздел только для администраторов",
     email: "Email",
     password: "Пароль",
@@ -300,7 +300,7 @@ export const ru = {
       admin: "Админ",
       user: "Пользователь",
     },
-    todayBadge: "⭐ Сегодня",
+    todayBadge: "Сегодня",
     age: {
       one: "{count} год",
       few: "{count} года",
@@ -310,6 +310,19 @@ export const ru = {
     edit: "✏️ Изменить",
     delete: "🗑️ Удалить",
     selfDelete: "Нельзя удалить самого себя",
+    orderTabsLabel: "Порядок какой задачи",
+    orderHint:
+      "💡 У каждой задачи свой порядок. Изменения вступают в силу с завтрашнего дня: сегодня и прошлые дни не меняются.",
+    swap: "⇄ Поменять",
+    swapCancel: "✕ Отмена",
+    swapWith: "⇄ С этим",
+    swapPick: "Выбран(а) {name}. С кем поменять местами?",
+    swapModal: {
+      title: "⇄ Обмен местами",
+      question: "{a} и {b} поменяются местами.",
+      task: "Порядок: {task}. Остальные остаются на своих местах.",
+      confirm: "Поменять",
+    },
     moveUp: "Поднять {name} выше",
     moveDown: "Опустить {name} ниже",
     notices: {
@@ -322,6 +335,8 @@ export const ru = {
       moved: "↕️ {name} теперь на {order}-м месте",
       deleteError: "Не удалось удалить: {error}",
       deleted: "🗑️ {name} удалён(а)",
+      swapped: "⇄ {a} и {b} поменялись местами",
+      swapError: "Не удалось поменять: {error}",
     },
     deleteModal: {
       title: "🗑️ Удаление пользователя",

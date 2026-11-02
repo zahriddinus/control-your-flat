@@ -6,10 +6,14 @@ import { EmailLink, NicknameLink, PhoneLink, RoleBadges, UserActions } from "./U
 // Katta ekran uchun: qatorni sudrab navbatni o'zgartirish mumkin
 export const UsersTable = ({
   users,
-  todayDutyId,
+  orderColumn,
+  todayIds,
+  todayTaskKey,
   currentUserId,
   busy,
+  swapSourceId,
   onMove,
+  onSwap,
   onEdit,
   onDelete,
 }) => {
@@ -28,14 +32,22 @@ export const UsersTable = ({
     resetDrag();
 
     if (draggedUser && draggedUser.user_id !== targetUser.user_id) {
-      onMove(draggedUser, targetUser.duty_order);
+      onMove(draggedUser, targetUser[orderColumn]);
     }
   }
+
+  // "source" - almashtirish uchun tanlangan, "target" - u bilan almashtirsa bo'ladi
+  const getSwapState = (user) => {
+    if (!swapSourceId) return "idle";
+
+    return user.user_id === swapSourceId ? "source" : "target";
+  };
 
   const getRowClass = (user) =>
     [
       "control__row",
-      user.user_id === todayDutyId && "control__row--today",
+      todayIds.includes(user.user_id) && "control__row--today",
+      user.user_id === swapSourceId && "control__row--swap",
       user.user_id === draggedId && "control__row--dragging",
       user.user_id === overId && user.user_id !== draggedId && "control__row--over",
     ]
@@ -85,7 +97,7 @@ export const UsersTable = ({
                 ⠿
               </td>
 
-              <th>{user.duty_order}</th>
+              <th>{user[orderColumn]}</th>
 
               <td>
                 <div className="d-flex align-items-center gap-2">
@@ -96,7 +108,11 @@ export const UsersTable = ({
                       {user.name} {user.last_name}
                     </span>
 
-                    <RoleBadges user={user} isToday={user.user_id === todayDutyId} />
+                    <RoleBadges
+                      user={user}
+                      isToday={todayIds.includes(user.user_id)}
+                      taskKey={todayTaskKey}
+                    />
                   </div>
                 </div>
               </td>
@@ -120,6 +136,8 @@ export const UsersTable = ({
                   user={user}
                   isSelf={user.user_id === currentUserId}
                   disabled={busy}
+                  swapState={getSwapState(user)}
+                  onSwap={onSwap}
                   onEdit={onEdit}
                   onDelete={onDelete}
                 />

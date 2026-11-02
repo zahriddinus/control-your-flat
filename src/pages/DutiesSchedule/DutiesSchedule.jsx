@@ -7,7 +7,7 @@ import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
 import { useMyUser } from "../../hooks/useMyUser";
 import { formatDate, formatLongDate, getMonthName } from "../../utils/date";
-import { TASKS, fetchSchedules } from "../../utils/schedule";
+import { TASKS, fetchSchedules, sortUsersByOrder } from "../../utils/schedule";
 import { buildIcs, downloadFile } from "../../utils/ics";
 import { ScheduleTable } from "./ScheduleTable";
 import { MonthCalendar } from "./MonthCalendar";
@@ -54,10 +54,10 @@ export const DutiesSchedule = () => {
 
   useEffect(() => {
     const getUsers = async () => {
-      // Jadval va avatarlar uchun id, ism va familiya kerak
+      // Jadval va avatarlar uchun id, ism, familiya va har bir vazifaning tartibi kerak
       const { data, error } = await supabase
         .from("users")
-        .select("user_id, name, last_name")
+        .select("user_id, name, last_name, duty_order, rubbish_order, cleaning_order")
         .order("duty_order", { ascending: true });
 
       if (error) {
@@ -448,6 +448,7 @@ export const DutiesSchedule = () => {
               days={days}
               isAssigned={task.isAssigned}
               {...viewProps}
+              users={sortUsersByOrder(data, task.orderColumn)}
             />
           ))
         )}

@@ -1,23 +1,34 @@
 import { supabase } from "../lib/supabese";
 import { formatDate } from "./date";
 
-// Har bir vazifa: user o'sha kuni shu vazifadami.
+// Har bir vazifa: user o'sha kuni shu vazifadami va u qaysi tartib ustuni bo'yicha aylanadi.
 // Nomlari tarjimada: t(`tasks.${task.key}.title`) va t(`tasks.${task.key}.label`)
 export const TASKS = [
   {
     key: "duty",
+    orderColumn: "duty_order",
     isAssigned: (schedule, userId) => schedule?.duty?.user_id === userId,
   },
   {
     key: "rubbish",
+    orderColumn: "rubbish_order",
     isAssigned: (schedule, userId) => schedule?.rubbish?.user_id === userId,
   },
   {
     key: "cleaning",
+    orderColumn: "cleaning_order",
     isAssigned: (schedule, userId) =>
       schedule?.cleaning?.some((cleaningUser) => cleaningUser.user_id === userId) ?? false,
   },
 ];
+
+// Userlarni berilgan vazifa tartibi bo'yicha saralaydi (bo'sh qiymatlar oxirida)
+export const sortUsersByOrder = (users, orderColumn) =>
+  [...users].sort(
+    (a, b) =>
+      (a[orderColumn] ?? Infinity) - (b[orderColumn] ?? Infinity) ||
+      (a.duty_order ?? Infinity) - (b.duty_order ?? Infinity)
+  );
 
 export const getAssignedUsers = (users, task, schedule) =>
   users.filter((user) => task.isAssigned(schedule, user.user_id));

@@ -56,7 +56,7 @@ export const en = {
   },
 
   login: {
-    title: "🔐 Admin login",
+    title: "Admin login",
     subtitle: "This section is for admins only",
     email: "Email",
     password: "Password",
@@ -286,11 +286,24 @@ export const en = {
       admin: "Admin",
       user: "User",
     },
-    todayBadge: "⭐ Today",
+    todayBadge: "Today",
     age: { one: "{count} year old", other: "{count} years old" },
     edit: "✏️ Edit",
     delete: "🗑️ Delete",
     selfDelete: "You can't delete yourself",
+    orderTabsLabel: "Which task's order",
+    orderHint:
+      "💡 Each task has its own order. Changes take effect from tomorrow: today and past days stay the same.",
+    swap: "⇄ Swap",
+    swapCancel: "✕ Cancel",
+    swapWith: "⇄ With this one",
+    swapPick: "{name} selected. Who should they swap with?",
+    swapModal: {
+      title: "⇄ Swap places",
+      question: "{a} and {b} will swap places.",
+      task: "Order: {task}. Everyone else stays put.",
+      confirm: "Swap",
+    },
     moveUp: "Move {name} up",
     moveDown: "Move {name} down",
     notices: {
@@ -303,6 +316,8 @@ export const en = {
       moved: "↕️ {name} is now at position {order}",
       deleteError: "Couldn't delete: {error}",
       deleted: "🗑️ {name} deleted",
+      swapped: "⇄ {a} and {b} swapped places",
+      swapError: "Couldn't swap: {error}",
     },
     deleteModal: {
       title: "🗑️ Delete user",

@@ -5,12 +5,16 @@ import { EmailLink, NicknameLink, PhoneLink, RoleBadges, UserActions } from "./U
 // Telefon uchun: navbat ↑ ↓ tugmalari bilan o'zgaradi
 export const UserCards = ({
   users,
+  orderColumn,
   firstUserId,
   lastUserId,
-  todayDutyId,
+  todayIds,
+  todayTaskKey,
   currentUserId,
   busy,
+  swapSourceId,
   onMoveStep,
+  onSwap,
   onEdit,
   onDelete,
 }) => {
@@ -19,16 +23,18 @@ export const UserCards = ({
   return (
     <div className="d-md-none d-flex flex-column gap-3">
       {users.map((user) => {
-        const isToday = user.user_id === todayDutyId;
+        const isToday = todayIds.includes(user.user_id);
 
         return (
           <div
-            className={`control__card card border-0 shadow-sm ${isToday ? "control__card--today" : ""}`}
+            className={`control__card card border-0 shadow-sm ${isToday ? "control__card--today" : ""} ${
+              user.user_id === swapSourceId ? "control__card--swap" : ""
+            }`}
             key={user.user_id}
           >
             <div className="card-body text-start">
               <div className="d-flex align-items-center gap-3 mb-2">
-                <span className="control__order">#{user.duty_order}</span>
+                <span className="control__order">#{user[orderColumn]}</span>
 
                 <Avatar user={user} />
 
@@ -37,7 +43,7 @@ export const UserCards = ({
                     {user.name} {user.last_name}
                   </span>
 
-                  <RoleBadges user={user} isToday={isToday} />
+                  <RoleBadges user={user} isToday={isToday} taskKey={todayTaskKey} />
                 </div>
 
                 <div className="btn-group-vertical btn-group-sm">
@@ -80,6 +86,10 @@ export const UserCards = ({
                 user={user}
                 isSelf={user.user_id === currentUserId}
                 disabled={busy}
+                swapState={
+                  !swapSourceId ? "idle" : user.user_id === swapSourceId ? "source" : "target"
+                }
+                onSwap={onSwap}
                 onEdit={onEdit}
                 onDelete={onDelete}
               />

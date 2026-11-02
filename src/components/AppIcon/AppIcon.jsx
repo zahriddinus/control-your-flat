@@ -33,6 +33,37 @@ const ICONS = {
     </>
   ),
   check: <path d="m3 8.5 3 3 7-7" />,
+  lock: (
+    <>
+      <rect x="3" y="7" width="10" height="7.5" rx="1.5" />
+      <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2M8 10v1.5" />
+    </>
+  ),
+  mail: (
+    <>
+      <rect x="1.5" y="3" width="13" height="10" rx="1.5" />
+      <path d="m2 4 6 5 6-5" />
+    </>
+  ),
+  eye: (
+    <>
+      <path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" />
+      <circle cx="8" cy="8" r="2" />
+    </>
+  ),
+  eyeOff: (
+    <>
+      <path d="M1.5 8S4 3.5 8 3.5 14.5 8 14.5 8 12 12.5 8 12.5 1.5 8 1.5 8z" />
+      <circle cx="8" cy="8" r="2" />
+      <path d="m2.5 2.5 11 11" />
+    </>
+  ),
+  alert: (
+    <>
+      <circle cx="8" cy="8" r="6.5" />
+      <path d="M8 4.8v3.7M8 11.2h.01" />
+    </>
+  ),
   table: (
     <>
       <rect x="2" y="2.5" width="12" height="11" rx="1.5" />

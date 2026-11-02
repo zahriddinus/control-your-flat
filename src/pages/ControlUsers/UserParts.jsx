@@ -1,8 +1,10 @@
+import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
 
 // Jadval va mobil kartochkalar uchun umumiy bo'laklar
 
-export const RoleBadges = ({ user, isToday }) => {
+// taskKey - qaysi vazifa bo'yicha "Bugun" (tanlangan tab)
+export const RoleBadges = ({ user, isToday, taskKey = "duty" }) => {
   const { t } = useI18n();
 
   return (
@@ -13,7 +15,12 @@ export const RoleBadges = ({ user, isToday }) => {
         {user.role === "admin" ? t("control.roles.admin") : t("control.roles.user")}
       </span>
 
-      {isToday && <span className="badge text-bg-warning ms-1">{t("control.todayBadge")}</span>}
+      {isToday && (
+        <span className="control__today-badge badge text-bg-warning ms-1">
+          <TaskIcon taskKey={taskKey} />
+          {t("control.todayBadge")}
+        </span>
+      )}
     </>
   );
 };
@@ -31,11 +38,38 @@ export const PhoneLink = ({ phone }) => (phone ? <a href={`tel:${phone}`}>{phone
 
 export const EmailLink = ({ email }) => (email ? <a href={`mailto:${email}`}>{email}</a> : "—");
 
-export const UserActions = ({ user, isSelf, disabled, onEdit, onDelete }) => {
+// swapState: "idle" - hech kim tanlanmagan, "source" - shu odam tanlangan,
+// "target" - boshqasi tanlangan, shu odam bilan almashtirsa bo'ladi
+const SWAP_BUTTONS = {
+  idle: { className: "btn-outline-secondary", labelKey: "control.swap" },
+  source: { className: "btn-secondary", labelKey: "control.swapCancel" },
+  target: { className: "btn-primary", labelKey: "control.swapWith" },
+};
+
+export const UserActions = ({
+  user,
+  isSelf,
+  disabled,
+  swapState = "idle",
+  onSwap,
+  onEdit,
+  onDelete,
+}) => {
   const { t } = useI18n();
+
+  const swapButton = SWAP_BUTTONS[swapState];
 
   return (
     <>
+      <button
+        className={`btn btn-sm ${swapButton.className} me-2`}
+        type="button"
+        onClick={() => onSwap(user)}
+        disabled={disabled}
+      >
+        {t(swapButton.labelKey)}
+      </button>
+
       <button
         className="btn btn-sm btn-outline-primary me-2"
         type="button"

@@ -6,6 +6,8 @@ export const ConfirmModal = ({
   title,
   children,
   confirmLabel,
+  // "danger" (o'chirish) yoki "primary" (oddiy tasdiqlash)
+  confirmVariant = "danger",
   loading = false,
   onConfirm,
   onCancel,
@@ -60,7 +62,7 @@ export const ConfirmModal = ({
 
               <button
                 type="button"
-                className="btn btn-danger px-4"
+                className={`btn btn-${confirmVariant} px-4`}
                 onClick={onConfirm}
                 disabled={loading}
               >

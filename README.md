@@ -49,48 +49,34 @@ The app expects the following in your Supabase project.
 | `name`         | text        |                                                    |
 | `last_name`    | text        |                                                    |
 | `age`          | int         |                                                    |
-| `duty_order`   | int         | Position in the rotation (1, 2, 3, …)              |
+| `duty_order`   | int         | Position in the duty rotation (1, 2, 3, …)         |
+| `rubbish_order` | int        | Position in the rubbish rotation                   |
+| `cleaning_order` | int       | Position in the deep cleaning rotation (pairs: 1–2, 3–4, …) |
 | `nickname`     | text        | Telegram username, e.g. `@username`                |
 | `phone_number` | text        |                                                    |
 | `email`        | text        |                                                    |
 
 ### Database functions (RPC)
 
-| Function                                         | Used for                                                       |
-| ------------------------------------------------ | -------------------------------------------------------------- |
-| `get_duty_schedule(target_date date)`            | Returns `{ duty, rubbish, cleaning[] }` for a given day; each entry has a `user_id` |
-| `move_user_to_order(p_user_id, p_new_order)`     | Moves a user to a new position and shifts the others           |
-| `shift_users_for_insert(p_new_order)`            | Makes room for a new user at a given position                  |
-| `shift_users_after_delete(p_deleted_order)`      | Closes the gap after a user is deleted                         |
-| `delete_user_and_shift(p_user_id uuid)`          | Deletes a user and closes the gap in one transaction (used by the admin page) |
+The database objects live in the Supabase project. Run
+[supabase/migrations/20261102_per_task_orders_and_history.sql](supabase/migrations/20261102_per_task_orders_and_history.sql)
+once in **Supabase → SQL Editor** to create them.
 
-These functions are not stored in this repository; they live in the Supabase project. `delete_user_and_shift` wraps the delete and `shift_users_after_delete`, so if shifting fails the delete is rolled back. To create it, run this in **Supabase → SQL Editor**:
+| Function | Used for |
+| --- | --- |
+| `get_duty_schedule(target_date date)` | Returns `{ duty, rubbish, cleaning[] }` for a day. Past days come from `duty_history`, other days from `compute_duty_schedule` |
+| `compute_duty_schedule(target_date date)` | The rotation formula: duty by `duty_order` every day, rubbish by `rubbish_order` every 3rd day, deep cleaning by `cleaning_order` in pairs every 7th day |
+| `move_user_in_order(p_task, p_user_id, p_new_order)` | Moves a user within one task's order (`duty`, `rubbish` or `cleaning`); others shift |
+| `swap_users_in_order(p_task, p_user_a, p_user_b)` | Swaps two users within one task's order; nobody else moves |
+| `add_user(p_user jsonb, p_duty_order int)` | Inserts a user at a duty position (or at the end) and at the end of the other orders |
+| `delete_user_and_shift(p_user_id uuid)` | Deletes a user and closes the gap in all three orders |
+| `snapshot_duty_history()` | Saves every day from 2026-09-01 up to today (Tashkent time) into `duty_history` |
 
-```sql
-create or replace function public.delete_user_and_shift(p_user_id uuid)
-returns void
-language plpgsql
-set search_path = public
-as $$
-declare
-  v_order integer;
-begin
-  delete from public.users
-  where user_id = p_user_id
-  returning duty_order into v_order;
+Each task has its own order column, so changing the rubbish order does not touch duty or deep cleaning. Every function that changes an order first calls `snapshot_duty_history()`, so today and past days stay as they were and the new order takes effect from tomorrow. The functions run with the caller's permissions, so Row Level Security still decides who may change the orders (admins only).
 
-  if not found then
-    raise exception 'User topilmadi yoki o''chirishga ruxsat yo''q';
-  end if;
+### Telegram bot
 
-  perform public.shift_users_after_delete(p_deleted_order => v_order);
-end;
-$$;
-
-revoke execute on function public.delete_user_and_shift(uuid) from anon;
-```
-
-It runs with the caller's permissions, so Row Level Security still decides who may delete. Keep `search_path = public`: `shift_users_after_delete` refers to `users` without the `public.` prefix and fails with an empty search path.
+[supabase/functions/daily-schedule/index.ts](supabase/functions/daily-schedule/index.ts) is a Supabase Edge Function that posts to the flat's Telegram group. Two `pg_cron` jobs call it: `send-daily-duty-telegram` at 08:00 Tashkent time (today's duties with @mentions, tomorrow's summary, weather and the tip of the day) and `send-evening-duty-telegram` at 21:00 with `?mode=evening` (a reminder that mentions tomorrow's people). It needs the `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` secrets; set `SITE_URL` to add an "Open schedule" button.
 
 ### Creating an admin
 

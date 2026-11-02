@@ -6,9 +6,10 @@ import { ConfirmModal } from "../../components/ConfirmModal";
 import { Avatar } from "../../components/Avatar";
 import { Loading } from "../../components/Loading";
 import { Notice, useNotice } from "../../components/Notice";
+import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
 import { addDays, formatLongDate } from "../../utils/date";
-import { fetchSchedules } from "../../utils/schedule";
+import { TASKS, fetchSchedules, sortUsersByOrder } from "../../utils/schedule";
 import { StatsCards } from "./StatsCards";
 import { UsersTable } from "./UsersTable";
 import { UserCards } from "./UserCards";
@@ -22,8 +23,16 @@ export const ControlUsers = () => {
   const [weekSchedules, setWeekSchedules] = useState([]);
   const [currentUserId, setCurrentUserId] = useState(null);
 
+  // Qaysi vazifaning tartibi ko'rsatilmoqda: har birining o'z tartibi bor
+  const [orderTask, setOrderTask] = useState("duty");
+
   // Navbat o'zgarayotganda boshqa amallar vaqtincha o'chadi
   const [busy, setBusy] = useState(false);
+
+  // O'rin almashtirish: birinchi tanlangan odam, keyin tasdiqlanadigan juftlik
+  const [swapSource, setSwapSource] = useState(null);
+  const [swapPair, setSwapPair] = useState(null);
+  const [swapping, setSwapping] = useState(false);
 
   // MODALS
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -100,21 +109,35 @@ export const ControlUsers = () => {
     };
   }, [users, today]);
 
-  const todayDutyId = weekSchedules[0]?.duty?.user_id;
+  const orderTaskDef = TASKS.find((task) => task.key === orderTask);
+  const orderColumn = orderTaskDef.orderColumn;
 
-  const maxOrder = users.length ? Math.max(...users.map((user) => user.duty_order || 0)) : 0;
+  // Tanlangan tabdagi vazifada bugun kim turibdi (musor va uborka har kuni bo'lmaydi)
+  const todayIds = users
+    .filter((user) => orderTaskDef.isAssigned(weekSchedules[0], user.user_id))
+    .map((user) => user.user_id);
+  const orderTaskTitle = t(`tasks.${orderTask}.title`);
+
+  const sortedUsers = useMemo(() => sortUsersByOrder(users, orderColumn), [users, orderColumn]);
+
+  const maxOrder = users.length ? Math.max(...users.map((user) => user[orderColumn] || 0)) : 0;
 
   const filteredUsers = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    if (!query) return users;
+    if (!query) return sortedUsers;
 
-    return users.filter((user) =>
+    return sortedUsers.filter((user) =>
       [user.name, user.last_name, user.nickname, user.phone_number, user.email]
         .filter(Boolean)
         .some((value) => value.toLowerCase().includes(query))
     );
-  }, [users, search]);
+  }, [sortedUsers, search]);
+
+  function changeOrderTask(taskKey) {
+    setOrderTask(taskKey);
+    setSwapSource(null);
+  }
 
   // MODAL
 
@@ -161,9 +184,10 @@ export const ControlUsers = () => {
         return;
       }
 
-      // Duty order o'zgargan bo'lsa
+      // Oynadagi "navbatdagi o'rni" - navbatchilik tartibi
       if (dutyOrder && dutyOrder !== selectedUser.duty_order) {
-        const { error: orderError } = await supabase.rpc("move_user_to_order", {
+        const { error: orderError } = await supabase.rpc("move_user_in_order", {
+          p_task: "duty",
           p_user_id: selectedUser.user_id,
           p_new_order: dutyOrder,
         });
@@ -180,27 +204,12 @@ export const ControlUsers = () => {
       showNotice(t("control.notices.saved", { name: formData.name }));
     }
 
-    // ADD USER
+    // ADD USER: surish, qo'shish va tarixni saqlash bitta tranzaksiyada
     else {
-      // Admin order kiritmagan bo'lsa, oxiriga qo'shamiz
-      const newOrder = dutyOrder > 0 ? dutyOrder : maxOrder + 1;
-
-      // Agar yangi user o'rtaga kirayotgan bo'lsa, undan keyingi userlarni suramiz
-      if (newOrder <= maxOrder) {
-        const { error: shiftError } = await supabase.rpc("shift_users_for_insert", {
-          p_new_order: newOrder,
-        });
-
-        if (shiftError) {
-          console.error(shiftError);
-          showNotice(t("control.notices.addError", { error: shiftError.message }), "danger");
-          return;
-        }
-      }
-
-      const { error: insertError } = await supabase
-        .from("users")
-        .insert([{ ...fields, duty_order: newOrder }]);
+      const { data: newOrder, error: insertError } = await supabase.rpc("add_user", {
+        p_user: fields,
+        p_duty_order: dutyOrder > 0 ? dutyOrder : null,
+      });
 
       if (insertError) {
         console.error(insertError);
@@ -215,23 +224,24 @@ export const ControlUsers = () => {
     await refreshUsers();
   }
 
-  // MOVE (sudrash yoki ↑ ↓)
+  // MOVE (sudrash yoki ↑ ↓) - tanlangan vazifa tartibida
 
-  // Raqamlar ketma-ket bo'lmasligi mumkin (masalan 1, 21, 22),
-  // shuning uchun ↑ ↓ qo'shni userning o'rniga suradi
+  // ↑ ↓ qo'shni userning o'rniga suradi
   function handleMoveStep(user, direction) {
-    const index = users.findIndex((item) => item.user_id === user.user_id);
-    const neighbor = users[index + direction];
+    const index = sortedUsers.findIndex((item) => item.user_id === user.user_id);
+    const neighbor = sortedUsers[index + direction];
 
-    if (neighbor) handleMove(user, neighbor.duty_order);
+    if (neighbor) handleMove(user, neighbor[orderColumn]);
   }
 
   async function handleMove(user, newOrder) {
-    if (busy || newOrder === user.duty_order || newOrder < 1 || newOrder > maxOrder) return;
+    if (busy || newOrder === user[orderColumn] || newOrder < 1 || newOrder > maxOrder) return;
 
     setBusy(true);
+    setSwapSource(null);
 
-    const { error } = await supabase.rpc("move_user_to_order", {
+    const { error } = await supabase.rpc("move_user_in_order", {
+      p_task: orderTask,
       p_user_id: user.user_id,
       p_new_order: newOrder,
     });
@@ -247,6 +257,48 @@ export const ControlUsers = () => {
     setBusy(false);
   }
 
+  // SWAP: birinchi bosilgan - manba, ikkinchisi bosilganda tasdiqlash oynasi
+
+  function handleSwap(user) {
+    if (!swapSource) {
+      setSwapSource(user);
+      return;
+    }
+
+    if (swapSource.user_id === user.user_id) {
+      setSwapSource(null);
+      return;
+    }
+
+    setSwapPair([swapSource, user]);
+  }
+
+  async function handleSwapConfirm() {
+    const [first, second] = swapPair;
+
+    setSwapping(true);
+
+    const { error } = await supabase.rpc("swap_users_in_order", {
+      p_task: orderTask,
+      p_user_a: first.user_id,
+      p_user_b: second.user_id,
+    });
+
+    if (error) {
+      console.error(error);
+      showNotice(t("control.notices.swapError", { error: error.message }), "danger");
+    } else {
+      showNotice(t("control.notices.swapped", { a: first.name, b: second.name }));
+    }
+
+    setSwapping(false);
+    setSwapPair(null);
+    setSwapSource(null);
+    await refreshUsers();
+  }
+
+  const cancelSwap = useCallback(() => setSwapPair(null), []);
+
   // DELETE
 
   async function handleDeleteConfirm() {
@@ -254,8 +306,7 @@ export const ControlUsers = () => {
 
     setDeleting(true);
 
-    // O'chirish va keyingilarni surish bitta tranzaksiyada bajariladi:
-    // biri xato bersa, ikkalasi ham bekor bo'ladi
+    // O'chirish, uchala tartibdagi bo'shliqni yopish va tarixni saqlash bitta tranzaksiyada
     const { error } = await supabase.rpc("delete_user_and_shift", {
       p_user_id: user.user_id,
     });
@@ -303,10 +354,14 @@ export const ControlUsers = () => {
 
     const listProps = {
       users: filteredUsers,
-      todayDutyId,
+      orderColumn,
+      todayIds,
+      todayTaskKey: orderTask,
       currentUserId,
       busy,
+      swapSourceId: swapSource?.user_id,
       onMove: handleMove,
+      onSwap: handleSwap,
       onEdit: handleEdit,
       onDelete: setUserToDelete,
     };
@@ -316,8 +371,8 @@ export const ControlUsers = () => {
         <UsersTable {...listProps} />
         <UserCards
           {...listProps}
-          firstUserId={users[0]?.user_id}
-          lastUserId={users[users.length - 1]?.user_id}
+          firstUserId={sortedUsers[0]?.user_id}
+          lastUserId={sortedUsers[sortedUsers.length - 1]?.user_id}
           onMoveStep={handleMoveStep}
         />
       </>
@@ -356,6 +411,47 @@ export const ControlUsers = () => {
 
         <StatsCards users={users} schedules={weekSchedules} />
 
+        {/* QAYSI VAZIFA TARTIBI */}
+
+        <div
+          className="control__tabs btn-group mb-2"
+          role="group"
+          aria-label={t("control.orderTabsLabel")}
+        >
+          {TASKS.map((task) => (
+            <button
+              key={task.key}
+              type="button"
+              className={`control__tab btn d-inline-flex align-items-center justify-content-center gap-2 ${
+                orderTask === task.key ? "active" : ""
+              }`}
+              onClick={() => changeOrderTask(task.key)}
+              aria-pressed={orderTask === task.key}
+            >
+              <TaskIcon taskKey={task.key} />
+              {t(`tasks.${task.key}.title`)}
+            </button>
+          ))}
+        </div>
+
+        <p className="small text-muted text-start mb-3">{t("control.orderHint")}</p>
+
+        {swapSource && (
+          <div className="control__swap-banner alert alert-primary d-flex flex-wrap align-items-center justify-content-between gap-2 py-2">
+            <span>
+              {t("control.swapPick", { name: `${swapSource.name} ${swapSource.last_name}` })}
+            </span>
+
+            <button
+              type="button"
+              className="btn btn-sm btn-outline-primary"
+              onClick={() => setSwapSource(null)}
+            >
+              {t("common.cancel")}
+            </button>
+          </div>
+        )}
+
         <div className="d-flex justify-content-between align-items-center mb-2 small text-muted">
           <span className="d-none d-md-inline">{t("control.dragHint")}</span>
 
@@ -379,6 +475,47 @@ export const ControlUsers = () => {
         onSubmit={handleModalSubmit}
         users={users}
       />
+
+      <ConfirmModal
+        isOpen={!!swapPair}
+        title={t("control.swapModal.title")}
+        confirmLabel={t("control.swapModal.confirm")}
+        confirmVariant="primary"
+        loading={swapping}
+        onConfirm={handleSwapConfirm}
+        onCancel={cancelSwap}
+      >
+        {swapPair && (
+          <div>
+            <div className="d-flex align-items-center justify-content-center gap-3 mb-3">
+              <span className="text-center">
+                <Avatar user={swapPair[0]} />
+                <small className="d-block mt-1">#{swapPair[0][orderColumn]}</small>
+              </span>
+
+              <span className="control__swap-arrow" aria-hidden="true">
+                ⇄
+              </span>
+
+              <span className="text-center">
+                <Avatar user={swapPair[1]} />
+                <small className="d-block mt-1">#{swapPair[1][orderColumn]}</small>
+              </span>
+            </div>
+
+            <p className="m-0 fw-semibold text-center">
+              {t("control.swapModal.question", {
+                a: `${swapPair[0].name} ${swapPair[0].last_name}`,
+                b: `${swapPair[1].name} ${swapPair[1].last_name}`,
+              })}
+            </p>
+
+            <small className="d-block text-muted text-center mt-1">
+              {t("control.swapModal.task", { task: orderTaskTitle })}
+            </small>
+          </div>
+        )}
+      </ConfirmModal>
 
       <ConfirmModal
         isOpen={!!userToDelete}
