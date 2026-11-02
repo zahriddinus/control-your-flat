@@ -228,9 +228,80 @@ $header-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
   }
 }
 
-// Bildirishnoma
+// Login oynasi: user oynasi bilan bir uslubda (gradient sarlavha, belgili maydonlar)
 .login-modal {
+  overflow: hidden;
   border-radius: 16px;
+
+  &__header {
+    color: #fff;
+    background: $header-gradient;
+  }
+
+  &__subtitle {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  // Oq-shaffof doira ichida qulf
+  &__badge {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    background-color: rgba(255, 255, 255, 0.18);
+  }
+
+  .input-group-text {
+    color: var(--bs-secondary-color);
+    background-color: var(--bs-tertiary-bg);
+  }
+
+  &__eye {
+    border-color: var(--bs-border-color);
+  }
+
+  &__submit {
+    border: none;
+    background: $header-gradient;
+
+    &:hover,
+    &:focus {
+      background: $header-gradient;
+      filter: brightness(1.1);
+    }
+  }
+
+  &--shake {
+    animation: login-shake 0.45s ease;
+  }
+}
+
+@keyframes login-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  20%,
+  60% {
+    transform: translateX(-8px);
+  }
+
+  40%,
+  80% {
+    transform: translateX(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-modal--shake {
+    animation: none;
+  }
 }
 
 @keyframes header-fade-in {

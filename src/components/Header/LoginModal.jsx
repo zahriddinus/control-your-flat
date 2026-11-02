@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabese";
 import { useModalEffects } from "../../hooks/useModalEffects";
 import { useI18n } from "../../i18n";
+import { AppIcon } from "../AppIcon";
 
 export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
   const { t } = useI18n();
@@ -10,6 +11,9 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // Xato bo'lganda oyna bir marta silkinadi
+  const [shake, setShake] = useState(false);
 
   const emailRef = useRef(null);
 
@@ -30,6 +34,12 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
     emailRef.current?.focus();
   }, [isOpen]);
 
+  function showError(key) {
+    setError(key);
+    setShake(true);
+    setLoading(false);
+  }
+
   async function handleSubmit(evt) {
     evt.preventDefault();
 
@@ -40,8 +50,7 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
 
     if (error) {
       console.error(error);
-      setError("login.wrongCredentials");
-      setLoading(false);
+      showError("login.wrongCredentials");
       return;
     }
 
@@ -57,8 +66,7 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
       // Admin bo'lmagan userning sessiyasini ochiq qoldirmaymiz
       await supabase.auth.signOut();
 
-      setError(profileError ? "login.profileNotFound" : "login.adminsOnly");
-      setLoading(false);
+      showError(profileError ? "login.profileNotFound" : "login.adminsOnly");
       return;
     }
 
@@ -88,61 +96,90 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
         onMouseDown={(evt) => evt.target === evt.currentTarget && handleClose()}
       >
         <div className="modal-dialog modal-dialog-centered">
-          <div className="login-modal modal-content border-0 shadow">
+          <div
+            className={`login-modal modal-content border-0 shadow ${shake ? "login-modal--shake" : ""}`}
+            onAnimationEnd={() => setShake(false)}
+          >
             <form onSubmit={handleSubmit}>
-              <div className="modal-header border-0 pb-0">
-                <div className="text-start">
-                  <h1 className="modal-title fs-4 fw-bold" id="loginModalLabel">
-                    {t("login.title")}
-                  </h1>
+              {/* SARLAVHA */}
 
-                  <small className="text-muted">{t("login.subtitle")}</small>
+              <div className="login-modal__header modal-header border-0">
+                <div className="d-flex align-items-center gap-3">
+                  <span className="login-modal__badge" aria-hidden="true">
+                    <AppIcon name="lock" />
+                  </span>
+
+                  <div className="text-start">
+                    <h1 className="modal-title fs-5 fw-bold" id="loginModalLabel">
+                      {t("login.title")}
+                    </h1>
+
+                    <small className="login-modal__subtitle">{t("login.subtitle")}</small>
+                  </div>
                 </div>
 
                 <button
                   type="button"
-                  className="btn-close"
+                  className="btn-close btn-close-white"
                   aria-label={t("common.close")}
                   onClick={handleClose}
                   disabled={loading}
                 ></button>
               </div>
 
-              <div className="modal-body text-start">
+              <div className="modal-body text-start p-4">
                 {error && (
-                  <div className="alert alert-danger py-2" role="alert">
+                  <div
+                    className="login-modal__error alert alert-danger d-flex align-items-center gap-2 py-2"
+                    role="alert"
+                  >
+                    <AppIcon name="alert" className="flex-shrink-0" />
                     {t(error)}
                   </div>
                 )}
 
-                <label htmlFor="loginEmail" className="form-label">
+                {/* EMAIL */}
+
+                <label htmlFor="loginEmail" className="form-label small fw-semibold">
                   {t("login.email")}
                 </label>
 
-                <input
-                  ref={emailRef}
-                  type="email"
-                  id="loginEmail"
-                  className="form-control mb-3"
-                  autoComplete="email"
-                  placeholder="name@example.com"
-                  value={email}
-                  onChange={(evt) => setEmail(evt.target.value)}
-                  disabled={loading}
-                  required
-                />
+                <div className="input-group mb-3">
+                  <span className="input-group-text">
+                    <AppIcon name="mail" />
+                  </span>
 
-                <label htmlFor="loginPassword" className="form-label">
+                  <input
+                    ref={emailRef}
+                    type="email"
+                    id="loginEmail"
+                    className="form-control"
+                    autoComplete="email"
+                    placeholder="name@example.com"
+                    value={email}
+                    onChange={(evt) => setEmail(evt.target.value)}
+                    disabled={loading}
+                    required
+                  />
+                </div>
+
+                {/* PAROL */}
+
+                <label htmlFor="loginPassword" className="form-label small fw-semibold">
                   {t("login.password")}
                 </label>
 
                 <div className="input-group">
+                  <span className="input-group-text">
+                    <AppIcon name="lock" />
+                  </span>
+
                   <input
                     type={showPassword ? "text" : "password"}
                     id="loginPassword"
                     className="form-control"
                     autoComplete="current-password"
-                    placeholder="********"
+                    placeholder="••••••••"
                     value={password}
                     onChange={(evt) => setPassword(evt.target.value)}
                     disabled={loading}
@@ -151,27 +188,34 @@ export const LoginModal = ({ isOpen, onClose, onSuccess }) => {
 
                   <button
                     type="button"
-                    className="btn btn-outline-secondary"
+                    className="login-modal__eye btn btn-outline-secondary"
                     onClick={() => setShowPassword((prev) => !prev)}
                     aria-label={showPassword ? t("login.hidePassword") : t("login.showPassword")}
+                    title={showPassword ? t("login.hidePassword") : t("login.showPassword")}
                     disabled={loading}
                   >
-                    {showPassword ? "🙈" : "👁️"}
+                    <AppIcon name={showPassword ? "eyeOff" : "eye"} />
                   </button>
                 </div>
               </div>
 
-              <div className="modal-footer border-0 pt-0">
+              {/* TUGMALAR */}
+
+              <div className="modal-footer border-0 px-4 pb-4 pt-0 flex-nowrap gap-2">
                 <button
                   type="button"
-                  className="btn btn-light"
+                  className="btn btn-light w-50 m-0"
                   onClick={handleClose}
                   disabled={loading}
                 >
                   {t("common.cancel")}
                 </button>
 
-                <button type="submit" className="btn btn-primary px-4" disabled={loading}>
+                <button
+                  type="submit"
+                  className="login-modal__submit btn btn-primary w-50 m-0"
+                  disabled={loading}
+                >
                   {loading ? (
                     <>
                       <span
