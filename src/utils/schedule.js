@@ -2,25 +2,29 @@ import { supabase } from "../lib/supabese";
 import { formatDate } from "./date";
 import { readCache, writeCache } from "./offline";
 
-// Har bir vazifa: user o'sha kuni shu vazifadami va u qaysi tartib ustuni bo'yicha aylanadi.
+// Bazadan har bir vazifa ro'yxat bo'lib keladi: [{ user_id, name, last_name }].
+// Eski nusxalarda bitta odam obyekt bo'lib saqlangan bo'lishi mumkin
+export const getAssigned = (schedule, taskKey) => {
+  const value = schedule?.[taskKey];
+
+  if (Array.isArray(value)) return value;
+
+  return value ? [value] : [];
+};
+
+const makeTask = (key, orderColumn) => ({
+  key,
+  orderColumn,
+  isAssigned: (schedule, userId) =>
+    getAssigned(schedule, key).some((assigned) => assigned.user_id === userId),
+});
+
+// Har bir vazifa va u qaysi tartib ustuni bo'yicha aylanadi. Uyda qaysilari yoqilgani - useFlat().tasks.
 // Nomlari tarjimada: t(`tasks.${task.key}.title`) va t(`tasks.${task.key}.label`)
 export const TASKS = [
-  {
-    key: "duty",
-    orderColumn: "duty_order",
-    isAssigned: (schedule, userId) => schedule?.duty?.user_id === userId,
-  },
-  {
-    key: "rubbish",
-    orderColumn: "rubbish_order",
-    isAssigned: (schedule, userId) => schedule?.rubbish?.user_id === userId,
-  },
-  {
-    key: "cleaning",
-    orderColumn: "cleaning_order",
-    isAssigned: (schedule, userId) =>
-      schedule?.cleaning?.some((cleaningUser) => cleaningUser.user_id === userId) ?? false,
-  },
+  makeTask("duty", "duty_order"),
+  makeTask("rubbish", "rubbish_order"),
+  makeTask("cleaning", "cleaning_order"),
 ];
 
 // Userlarni berilgan vazifa tartibi bo'yicha saralaydi (bo'sh qiymatlar oxirida)
@@ -41,11 +45,11 @@ export const getAssignedNames = (users, task, schedule) =>
     .join(", ");
 
 // Kunlar nusxasi { "2026-11-02": {...} }: internet bo'lmasa shundan ko'rsatiladi
-const SCHEDULES_CACHE_KEY = "schedules";
+const getCacheKey = (flatId) => `schedules:${flatId}`;
 const MAX_CACHED_DAYS = 120;
 
-const cacheSchedules = (entries) => {
-  const cache = readCache(SCHEDULES_CACHE_KEY) ?? {};
+const cacheSchedules = (flatId, entries) => {
+  const cache = readCache(getCacheKey(flatId)) ?? {};
 
   entries.forEach(([date, schedule]) => {
     cache[date] = schedule;
@@ -58,18 +62,19 @@ const cacheSchedules = (entries) => {
     delete cache[date];
   });
 
-  writeCache(SCHEDULES_CACHE_KEY, cache);
+  writeCache(getCacheKey(flatId), cache);
 };
 
-// Bitta so'rov bilan butun oraliq (SQL: get_duty_schedule_range).
-// Funksiya bazada hali bo'lmasa (PGRST202), null qaytadi va har kun alohida so'raladi
-const fetchRange = async (dateStrings) => {
+const RANGE_LIMIT = 62;
+
+// Bitta so'rov bilan butun oraliq (SQL: get_duty_schedule_range, ko'pi bilan 62 kun)
+const fetchRange = async (flatId, dateStrings) => {
   const { data, error } = await supabase.rpc("get_duty_schedule_range", {
+    p_flat: flatId,
     start_date: dateStrings[0],
     end_date: dateStrings[dateStrings.length - 1],
   });
 
-  if (error?.code === "PGRST202") return null;
   if (error) throw new Error(`Schedule range error: ${error.message}`);
 
   const byDate = new Map(data.map((schedule) => [schedule.date, schedule]));
@@ -77,34 +82,31 @@ const fetchRange = async (dateStrings) => {
   return dateStrings.map((date) => byDate.get(date) ?? null);
 };
 
-const fetchOneByOne = (dateStrings) =>
-  Promise.all(
-    dateStrings.map(async (dateString) => {
-      const { data, error } = await supabase.rpc("get_duty_schedule", {
-        target_date: dateString,
-      });
-
-      if (error) throw new Error(`Schedule error ${dateString}: ${error.message}`);
-
-      return data;
-    })
-  );
-
 // Ketma-ket sanalar uchun navbatlar, sanalar bilan bir xil tartibda.
 // Internet bo'lmasa va hamma kunlar nusxada bo'lsa, nusxa qaytariladi
-export const fetchSchedules = async (dates) => {
+export const fetchSchedules = async (flatId, dates) => {
   const dateStrings = dates.map(formatDate);
 
-  if (!dateStrings.length) return [];
+  if (!flatId || !dateStrings.length) return [];
 
   try {
-    const schedules = (await fetchRange(dateStrings)) ?? (await fetchOneByOne(dateStrings));
+    // Server bir so'rovda ko'pi bilan 62 kun beradi, uzunroq oraliq bo'laklarga bo'linadi
+    const chunks = [];
 
-    cacheSchedules(dateStrings.map((date, index) => [date, schedules[index]]));
+    for (let index = 0; index < dateStrings.length; index += RANGE_LIMIT) {
+      chunks.push(dateStrings.slice(index, index + RANGE_LIMIT));
+    }
+
+    const schedules = (await Promise.all(chunks.map((chunk) => fetchRange(flatId, chunk)))).flat();
+
+    cacheSchedules(
+      flatId,
+      dateStrings.map((date, index) => [date, schedules[index]])
+    );
 
     return schedules;
   } catch (error) {
-    const cache = readCache(SCHEDULES_CACHE_KEY) ?? {};
+    const cache = readCache(getCacheKey(flatId)) ?? {};
 
     if (dateStrings.every((date) => date in cache)) {
       return dateStrings.map((date) => cache[date]);

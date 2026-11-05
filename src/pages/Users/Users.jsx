@@ -7,11 +7,13 @@ import { useI18n } from "../../i18n";
 import { Avatar } from "../../components/Avatar";
 import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
-import { TASKS, fetchSchedules } from "../../utils/schedule";
+import { useFlat } from "../../context/FlatContext";
+import { fetchSchedules } from "../../utils/schedule";
 import { queryWithCache } from "../../utils/offline";
 
 export const Users = () => {
   const { t } = useI18n();
+  const { flatId, tasks } = useFlat();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -19,15 +21,20 @@ export const Users = () => {
   const [todaySchedule, setTodaySchedule] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
+
     const getUsers = async () => {
       // Faqat sahifada ko'rsatiladigan ustunlarni olamiz
       // Internet bo'lmasa, oxirgi saqlangan ro'yxat ko'rsatiladi
-      const { data, error } = await queryWithCache("users:list", () =>
+      const { data, error } = await queryWithCache(`users:list:${flatId}`, () =>
         supabase
           .from("users")
           .select("user_id, name, last_name, nickname, phone_number, duty_order")
+          .eq("flat_id", flatId)
           .order("duty_order", { ascending: true })
       );
+
+      if (cancelled) return;
 
       if (error) {
         console.error(error);
@@ -42,9 +49,9 @@ export const Users = () => {
     // Bugungi navbatchilarni belgilash uchun. Xato bo'lsa, sahifa baribir ishlaydi
     const getTodaySchedule = async () => {
       try {
-        const [schedule] = await fetchSchedules([new Date()]);
+        const [schedule] = await fetchSchedules(flatId, [new Date()]);
 
-        setTodaySchedule(schedule);
+        if (!cancelled) setTodaySchedule(schedule);
       } catch (error) {
         console.error(error);
       }
@@ -52,7 +59,11 @@ export const Users = () => {
 
     getUsers();
     getTodaySchedule();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [flatId]);
 
   const filteredUsers = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -67,7 +78,7 @@ export const Users = () => {
   }, [data, search]);
 
   const getTodayTasks = (user) =>
-    TASKS.filter((task) => task.isAssigned(todaySchedule, user.user_id));
+    tasks.filter((task) => task.isAssigned(todaySchedule, user.user_id));
 
   if (loading) {
     return <PageSkeleton variant="users" />;

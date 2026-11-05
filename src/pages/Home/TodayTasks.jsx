@@ -1,19 +1,23 @@
 import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
-import { TASKS, getAssignedNames } from "../../utils/schedule";
+import { useFlat } from "../../context/FlatContext";
+import { getAssignedNames } from "../../utils/schedule";
 import { findDone } from "../../utils/done";
 
 // done - bugungi "Bajardim" belgilari: bajargan odam ismi yonida yashil belgi chiqadi
 export const TodayTasks = ({ users, schedules, loading, done }) => {
   const { t } = useI18n();
+  const { tasks } = useFlat();
   const [todaySchedule, tomorrowSchedule] = schedules;
 
   // Ertaga faqat kimgadir vazifa berilgan bandlar ko'rsatiladi
-  const tomorrowTasks = TASKS.map((task) => ({
-    task,
-    names: getAssignedNames(users, task, tomorrowSchedule),
-  })).filter(({ names }) => names);
+  const tomorrowTasks = tasks
+    .map((task) => ({
+      task,
+      names: getAssignedNames(users, task, tomorrowSchedule),
+    }))
+    .filter(({ names }) => names);
 
   const renderNames = (task) => {
     const assigned = users.filter((user) => task.isAssigned(todaySchedule, user.user_id));
@@ -43,7 +47,7 @@ export const TodayTasks = ({ users, schedules, loading, done }) => {
       <h2 className="home__section-title">{t("home.todayTitle")}</h2>
 
       <div className="row g-3">
-        {TASKS.map((task) => (
+        {tasks.map((task) => (
           <div className="col-12 col-md-4" key={task.key}>
             <div className={`home__task home__task--${task.key} card h-100 border-0 shadow-sm`}>
               <div className="card-body d-flex align-items-center gap-3">

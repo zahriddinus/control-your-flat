@@ -1,10 +1,12 @@
 import { TaskChip } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
 import { addDays, formatDate, getShortWeekday } from "../../utils/date";
-import { TASKS, getAssignedNames } from "../../utils/schedule";
+import { useFlat } from "../../context/FlatContext";
+import { getAssignedNames } from "../../utils/schedule";
 
 export const WeekView = ({ users, schedules, today, loading }) => {
   const { t, lang } = useI18n();
+  const { tasks } = useFlat();
   const week = Array.from({ length: 7 }, (_, index) => ({
     date: addDays(today, index),
     schedule: schedules[index],
@@ -32,7 +34,7 @@ export const WeekView = ({ users, schedules, today, loading }) => {
               {loading ? (
                 <span className="placeholder col-10"></span>
               ) : (
-                TASKS.map((task) => {
+                tasks.map((task) => {
                   const names = getAssignedNames(users, task, schedule);
 
                   if (!names) return null;

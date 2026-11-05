@@ -610,28 +610,6 @@
   }
 }
 
-// "Men kimman?" tugmasi salomlashuv ostida (ko'k-binafsha fonda)
-.home__who-btn {
-  margin-top: 10px;
-  padding: 4px 12px 4px 8px;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 0.8rem;
-  background-color: rgba(255, 255, 255, 0.1);
-  transition:
-    color 0.2s ease,
-    background-color 0.2s ease;
-
-  &:hover {
-    color: #fff;
-    background-color: rgba(255, 255, 255, 0.22);
-  }
-}
-
 // "Bajardim" tugmalari va "Bajarildi" belgilari
 .home__done {
   margin-top: 12px;

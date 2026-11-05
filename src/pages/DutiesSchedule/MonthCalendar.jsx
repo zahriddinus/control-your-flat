@@ -1,7 +1,8 @@
 import { TaskChip } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
 import { addDays, formatLongDate, getShortWeekday } from "../../utils/date";
-import { TASKS, getAssignedNames } from "../../utils/schedule";
+import { useFlat } from "../../context/FlatContext";
+import { getAssignedNames } from "../../utils/schedule";
 
 // Hafta kunlari nomlarini olish uchun istalgan dushanba
 const SOME_MONDAY = new Date(2024, 0, 1);
@@ -18,6 +19,7 @@ export const MonthCalendar = ({
   onSelectDay,
 }) => {
   const { t, lang } = useI18n();
+  const { tasks } = useFlat();
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
@@ -62,7 +64,7 @@ export const MonthCalendar = ({
           const schedule = monthSchedules[day];
           const weekend = date.getDay() === 0 || date.getDay() === 6;
           const isMineDay =
-            hasFilter && TASKS.some((task) => task.isAssigned(schedule, filterUserId));
+            hasFilter && tasks.some((task) => task.isAssigned(schedule, filterUserId));
 
           const dayClass = [
             "schedule-cal__day",
@@ -86,7 +88,7 @@ export const MonthCalendar = ({
               <span className="schedule-cal__number">{day}</span>
 
               <span className="schedule-cal__tasks">
-                {TASKS.map((task) => {
+                {tasks.map((task) => {
                   const names = getAssignedNames(users, task, schedule);
 
                   if (!names) return null;

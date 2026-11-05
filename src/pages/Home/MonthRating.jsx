@@ -3,7 +3,8 @@ import { Avatar } from "../../components/Avatar";
 import { AppIcon } from "../../components/AppIcon";
 import { useI18n } from "../../i18n";
 import { addDays, formatDate, getMonthName, parseDate } from "../../utils/date";
-import { fetchSchedules, TASKS } from "../../utils/schedule";
+import { fetchSchedules } from "../../utils/schedule";
+import { useFlat } from "../../context/FlatContext";
 import { DONE_TRACKING_START, fetchDone, findDone } from "../../utils/done";
 
 // Bootstrap Icons: kubok
@@ -18,14 +19,14 @@ const Trophy = () => (
 
 // O'tgan kunlardagi har bir navbat hisoblanadi. Bugungisi faqat bajarilgan bo'lsa qo'shiladi,
 // shunda kun tugamasdan hech kim "qoldirdi" bo'lib qolmaydi
-const buildStats = (users, days, todayKey) =>
+const buildStats = (users, days, todayKey, tasks) =>
   users
     .map((user) => {
       let assigned = 0;
       let done = 0;
 
       days.forEach(({ date, schedule, records }) => {
-        TASKS.forEach((task) => {
+        tasks.forEach((task) => {
           if (!task.isAssigned(schedule, user.user_id)) return;
 
           const isDone = Boolean(findDone(records, task.key, user.user_id));
@@ -49,12 +50,14 @@ const buildStats = (users, days, todayKey) =>
 // Shu oy bo'yicha kim nechta navbatni bajargani. doneToday - bugungi belgilar (jonli yangilanadi)
 export const MonthRating = ({ users, today, doneToday }) => {
   const { t, lang } = useI18n();
+  const { flat, flatId, tasks } = useFlat();
   const [history, setHistory] = useState(null);
   const [error, setError] = useState(false);
 
   const todayKey = formatDate(today);
   const monthStart = formatDate(new Date(today.getFullYear(), today.getMonth(), 1));
-  const from = monthStart > DONE_TRACKING_START ? monthStart : DONE_TRACKING_START;
+  // Oy boshi, belgilar boshlangan kun va uy navbatlari boshlangan kundan eng kechi
+  const from = [monthStart, DONE_TRACKING_START, flat.start_date].sort().at(-1);
 
   // O'tgan kunlar: navbatlar va belgilar bir marta yuklanadi
   useEffect(() => {
@@ -73,8 +76,8 @@ export const MonthRating = ({ users, today, doneToday }) => {
         const yesterday = formatDate(addDays(parseDate(todayKey), -1));
 
         const [schedules, records] = await Promise.all([
-          fetchSchedules(dates),
-          from <= yesterday ? fetchDone(from, yesterday) : [],
+          fetchSchedules(flatId, dates),
+          from <= yesterday ? fetchDone(flatId, from, yesterday) : [],
         ]);
 
         if (cancelled) return;
@@ -101,7 +104,7 @@ export const MonthRating = ({ users, today, doneToday }) => {
     return () => {
       cancelled = true;
     };
-  }, [from, todayKey]);
+  }, [flatId, from, todayKey]);
 
   if (error || from > todayKey) return null;
 
@@ -110,7 +113,7 @@ export const MonthRating = ({ users, today, doneToday }) => {
     day.date === todayKey ? { ...day, records: doneToday ?? [] } : day
   );
 
-  const stats = days ? buildStats(users, days, todayKey) : [];
+  const stats = days ? buildStats(users, days, todayKey, tasks) : [];
   const bestDone = stats[0]?.done ?? 0;
   const hasData = stats.some((stat) => stat.assigned > 0);
 

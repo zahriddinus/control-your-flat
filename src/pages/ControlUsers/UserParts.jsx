@@ -4,17 +4,32 @@ import { useI18n } from "../../i18n";
 
 // Jadval va mobil kartochkalar uchun umumiy bo'laklar
 
+// account - "owner" (uy egasi), "member" (o'z hisobi bilan kiradi) yoki yo'q.
 // taskKey - qaysi vazifa bo'yicha "Bugun" (tanlangan tab)
-export const RoleBadges = ({ user, isToday, taskKey = "duty" }) => {
+export const RoleBadges = ({ account, isToday, taskKey = "duty" }) => {
   const { t } = useI18n();
 
   return (
     <>
-      <span
-        className={`badge ${user.role === "admin" ? "text-bg-primary" : "text-bg-light border"}`}
-      >
-        {user.role === "admin" ? t("control.roles.admin") : t("control.roles.user")}
-      </span>
+      {account === "owner" && (
+        <span className="control__account-badge badge text-bg-primary">
+          <AppIcon name="shield" />
+          {t("control.roles.owner")}
+        </span>
+      )}
+
+      {account === "member" && (
+        <span className="control__account-badge control__account-badge--member badge">
+          <AppIcon name="check" />
+          {t("control.roles.member")}
+        </span>
+      )}
+
+      {!account && (
+        <span className="control__account-badge control__account-badge--none badge">
+          {t("control.roles.noAccount")}
+        </span>
+      )}
 
       {isToday && (
         <span className="control__today-badge badge text-bg-warning ms-1">
@@ -48,9 +63,11 @@ const SWAP_BUTTONS = {
 };
 
 // compact - jadval uchun faqat ikonkalar, nomi esa tooltip'da
+// onInvite - hisobi yo'q xonadoshga taklif havolasi (bo'lmasa tugma chiqmaydi)
 export const UserActions = ({
   user,
   compact = false,
+  onInvite,
   isSelf,
   disabled,
   swapState = "idle",
@@ -67,6 +84,27 @@ export const UserActions = ({
 
     return (
       <div className="control__actions">
+        {onInvite && (
+          <button
+            className="control__icon-btn control__icon-btn--invite"
+            type="button"
+            onClick={() => onInvite(user)}
+            disabled={disabled}
+            title={t("control.invite")}
+            aria-label={t("control.invite")}
+          >
+            <AppIcon name="send" />
+          </button>
+        )}
+
+        {/* Taklif kerak bo'lmasa ham joy saqlanadi, shunda ustunlar tekis turadi */}
+        {!onInvite && (
+          <span
+            className="control__icon-btn control__icon-btn--placeholder"
+            aria-hidden="true"
+          ></span>
+        )}
+
         <button
           className={`control__icon-btn control__icon-btn--swap control__icon-btn--${swapState}`}
           type="button"
@@ -105,6 +143,18 @@ export const UserActions = ({
 
   return (
     <>
+      {onInvite && (
+        <button
+          className="btn btn-sm btn-outline-success me-2"
+          type="button"
+          onClick={() => onInvite(user)}
+          disabled={disabled}
+        >
+          <AppIcon name="send" className="me-1" />
+          {t("control.invite")}
+        </button>
+      )}
+
       <button
         className={`btn btn-sm ${swapButton.className} me-2`}
         type="button"

@@ -1,6 +1,6 @@
 import { useI18n } from "../../i18n";
 import { addDays, formatDaysLeft, formatLongDate } from "../../utils/date";
-import { TASKS } from "../../utils/schedule";
+import { useFlat } from "../../context/FlatContext";
 import { TaskIcon } from "../../components/TaskIcon";
 
 const getBadgeClass = (days) => {
@@ -13,6 +13,7 @@ const getBadgeClass = (days) => {
 // userId va onUserChange Home'dan keladi: salomlashish ham shu tanlovga qaraydi
 export const MyTurn = ({ users, schedules, today, loading, userId, onUserChange }) => {
   const { t, lang } = useI18n();
+  const { tasks } = useFlat();
 
   const user = users.find((item) => item.user_id === userId);
 
@@ -44,7 +45,7 @@ export const MyTurn = ({ users, schedules, today, loading, userId, onUserChange 
 
         {user && (
           <ul className="list-unstyled m-0">
-            {TASKS.map((task) => {
+            {tasks.map((task) => {
               const days = schedules.findIndex((schedule) =>
                 task.isAssigned(schedule, user.user_id)
               );

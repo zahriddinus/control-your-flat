@@ -1,5 +1,6 @@
 import "./bottomNav.scss";
 import { NavLink } from "react-router-dom";
+import { useFlat } from "../../context/FlatContext";
 import { useI18n } from "../../i18n";
 import { NAV_LINKS } from "../../utils/navigation";
 import { AppIcon } from "../AppIcon";
@@ -8,6 +9,10 @@ import { AppIcon } from "../AppIcon";
 // Mavzu, til va login header'dagi menyuda qoladi
 export const BottomNav = () => {
   const { t } = useI18n();
+  const { membership } = useFlat();
+
+  // Uyga a'zo bo'lmagan (yoki login qilmagan) odamga menyu kerak emas
+  if (!membership) return null;
 
   return (
     <nav className="bottom-nav" aria-label={t("header.mainMenu")}>

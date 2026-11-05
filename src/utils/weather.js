@@ -1,9 +1,4 @@
-// Xonadon joylashuvi: Toshkent, Sergeli tumani. Nomi tarjimada: weather.flatName
-export const FLAT_LOCATION = {
-  latitude: 41.22,
-  longitude: 69.22,
-  isFlat: true,
-};
+import { getAssigned } from "./schedule";
 
 // WMO ob-havo kodlari: https://open-meteo.com/en/docs
 // type - WeatherIcon qaysi rasmni chizishi. Nomlari tarjimada: weather.codes.<kod>
@@ -46,15 +41,15 @@ export const getWeatherInfo = (code) =>
 const isRainy = (code) => (code >= 51 && code <= 67) || (code >= 80 && code <= 82) || code >= 95;
 const isSnowy = (code) => (code >= 71 && code <= 77) || code === 85 || code === 86;
 
-export const fetchWeather = async ({ latitude, longitude, isFlat }) => {
+// timezone - uyning vaqt mintaqasi; o'zim turgan joy uchun "auto"
+export const fetchWeather = async ({ latitude, longitude, timezone }) => {
   const params = new URLSearchParams({
     latitude,
     longitude,
     current: "temperature_2m,apparent_temperature,weather_code,wind_speed_10m,is_day",
     daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
     forecast_days: "2",
-    // Uy uchun Toshkent vaqti, boshqa joy uchun o'sha joyning vaqti
-    timezone: isFlat ? "Asia/Tashkent" : "auto",
+    timezone: timezone ?? "auto",
   });
 
   const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
@@ -84,7 +79,7 @@ export const getWeatherTips = ({ weather, users, schedules, isFlat, t }) => {
   const tips = [];
 
   const getName = (schedule, key) =>
-    users.find((user) => user.user_id === schedule?.[key]?.user_id)?.name?.trim();
+    users.find((user) => user.user_id === getAssigned(schedule, key)[0]?.user_id)?.name?.trim();
 
   if (isFlat) {
     const rubbishToday = getName(schedules[0], "rubbish");
@@ -98,7 +93,9 @@ export const getWeatherTips = ({ weather, users, schedules, isFlat, t }) => {
       tips.push(t("weather.tips.rubbishTomorrowRain", { name: rubbishTomorrow }));
     }
 
-    const cleaningIndex = [0, 1].find((index) => schedules[index]?.cleaning?.length > 0);
+    const cleaningIndex = [0, 1].find(
+      (index) => getAssigned(schedules[index], "cleaning").length > 0
+    );
 
     if (cleaningIndex !== undefined) {
       const day = cleaningIndex === 0 ? today : tomorrow;

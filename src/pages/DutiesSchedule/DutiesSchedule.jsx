@@ -6,9 +6,9 @@ import { EmptyState, ErrorState } from "../../components/EmptyState";
 import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
-import { useMyUser } from "../../hooks/useMyUser";
+import { useFlat } from "../../context/FlatContext";
 import { formatDate, formatLongDate, getMonthName } from "../../utils/date";
-import { TASKS, fetchSchedules, sortUsersByOrder } from "../../utils/schedule";
+import { fetchSchedules, sortUsersByOrder } from "../../utils/schedule";
 import { buildIcs, downloadFile } from "../../utils/ics";
 import { queryWithCache } from "../../utils/offline";
 import { ScheduleTable } from "./ScheduleTable";
@@ -33,7 +33,7 @@ const VIEWS = [
 
 export const DutiesSchedule = () => {
   const { t, lang } = useI18n();
-  const [, setMyUserId] = useMyUser();
+  const { flatId, tasks } = useFlat();
 
   const [monthSchedules, setMonthSchedules] = useState({});
   const [data, setData] = useState([]);
@@ -58,10 +58,11 @@ export const DutiesSchedule = () => {
   useEffect(() => {
     const getUsers = async () => {
       // Jadval va avatarlar uchun id, ism, familiya va har bir vazifaning tartibi kerak
-      const { data, error } = await queryWithCache("users:schedule", () =>
+      const { data, error } = await queryWithCache(`users:schedule:${flatId}`, () =>
         supabase
           .from("users")
           .select("user_id, name, last_name, duty_order, rubbish_order, cleaning_order")
+          .eq("flat_id", flatId)
           .order("duty_order", { ascending: true })
       );
 
@@ -76,7 +77,7 @@ export const DutiesSchedule = () => {
     };
 
     getUsers();
-  }, []);
+  }, [flatId]);
 
   // CURRENT DATE UPDATE
 
@@ -121,7 +122,10 @@ export const DutiesSchedule = () => {
         const currentDays = Array.from({ length: daysInCurrentMonth }, (_, i) => i + 1);
 
         // Barcha kunlar uchun RPC'larni parallel yuboramiz
-        const results = await fetchSchedules(currentDays.map((day) => new Date(year, month, day)));
+        const results = await fetchSchedules(
+          flatId,
+          currentDays.map((day) => new Date(year, month, day))
+        );
 
         if (cancelled) return;
 
@@ -150,7 +154,7 @@ export const DutiesSchedule = () => {
     return () => {
       cancelled = true;
     };
-  }, [year, month, data.length]);
+  }, [flatId, year, month, data.length]);
 
   // DATE CONTROLS
 
@@ -200,9 +204,6 @@ export const DutiesSchedule = () => {
     const userId = evt.target.value;
 
     setFilterUserId(userId);
-
-    // Ism tanlansa, Home'dagi "Mening navbatim" ham shu odamni eslab qoladi
-    if (userId) setMyUserId(userId);
   }
 
   const filterUser = data.find((user) => user.user_id === filterUserId);
@@ -211,10 +212,12 @@ export const DutiesSchedule = () => {
 
   const myEvents = filterUser
     ? days.flatMap((day) =>
-        TASKS.filter((task) => task.isAssigned(monthSchedules[day], filterUserId)).map((task) => ({
-          day,
-          task,
-        }))
+        tasks
+          .filter((task) => task.isAssigned(monthSchedules[day], filterUserId))
+          .map((task) => ({
+            day,
+            task,
+          }))
       )
     : [];
 
@@ -417,7 +420,7 @@ export const DutiesSchedule = () => {
         </h3>
 
         <div className="row g-3 mb-4">
-          {TASKS.map((task) => {
+          {tasks.map((task) => {
             const names = getAssignedNames(task);
 
             return (
@@ -462,7 +465,7 @@ export const DutiesSchedule = () => {
         {view === "calendar" ? (
           <MonthCalendar {...viewProps} />
         ) : (
-          TASKS.map((task) => (
+          tasks.map((task) => (
             <ScheduleTable
               key={task.key}
               taskKey={task.key}

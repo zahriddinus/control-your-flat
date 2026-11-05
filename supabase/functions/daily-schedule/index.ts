@@ -1,19 +1,32 @@
-// Xonadon navbatlari: Telegram guruhiga kunlik xabar (Supabase Edge Function).
+// Uylar navbatlari: har bir uyning Telegram guruhiga kunlik xabar (Supabase Edge Function).
 //
 // Ertalab (sukut bo'yicha): bugungi navbatchilar @nickname bilan belgilanadi, ertangi navbatlar
 // qisqacha, ob-havo, yomg'ir haqida ogohlantirish va kun maslahati.
 // Kechqurun (body: {"mode":"evening"} yoki ?mode=evening): faqat ertangi navbatchilarga eslatma.
 //
-// Secrets: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, SUPABASE_URL va SUPABASE_ANON_KEY
-// (Supabase o'zi beradi). Navbatlar va nickname'lar ochiq ma'lumot, admin kaliti shart emas;
-// SUPABASE_ANON_KEY bo'lmasa, SUPABASE_SERVICE_ROLE_KEY ishlatiladi.
+// Xabar flats.telegram_chat_id ulangan har bir uyga yuboriladi. Eng birinchi yaratilgan uyda
+// telegram_chat_id bo'sh bo'lsa, TELEGRAM_CHAT_ID secret ishlatiladi (eski sozlama ishlayveradi).
+//
+// Secrets: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID, SUPABASE_URL va SUPABASE_SERVICE_ROLE_KEY
+// (oxirgi ikkisini Supabase o'zi beradi). Uylar ma'lumoti yopiq (RLS), shuning uchun bot
+// service role kaliti bilan o'qiydi. Bu kalit faqat serverda turadi, saytga chiqmaydi.
 // Ixtiyoriy: SITE_URL (masalan https://control-your-flat.vercel.app) - "Jadvalni ochish" tugmasi.
 
 type User = { user_id: string; name: string; last_name: string | null; nickname: string | null };
 type Person = { user_id: string; name: string; last_name: string | null };
-type Schedule = { duty: Person | null; rubbish: Person | null; cleaning: Person[] };
+type TaskKey = "duty" | "rubbish" | "cleaning";
+type Schedule = Record<TaskKey, Person[]>;
 type WeatherDay = { icon: string; label: string; min: number; max: number; rain: number; wet: boolean };
 type Weather = { today: WeatherDay; tomorrow: WeatherDay };
+type Flat = {
+  id: string;
+  name: string;
+  timezone: string;
+  latitude: number | null;
+  longitude: number | null;
+  telegram_chat_id: string | null;
+};
+type FlatTask = { task: TaskKey; enabled: boolean; every_days: number };
 
 const WEEKDAYS = ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
 const MONTHS = [
@@ -35,11 +48,14 @@ const TIPS = [
   "Yuvilgan kiyimlarni quritgichda uzoq qoldirmang.",
 ];
 
-// Toshkent, Sergeli
-const FLAT = { latitude: 41.22, longitude: 69.22 };
+// Vazifalar: belgisi, nomi, bugun ham keyin ham bo'lmasa nima yoziladi va ismlar orasidagi so'z
+const TASK_LINES: Record<TaskKey, { icon: string; label: string; none: string; join: string }> = {
+  duty: { icon: "⭐", label: "Navbatchi", none: "—", join: ", " },
+  rubbish: { icon: "🗑", label: "Musor", none: "bugun yo'q", join: ", " },
+  cleaning: { icon: "🧹", label: "Uborka", none: "yaqin kunlarda yo'q", join: " va " },
+};
 
-// Generalniy uborka qancha kun oldindan qidiriladi
-const LOOKAHEAD_DAYS = 8;
+const TASK_ORDER: TaskKey[] = ["duty", "rubbish", "cleaning"];
 
 // Supabase serverlari soatidagi kichik farq tufayli ba'zan "JWT issued at future" (PGRST303)
 // qaytadi. Bu vaqtinchalik: biroz kutib, qayta uriniladi
@@ -48,11 +64,11 @@ const RETRY_DELAY_MS = 1000;
 
 const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-// SANALAR ("2026-11-02" ko'rinishidagi Toshkent sanalari)
+// SANALAR ("2026-11-02" ko'rinishida, uyning vaqt mintaqasi bo'yicha)
 
-export const getTashkentDate = (date = new Date()) =>
+export const getLocalDate = (timeZone = "Asia/Tashkent", date = new Date()) =>
   new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Tashkent",
+    timeZone,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -122,13 +138,16 @@ const describeWeather = (code: number): [string, string] => {
   return ["🌡", "Ob-havo"];
 };
 
-export const fetchWeather = async (): Promise<Weather> => {
+// Uy manzili (koordinatalari) kiritilmagan bo'lsa, ob-havo qismi chiqmaydi
+export const fetchWeather = async (flat: Flat): Promise<Weather | null> => {
+  if (flat.latitude == null || flat.longitude == null) return null;
+
   const params = new URLSearchParams({
-    latitude: String(FLAT.latitude),
-    longitude: String(FLAT.longitude),
+    latitude: String(flat.latitude),
+    longitude: String(flat.longitude),
     daily: "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max",
     forecast_days: "2",
-    timezone: "Asia/Tashkent",
+    timezone: flat.timezone,
   });
 
   const response = await fetch(`https://api.open-meteo.com/v1/forecast?${params}`);
@@ -160,15 +179,20 @@ const formatWeatherLine = (day: WeatherDay) =>
 
 // XABARLAR
 
-// Ertalabki xabar. schedules[0] - bugun, schedules[1] - ertaga, keyingilari uborkani qidirish uchun
+// Ertalabki xabar. schedules[0] - bugun, schedules[1] - ertaga, keyingilari siyrak vazifalarni
+// (masalan, uborka) qidirish uchun. tasks - uyda yoqilgan vazifalar
 export const buildMorningMessage = ({
+  flatName,
   today,
   schedules,
+  tasks,
   users,
   weather,
 }: {
+  flatName: string;
   today: string;
   schedules: Schedule[];
+  tasks: TaskKey[];
   users: User[];
   weather: Weather | null;
 }) => {
@@ -176,64 +200,64 @@ export const buildMorningMessage = ({
   const [todaySchedule, tomorrowSchedule] = schedules;
   const lines: string[] = [];
 
-  lines.push("🏠 <b>Xonadon navbatlari</b>");
+  lines.push(`🏠 <b>${escapeHtml(flatName)}: navbatlar</b>`);
   lines.push(`📅 <b>${formatUzDate(today)}</b>`);
   if (weather) lines.push(formatWeatherLine(weather.today));
   lines.push("");
 
-  // Bugungi navbatchilar belgilanadi
-  lines.push(
-    `⭐ <b>Navbatchi:</b> ${todaySchedule.duty ? mention.withName(todaySchedule.duty) : "—"}`
-  );
-  lines.push(
-    `🗑 <b>Musor:</b> ${todaySchedule.rubbish ? mention.withName(todaySchedule.rubbish) : "bugun yo'q"}`
-  );
+  // Bugungi navbatchilar belgilanadi. Vazifa bugun bo'lmasa, keyingisi qachonligi
+  for (const task of tasks) {
+    const line = TASK_LINES[task];
+    const people = todaySchedule[task];
+    let value: string;
 
-  // Uborka bugun bo'lmasa, keyingisi qachonligi
-  let cleaning: string;
-
-  if (todaySchedule.cleaning.length) {
-    cleaning = todaySchedule.cleaning.map(mention.withName).join(" va ");
-  } else {
-    const nextIndex = schedules.findIndex((schedule) => schedule.cleaning.length > 0);
-
-    if (nextIndex === -1) {
-      cleaning = "yaqin kunlarda yo'q";
+    if (people.length) {
+      value = people.map(mention.withName).join(line.join);
     } else {
-      const when = nextIndex === 1 ? "ertaga" : `${nextIndex} kundan keyin`;
-      const names = schedules[nextIndex].cleaning
-        .map((person) => escapeHtml(person.name.trim()))
-        .join(" va ");
-      cleaning = `${when} (${names})`;
-    }
-  }
+      const nextIndex = schedules.findIndex((schedule) => schedule[task].length > 0);
 
-  lines.push(`🧹 <b>Uborka:</b> ${cleaning}`);
+      if (nextIndex === -1) {
+        value = line.none;
+      } else {
+        const when = nextIndex === 1 ? "ertaga" : `${nextIndex} kundan keyin`;
+        const names = schedules[nextIndex][task]
+          .map((person) => escapeHtml(person.name.trim()))
+          .join(line.join);
+        value = `${when} (${names})`;
+      }
+    }
+
+    lines.push(`${line.icon} <b>${line.label}:</b> ${value}`);
+  }
 
   // Ertangi navbatlar qisqacha, iqtibos ichida (belgilanmaydi: kechki eslatmada belgilanadi)
   const tomorrowLines = [`🔜 <b>Ertaga</b> · ${formatUzDate(addDays(today, 1))}`];
 
-  if (tomorrowSchedule.duty) tomorrowLines.push(`⭐ ${fullName(tomorrowSchedule.duty)}`);
-  if (tomorrowSchedule.rubbish) tomorrowLines.push(`🗑 ${fullName(tomorrowSchedule.rubbish)}`);
-  if (tomorrowSchedule.cleaning.length) {
-    tomorrowLines.push(`🧹 ${tomorrowSchedule.cleaning.map(fullName).join(" va ")}`);
+  for (const task of tasks) {
+    const people = tomorrowSchedule[task];
+
+    if (people.length) {
+      tomorrowLines.push(`${TASK_LINES[task].icon} ${people.map(fullName).join(TASK_LINES[task].join)}`);
+    }
   }
 
   lines.push("");
   lines.push(`<blockquote>${tomorrowLines.join("\n")}</blockquote>`);
 
-  // Ob-havoni navbat bilan bog'laydigan ogohlantirishlar
+  // Ob-havoni musor navbati bilan bog'laydigan ogohlantirishlar
   const warnings: string[] = [];
+  const rubbishToday = todaySchedule.rubbish[0];
+  const rubbishTomorrow = tomorrowSchedule.rubbish[0];
 
-  if (weather?.today.wet && todaySchedule.rubbish) {
+  if (weather?.today.wet && rubbishToday) {
     warnings.push(
-      `☔ Bugun yomg'ir ehtimoli bor. ${escapeHtml(todaySchedule.rubbish.name.trim())}, musorga soyabon bilan chiqing.`
+      `☔ Bugun yomg'ir ehtimoli bor. ${escapeHtml(rubbishToday.name.trim())}, musorga soyabon bilan chiqing.`
     );
   }
 
-  if (weather?.tomorrow.wet && tomorrowSchedule.rubbish) {
+  if (weather?.tomorrow.wet && rubbishTomorrow) {
     warnings.push(
-      `🌧 Ertaga yomg'ir kutilmoqda. ${escapeHtml(tomorrowSchedule.rubbish.name.trim())}, musorni bugun kechqurun tashlasangiz ham bo'ladi.`
+      `🌧 Ertaga yomg'ir kutilmoqda. ${escapeHtml(rubbishTomorrow.name.trim())}, musorni bugun kechqurun tashlasangiz ham bo'ladi.`
     );
   }
 
@@ -252,31 +276,37 @@ export const buildMorningMessage = ({
 
 // Kechki eslatma: faqat ertangi navbatchilar belgilanadi
 export const buildEveningMessage = ({
+  flatName,
   tomorrow,
   schedule,
+  tasks,
   users,
   weather,
 }: {
+  flatName: string;
   tomorrow: string;
   schedule: Schedule;
+  tasks: TaskKey[];
   users: User[];
   weather: Weather | null;
 }) => {
   const mention = createMention(users);
   const lines: string[] = [];
 
-  lines.push("🌙 <b>Ertangi navbatlar</b>");
+  lines.push(`🌙 <b>${escapeHtml(flatName)}: ertangi navbatlar</b>`);
   lines.push(`📅 <b>${formatUzDate(tomorrow)}</b>`);
   if (weather) lines.push(formatWeatherLine(weather.tomorrow));
   lines.push("");
 
-  if (schedule.duty) lines.push(`⭐ <b>Navbatchi:</b> ${mention.only(schedule.duty)}`);
-  if (schedule.rubbish) lines.push(`🗑 <b>Musor:</b> ${mention.only(schedule.rubbish)}`);
-  if (schedule.cleaning.length) {
-    lines.push(`🧹 <b>Uborka:</b> ${schedule.cleaning.map(mention.only).join(", ")}`);
+  for (const task of tasks) {
+    const people = schedule[task];
+
+    if (people.length) {
+      lines.push(`${TASK_LINES[task].icon} <b>${TASK_LINES[task].label}:</b> ${people.map(mention.only).join(", ")}`);
+    }
   }
 
-  if (weather?.tomorrow.wet && schedule.rubbish) {
+  if (weather?.tomorrow.wet && schedule.rubbish.length) {
     lines.push("");
     lines.push("🌧 Ertaga yomg'ir kutilmoqda, musorni bugun kechqurun tashlasangiz ham bo'ladi.");
   }
@@ -310,15 +340,21 @@ const getMode = async (request: Request) => {
   return "morning";
 };
 
+// Bazadan kelgan kun: har bir vazifa - odamlar ro'yxati
+const toSchedule = (result: Partial<Schedule> | null): Schedule => ({
+  duty: result?.duty ?? [],
+  rubbish: result?.rubbish ?? [],
+  cleaning: result?.cleaning ?? [],
+});
+
 export const handler = async (request: Request) => {
   const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
-  const chatId = Deno.env.get("TELEGRAM_CHAT_ID");
+  const defaultChatId = Deno.env.get("TELEGRAM_CHAT_ID");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const supabaseKey =
-    Deno.env.get("SUPABASE_ANON_KEY") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const siteUrl = Deno.env.get("SITE_URL");
 
-  if (!botToken || !chatId || !supabaseUrl || !supabaseKey) {
+  if (!botToken || !supabaseUrl || !supabaseKey) {
     return json({ error: "Kerakli secrets topilmadi" }, 500);
   }
 
@@ -349,41 +385,8 @@ export const handler = async (request: Request) => {
     }
   };
 
-  const getSchedule = async (targetDate: string): Promise<Schedule> => {
-    const result = await supabaseRequest("rpc/get_duty_schedule", {
-      method: "POST",
-      body: JSON.stringify({ target_date: targetDate }),
-    });
-
-    return { duty: result.duty, rubbish: result.rubbish, cleaning: result.cleaning ?? [] };
-  };
-
-  const getUsers = (): Promise<User[]> =>
-    supabaseRequest("users?select=user_id,name,last_name,nickname");
-
-  try {
-    const mode = await getMode(request);
-    const today = getTashkentDate();
-    const tomorrow = addDays(today, 1);
-
-    const [users, schedules, weather] = await Promise.all([
-      getUsers(),
-      Promise.all(
-        Array.from({ length: LOOKAHEAD_DAYS }, (_, index) => getSchedule(addDays(today, index)))
-      ),
-      // Ob-havo ishlamasa ham xabar yuboriladi
-      fetchWeather().catch((error) => {
-        console.error(error);
-        return null;
-      }),
-    ]);
-
-    const text =
-      mode === "evening"
-        ? buildEveningMessage({ tomorrow, schedule: schedules[1], users, weather })
-        : buildMorningMessage({ today, schedules, users, weather });
-
-    const telegramResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+  const sendMessage = async (chatId: string, text: string) => {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -402,13 +405,79 @@ export const handler = async (request: Request) => {
       }),
     });
 
-    const telegramResult = await telegramResponse.json();
+    if (!response.ok) {
+      throw new Error(`Telegram xatoligi: ${JSON.stringify(await response.json())}`);
+    }
+  };
 
-    if (!telegramResponse.ok) {
-      return json({ error: "Telegram xatoligi", details: telegramResult }, telegramResponse.status);
+  // Bitta uy uchun xabar tayyorlab yuboradi
+  const notifyFlat = async (flat: Flat, chatId: string, mode: string) => {
+    const today = getLocalDate(flat.timezone);
+    const tomorrow = addDays(today, 1);
+
+    const [users, flatTasks, weather] = await Promise.all([
+      supabaseRequest(`users?select=user_id,name,last_name,nickname&flat_id=eq.${flat.id}`) as Promise<User[]>,
+      supabaseRequest(`flat_tasks?select=task,enabled,every_days&flat_id=eq.${flat.id}`) as Promise<FlatTask[]>,
+      // Ob-havo ishlamasa ham xabar yuboriladi
+      fetchWeather(flat).catch((error) => {
+        console.error(error);
+        return null;
+      }),
+    ]);
+
+    const enabled = flatTasks.filter((item) => item.enabled);
+    const tasks = TASK_ORDER.filter((task) => enabled.some((item) => item.task === task));
+
+    if (!users.length || !tasks.length) return "skipped";
+
+    // Eng siyrak vazifaning keyingi navbati ham ko'rinishi uchun shuncha kun oldinga qaraladi
+    const lookahead = Math.min(31, Math.max(2, ...enabled.map((item) => item.every_days + 1)));
+
+    const range = (await supabaseRequest("rpc/get_duty_schedule_range", {
+      method: "POST",
+      body: JSON.stringify({
+        p_flat: flat.id,
+        start_date: today,
+        end_date: addDays(today, lookahead - 1),
+      }),
+    })) as Partial<Schedule>[];
+
+    const schedules = range.map(toSchedule);
+
+    const text =
+      mode === "evening"
+        ? buildEveningMessage({ flatName: flat.name, tomorrow, schedule: schedules[1], tasks, users, weather })
+        : buildMorningMessage({ flatName: flat.name, today, schedules, tasks, users, weather });
+
+    await sendMessage(chatId, text);
+
+    return "sent";
+  };
+
+  try {
+    const mode = await getMode(request);
+
+    const flats = (await supabaseRequest(
+      "flats?select=id,name,timezone,latitude,longitude,telegram_chat_id&order=created_at.asc"
+    )) as Flat[];
+
+    const results: Record<string, string> = {};
+
+    // Bir uyda xato bo'lsa ham, qolganlariga yuboriladi
+    for (const [index, flat] of flats.entries()) {
+      const chatId = flat.telegram_chat_id ?? (index === 0 ? defaultChatId : null);
+
+      if (!chatId) continue;
+
+      try {
+        results[flat.name] = await notifyFlat(flat, chatId, mode);
+      } catch (error) {
+        console.error(flat.id, error);
+        results[flat.name] = error instanceof Error ? error.message : String(error);
+      }
     }
 
-    return json({ success: true, mode, today, tomorrow });
+    return json({ success: true, mode, results });
   } catch (error) {
     console.error(error);
     return json({ error: error instanceof Error ? error.message : String(error) }, 500);

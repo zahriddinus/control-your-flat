@@ -1,90 +1,28 @@
 import "./header.scss";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { supabase } from "../../lib/supabese";
+import { useAuth } from "../../context/AuthContext";
+import { useFlat } from "../../context/FlatContext";
 import { useI18n } from "../../i18n";
 import { NAV_LINKS } from "../../utils/navigation";
 import { AppIcon, LogoIcon } from "../AppIcon";
 import { Notice, useNotice } from "../Notice";
 import { ThemeToggle } from "../ThemeToggle";
 import { LanguageSwitcher } from "../LanguageSwitcher";
-import { AdminMenu } from "./AdminMenu";
-import { LoginModal } from "./LoginModal";
-
-const removeAdminFlag = () => {
-  try {
-    window.localStorage.removeItem("isAdmin");
-  } catch {
-    // Xotira yopiq bo'lsa, o'chiradigan narsa ham yo'q
-  }
-};
+import { UserMenu } from "./UserMenu";
 
 export const Header = () => {
   const navigate = useNavigate();
   const { t } = useI18n();
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [notice, showNotice] = useNotice();
 
-  // undefined - hali tekshirilmagan, null - yo'q
-  const [session, setSession] = useState(undefined);
-  const [profile, setProfile] = useState(undefined);
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { membership } = useFlat();
 
   const closeMenu = () => setIsMenuOpen(false);
-  const closeLogin = useCallback(() => setIsLoginOpen(false), []);
-
-  // AUTH
-
-  useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, newSession) => {
-      setSession(newSession);
-
-      // Sessiya yo'q bo'lsa, eski "isAdmin" belgisi qolib ketmasin
-      if (!newSession) removeAdminFlag();
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const userId = session?.user?.id;
-
-  useEffect(() => {
-    if (!userId) {
-      setProfile(null);
-      return;
-    }
-
-    let cancelled = false;
-
-    const getProfile = async () => {
-      setProfile(undefined);
-
-      const { data, error } = await supabase
-        .from("users")
-        .select("name, last_name, role")
-        .eq("user_id", userId)
-        .single();
-
-      if (cancelled) return;
-
-      if (error) console.error(error);
-
-      setProfile(data ?? null);
-    };
-
-    getProfile();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
-
-  const authReady = session !== undefined && profile !== undefined;
-  const isAdmin = profile?.role === "admin";
 
   // SCROLL
 
@@ -129,23 +67,12 @@ export const Header = () => {
     return () => desktopQuery.removeEventListener("change", handleChange);
   }, []);
 
-  // LOGIN / LOGOUT
-
-  function openLogin() {
-    closeMenu();
-    setIsLoginOpen(true);
-  }
-
-  function handleLoginSuccess(loggedProfile) {
-    closeLogin();
-    showNotice(t("header.welcome", { name: loggedProfile.name }));
-    navigate("/control-users");
-  }
+  // LOGOUT
 
   async function handleLogout() {
     closeMenu();
 
-    const { error } = await supabase.auth.signOut();
+    const { error } = await signOut();
 
     if (error) {
       console.error(error);
@@ -153,7 +80,6 @@ export const Header = () => {
       return;
     }
 
-    removeAdminFlag();
     showNotice(t("header.logoutSuccess"));
     navigate("/");
   }
@@ -219,20 +145,21 @@ export const Header = () => {
             aria-label={t("header.mainMenu")}
           >
             <ul className="header__nav-list">
-              {NAV_LINKS.map((link) => (
-                <li className="header__nav-item" key={link.to}>
-                  <NavLink
-                    to={link.to}
-                    className={({ isActive }) => `header__link ${isActive ? "active-link" : ""}`}
-                    onClick={closeMenu}
-                  >
-                    <span className="header__link-icon">
-                      <AppIcon name={link.icon} />
-                    </span>
-                    {t(link.labelKey)}
-                  </NavLink>
-                </li>
-              ))}
+              {membership &&
+                NAV_LINKS.map((link) => (
+                  <li className="header__nav-item" key={link.to}>
+                    <NavLink
+                      to={link.to}
+                      className={({ isActive }) => `header__link ${isActive ? "active-link" : ""}`}
+                      onClick={closeMenu}
+                    >
+                      <span className="header__link-icon">
+                        <AppIcon name={link.icon} />
+                      </span>
+                      {t(link.labelKey)}
+                    </NavLink>
+                  </li>
+                ))}
 
               <li className="header__nav-item">
                 <ThemeToggle />
@@ -242,18 +169,27 @@ export const Header = () => {
                 <LanguageSwitcher />
               </li>
 
-              {authReady && (
+              {!authLoading && (
                 <li className="header__nav-item">
-                  {isAdmin ? (
-                    <AdminMenu profile={profile} onNavigate={closeMenu} onLogout={handleLogout} />
+                  {user ? (
+                    <UserMenu onNavigate={closeMenu} onLogout={handleLogout} />
                   ) : (
-                    <button
-                      type="button"
-                      className="header__login-btn btn btn-primary"
-                      onClick={openLogin}
-                    >
-                      {t("header.login")}
-                    </button>
+                    <div className="d-flex gap-2">
+                      <Link
+                        className="header__login-btn btn btn-outline-primary"
+                        to="/login"
+                        onClick={closeMenu}
+                      >
+                        {t("header.login")}
+                      </Link>
+                      <Link
+                        className="header__login-btn btn btn-primary"
+                        to="/signup"
+                        onClick={closeMenu}
+                      >
+                        {t("header.signup")}
+                      </Link>
+                    </div>
                   )}
                 </li>
               )}
@@ -261,8 +197,6 @@ export const Header = () => {
           </nav>
         </div>
       </header>
-
-      <LoginModal isOpen={isLoginOpen} onClose={closeLogin} onSuccess={handleLoginSuccess} />
 
       <Notice notice={notice} />
     </>

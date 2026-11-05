@@ -6,7 +6,6 @@ import { AppIcon } from "../AppIcon";
 import { Avatar } from "../Avatar";
 
 const EMPTY_FORM = {
-  role: "user",
   name: "",
   lastName: "",
   age: "",
@@ -15,11 +14,6 @@ const EMPTY_FORM = {
   phoneNumber: "",
   email: "",
 };
-
-const ROLES = [
-  { value: "user", icon: "user", labelKey: "userModal.roleUser" },
-  { value: "admin", icon: "shield", labelKey: "userModal.roleAdmin" },
-];
 
 // Xatolar tarjima kaliti sifatida qaytadi: userModal.errors.*
 // Telegram nickname ("@"siz): 5-32 ta lotin harfi, raqam yoki "_"
@@ -92,7 +86,6 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
 
     if (selectedUser) {
       setFormData({
-        role: selectedUser.role || "user",
         name: selectedUser.name || "",
         lastName: selectedUser.last_name || "",
         age: selectedUser.age ?? "",
@@ -262,36 +255,7 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                       {renderError("age")}
                     </div>
                   </div>
-
-                  <div className="col-12 col-sm-7">
-                    <span className="form-label small d-block">{t("userModal.role")}</span>
-
-                    <div className="btn-group w-100" role="group" aria-label={t("userModal.role")}>
-                      {ROLES.map((role) => (
-                        <button
-                          key={role.value}
-                          type="button"
-                          className={`btn ${
-                            formData.role === role.value ? "btn-primary" : "btn-outline-primary"
-                          }`}
-                          onClick={() => setFormData((prev) => ({ ...prev, role: role.value }))}
-                          aria-pressed={formData.role === role.value}
-                          disabled={saving}
-                        >
-                          <AppIcon name={role.icon} className="me-1" />
-                          {t(role.labelKey)}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
                 </div>
-
-                {formData.role === "admin" && (
-                  <div className="alert alert-warning small py-2 mt-3 mb-0 d-flex gap-2">
-                    <AppIcon name="alert" className="flex-shrink-0 mt-1" />
-                    {t("userModal.adminWarning")}
-                  </div>
-                )}
               </section>
 
               {/* ALOQA */}

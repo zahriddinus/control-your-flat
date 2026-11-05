@@ -3,5 +3,24 @@ import { DutiesSchedule } from "./DutiesSchedule";
 import { Users } from "./Users";
 import { ControlUsers } from "./ControlUsers";
 import { Error } from "./Error";
+import { Landing } from "./Landing";
+import { Login, Signup, ForgotPassword, ResetPassword } from "./Auth";
+import { NewFlat } from "./NewFlat";
+import { Invite } from "./Invite";
+import { Settings } from "./Settings";
 
-export { Home, DutiesSchedule, Users, ControlUsers, Error };
+export {
+  Home,
+  DutiesSchedule,
+  Users,
+  ControlUsers,
+  Error,
+  Landing,
+  Login,
+  Signup,
+  ForgotPassword,
+  ResetPassword,
+  NewFlat,
+  Invite,
+  Settings,
+};

@@ -10,7 +10,8 @@ export const UsersTable = ({
   orderColumn,
   todayIds,
   todayTaskKey,
-  pairMode,
+  groupSize = 1,
+  accounts = {},
   currentUserId,
   busy,
   swapSourceId,
@@ -18,6 +19,7 @@ export const UsersTable = ({
   onSwap,
   onEdit,
   onDelete,
+  onInvite,
 }) => {
   const { t } = useI18n();
   const [draggedId, setDraggedId] = useState(null);
@@ -45,9 +47,10 @@ export const UsersTable = ({
     return user.user_id === swapSourceId ? "source" : "target";
   };
 
-  // Uborka tabida qo'shni o'rinlar juftlik: 1-2, 3-4, ... Juftliklar navbat bilan bo'yaladi
-  const getPairNumber = (user) => Math.ceil((user[orderColumn] ?? 0) / 2);
-  const isPairStart = (user) => (user[orderColumn] ?? 0) % 2 === 1;
+  // Bir navbatda bir necha kishi bo'lsa, qo'shni o'rinlar guruh: 1-2, 3-4, ... (yoki 1-3, 4-6)
+  const pairMode = groupSize > 1;
+  const getPairNumber = (user) => Math.ceil((user[orderColumn] ?? 0) / groupSize);
+  const isPairStart = (user) => ((user[orderColumn] ?? 1) - 1) % groupSize === 0;
 
   const getRowClass = (user) =>
     [
@@ -136,7 +139,7 @@ export const UsersTable = ({
                     </span>
 
                     <RoleBadges
-                      user={user}
+                      account={accounts[user.user_id]}
                       isToday={todayIds.includes(user.user_id)}
                       taskKey={todayTaskKey}
                     />
@@ -172,6 +175,7 @@ export const UsersTable = ({
                   onSwap={onSwap}
                   onEdit={onEdit}
                   onDelete={onDelete}
+                  onInvite={accounts[user.user_id] ? undefined : onInvite}
                 />
               </td>
             </tr>

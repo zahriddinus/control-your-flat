@@ -2,12 +2,18 @@ import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
 import { formatDaysLeft } from "../../utils/date";
+import { getAssigned } from "../../utils/schedule";
 
-export const StatsCards = ({ users, schedules }) => {
+// accounts - o'z hisobi bilan kiradigan xonadoshlar: { [user_id]: "owner" | "member" }
+export const StatsCards = ({ users, schedules, accounts = {} }) => {
   const { t } = useI18n();
-  const adminsCount = users.filter((user) => user.role === "admin").length;
-  const todayDuty = users.find((user) => user.user_id === schedules[0]?.duty?.user_id);
-  const cleaningDays = schedules.findIndex((schedule) => schedule?.cleaning?.length > 0);
+  const accountsCount = users.filter((user) => accounts[user.user_id]).length;
+  const todayDuty = users.find(
+    (user) => user.user_id === getAssigned(schedules[0], "duty")[0]?.user_id
+  );
+  const cleaningDays = schedules.findIndex(
+    (schedule) => getAssigned(schedule, "cleaning").length > 0
+  );
 
   // Navbatchi va uborka uchun vazifa ikonkasi, qolganlari uchun rangli doirada belgi
   const stats = [
@@ -20,8 +26,8 @@ export const StatsCards = ({ users, schedules }) => {
     {
       key: "admins",
       icon: <AppIcon name="shield" />,
-      label: t("control.stats.admins"),
-      value: adminsCount,
+      label: t("control.stats.accounts"),
+      value: `${accountsCount}/${users.length}`,
     },
     {
       key: "duty",

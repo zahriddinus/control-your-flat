@@ -36,15 +36,14 @@ export const uz = {
   },
 
   header: {
+    signup: "Ro'yxatdan o'tish",
     mainMenu: "Asosiy menyu",
     openMenu: "Menyuni ochish",
     closeMenu: "Menyuni yopish",
     login: "Kirish",
-    welcome: "Xush kelibsiz, {name}! 👋",
     logoutSuccess: "Tizimdan chiqdingiz. Xayr! 👋",
     logoutError: "Chiqishda xatolik yuz berdi. Qayta urinib ko'ring.",
     language: "Til",
-    adminBadge: "Admin",
     logout: "Chiqish",
   },
 
@@ -57,17 +56,12 @@ export const uz = {
   },
 
   login: {
-    title: "Admin kirishi",
-    subtitle: "Bu bo'lim faqat adminlar uchun",
     email: "Email",
     password: "Parol",
     showPassword: "Parolni ko'rsatish",
     hidePassword: "Parolni yashirish",
     submit: "Kirish",
     checking: "Tekshirilmoqda...",
-    wrongCredentials: "Email yoki parol noto'g'ri.",
-    profileNotFound: "Foydalanuvchi ma'lumotlari topilmadi.",
-    adminsOnly: "Kechirasiz, bu bo'lim faqat adminlar uchun.",
   },
 
   footer: {
@@ -100,15 +94,6 @@ export const uz = {
     error: "Nimadir xato ketdi",
   },
 
-  whoAmI: {
-    title: "Siz kimsiz?",
-    text: "Ismingizni tanlang: salomlashuv, navbatlaringiz va eslatmalar sizga moslashadi.",
-    privacy: "Tanlov faqat shu qurilmada saqlanadi.",
-    later: "Keyinroq",
-    choose: "Ismingizni tanlang",
-    change: "{name} emasmisiz?",
-  },
-
   done: {
     button: "Bajardim: {task}",
     doneAt: "{task}: bajarildi, {time}",
@@ -127,6 +112,201 @@ export const uz = {
     perfect: "Bitta ham qoldirmadi",
   },
 
+  auth: {
+    login: {
+      title: "Kirish",
+      subtitle: "Uyingiz navbatlariga xush kelibsiz",
+      forgot: "Parolni unutdingizmi?",
+      noAccount: "Hisobingiz yo'qmi?",
+    },
+    signup: {
+      title: "Ro'yxatdan o'tish",
+      subtitle: "Bir daqiqada hisob oching va uyingizni qo'shing",
+      link: "Ro'yxatdan o'tish",
+      submit: "Hisob ochish",
+      loading: "Hisob ochilmoqda...",
+      haveAccount: "Hisobingiz bormi?",
+      checkTitle: "Emailingizni tekshiring",
+      checkText: "{email} manziliga tasdiqlash xati yubordik. Xatdagi havolani bosing.",
+      checkHint: 'Xat kelmasa, "Spam" papkasini ham ko\'ring.',
+    },
+    forgot: {
+      title: "Parolni tiklash",
+      subtitle: "Emailingizni kiriting, yangi parol qo'yish havolasini yuboramiz",
+      submit: "Havola yuborish",
+      sent: "Agar {email} bilan hisob bo'lsa, unga havola yuborildi.",
+    },
+    reset: {
+      title: "Yangi parol",
+      submit: "Parolni saqlash",
+      expiredTitle: "Havola eskirgan",
+      expiredText:
+        "Parolni tiklash havolasi eskirgan yoki allaqachon ishlatilgan. Yangisini so'rang.",
+    },
+    confirmPassword: "Parolni takrorlang",
+    newPassword: "Yangi parol",
+    passwordHint: "Kamida 8 ta belgi.",
+    backToLogin: "Kirish sahifasiga qaytish",
+    sending: "Yuborilmoqda...",
+    saving: "Saqlanmoqda...",
+    errors: {
+      wrongCredentials: "Email yoki parol noto'g'ri.",
+      notConfirmed: "Email hali tasdiqlanmagan. Pochtangizdagi xatni oching.",
+      exists: "Bu email bilan hisob allaqachon bor. Kirib ko'ring.",
+      weakPassword: "Parol juda oddiy. Kamida 8 ta belgi, harf va raqam qo'shing.",
+      samePassword: "Yangi parol eskisidan farq qilishi kerak.",
+      mismatch: "Parollar bir xil emas.",
+      rateLimit: "Juda ko'p urinish. Birozdan keyin qayta urinib ko'ring.",
+      unknown: "Nimadir xato ketdi. Qayta urinib ko'ring.",
+    },
+  },
+
+  landing: {
+    title: "Uy navbatlari endi tartibda",
+    lead: "Navbatchilik, musor va generalniy uborka: kim, qachon, nima qiladi. Xonadoshlaringiz bilan bitta joyda.",
+    start: "Bepul boshlash",
+    preview: {
+      title: "Bugun kim nima qiladi?",
+      date: "Shanba",
+      duty: "Eldor",
+      rubbish: "Aziz",
+      cleaning: "Sardor, Jasur",
+    },
+    featuresTitle: "Nima uchun qulay?",
+    features: {
+      schedule: {
+        title: "Avtomatik jadval",
+        text: "Navbatlar o'zi aylanadi. Oy, kalendar va statistika bir qarashda.",
+      },
+      rules: {
+        title: "O'z qoidalaringiz",
+        text: "Qaysi vazifa, necha kunda bir va bir navbatda necha kishi — o'zingiz belgilaysiz.",
+      },
+      done: {
+        title: '"Bajardim" va reyting',
+        text: "Har kim o'z navbatini belgilaydi, oyning eng faoli aniqlanadi.",
+      },
+      invite: {
+        title: "Taklif havolasi",
+        text: "Xonadoshlar havola orqali o'z hisobi bilan qo'shiladi.",
+      },
+      telegram: {
+        title: "Telegram eslatmalar",
+        text: "Har kuni ertalab va kechqurun guruhga navbatlar haqida xabar.",
+      },
+      private: {
+        title: "Faqat sizniki",
+        text: "Uyingiz ma'lumotlarini faqat uyingiz a'zolari ko'radi.",
+      },
+    },
+    stepsTitle: "Qanday boshlanadi?",
+    steps: {
+      signup: { title: "Ro'yxatdan o'ting", text: "Email va parol bilan bir daqiqada." },
+      flat: {
+        title: "Uyingizni yarating",
+        text: "Nom, boshlanish sanasi va xonadoshlarni kiriting.",
+      },
+      invite: {
+        title: "Xonadoshlarni taklif qiling",
+        text: "Havolani Telegram'da yuboring — tamom!",
+      },
+    },
+  },
+
+  newFlat: {
+    title: "Uyingizni yarating",
+    titleAnother: "Yangi uy qo'shish",
+    subtitle: "Bir necha ma'lumot — va navbatlar jadvali tayyor.",
+    stepFlat: "Uy haqida",
+    stepOwner: "Siz haqingizda",
+    ownerHint: "Siz ham shu uyda yashaysiz: navbatlarda birinchi xonadosh sifatida qatnashasiz.",
+    ownerName: "Ismingiz",
+    ownerLastName: "Familiyangiz",
+    submit: "Uyni yaratish",
+    creating: "Yaratilmoqda...",
+    errors: {
+      tooMany: "Bitta hisob ko'pi bilan 5 ta uy yarata oladi.",
+      timezone: "Vaqt mintaqasi noto'g'ri.",
+      ownerName: "Ismingizni kiriting.",
+      unknown: "Uyni yaratib bo'lmadi. Qayta urinib ko'ring.",
+    },
+  },
+
+  flatForm: {
+    name: "Uy nomi",
+    namePlaceholder: "Masalan: Sergeli, 5-uy",
+    startDate: "Navbatlar boshlanish sanasi",
+    startDateHint: "Shu kundan boshlab navbatlar hisoblanadi.",
+    timezone: "Vaqt mintaqasi",
+    address: "Manzil",
+    addressPlaceholder: "Shahar, tuman (ixtiyoriy)",
+    locate: "Joylashuv",
+    locationHint: 'Ob-havo uchun: "Joylashuv" tugmasini uyda turib bosing.',
+    locationSet: "Joylashuv saqlanadi: {lat}, {lon}",
+    geoDenied: "Joylashuvga ruxsat berilmadi.",
+    geoUnsupported: "Brauzeringiz joylashuvni aniqlay olmaydi.",
+  },
+
+  settings: {
+    title: "Uy sozlamalari",
+    flatTitle: "Uy ma'lumotlari",
+    save: "Saqlash",
+    saved: "Saqlandi ✅",
+    saveError: "Saqlab bo'lmadi. Qayta urinib ko'ring.",
+    rulesTitle: "Navbat qoidalari",
+    rulesHint:
+      "O'zgarishlar bugundan keyingi kunlarga ta'sir qiladi: o'tgan kunlar tarixda saqlanadi.",
+    enabled: "Yoqilgan",
+    disabled: "O'chirilgan",
+    everyDays: "Necha kunda bir",
+    people: "Bir navbatda necha kishi",
+    ruleSaved: '"{task}" qoidasi saqlandi ✅',
+    dangerTitle: "Uyni o'chirish",
+    dangerText:
+      "Uy, xonadoshlar, tarix va barcha belgilar butunlay o'chadi. Buni qaytarib bo'lmaydi.",
+    deleteFlat: "Uyni o'chirish",
+    deleteTitle: "Uyni o'chirasizmi?",
+    deleteQuestion: "\"{name}\" va undagi barcha ma'lumotlar o'chiriladi. Ishonchingiz komilmi?",
+    deleteError: "Uyni o'chirib bo'lmadi.",
+  },
+
+  userMenu: {
+    myFlats: "Uylarim",
+    newFlat: "Yangi uy qo'shish",
+    noFlat: "Uy yo'q",
+    leave: "Uydan chiqish",
+    leaveTitle: "Uydan chiqasizmi?",
+    leaveQuestion: '"{name}" uyidan chiqasiz. Qaytish uchun egasidan yangi taklif kerak bo\'ladi.',
+  },
+
+  invite: {
+    title: "Sizni uyga taklif qilishdi",
+    subtitle: "Control Your Flat — uy navbatlari",
+    flatLabel: "Uy",
+    asResident: "Siz bu uyda {name} sifatida qo'shilasiz.",
+    join: "Uyga qo'shilish",
+    signup: "Ro'yxatdan o'tib qo'shilish",
+    login: "Hisobim bor — kirish",
+    signedInAs: "Siz {email} sifatida kirgansiz.",
+    invalidTitle: "Taklif ishlamaydi",
+    modalTitle: "Taklif havolasi",
+    modalText: "{name} shu havola orqali o'z hisobi bilan uyga qo'shiladi.",
+    linkLabel: "Taklif havolasi",
+    copy: "Nusxalash",
+    copied: "Nusxalandi",
+    share: "Ulashish",
+    expires: "Havola 7 kun amal qiladi va faqat bir marta ishlatiladi.",
+    shareText: '{name}, sizni "{flat}" uyiga Control Your Flat\'da taklif qilaman:',
+    errors: {
+      notFound: "Bunday taklif topilmadi.",
+      used: "Bu taklif allaqachon ishlatilgan.",
+      expired: "Taklif muddati tugagan. Uy egasidan yangisini so'rang.",
+      alreadyMember:
+        "Siz allaqachon shu uy a'zosisiz. Bu havola boshqa xonadosh uchun: uni o'shanga yuboring.",
+      alreadyLinked: "Bu xonadosh allaqachon boshqa hisobga ulangan.",
+      unknown: "Qo'shilib bo'lmadi. Qayta urinib ko'ring.",
+    },
+  },
   notFound: {
     title: "Sahifa topilmadi",
     text: "Siz qidirgan sahifa mavjud emas yoki ko'chirilgan.",
@@ -134,6 +314,8 @@ export const uz = {
   },
 
   home: {
+    noTasksTitle: "Vazifalar yoqilmagan",
+    noTasks: "Uy sozlamalarida kamida bitta vazifani yoqing.",
     me: {
       today: "Bugun sizda:",
       tomorrow: "Ertaga sizda:",
@@ -201,7 +383,8 @@ export const uz = {
   },
 
   weather: {
-    flatName: "Toshkent, Sergeli",
+    noLocation:
+      "Uy manzili kiritilmagan. Sozlamalarda joylashuvni qo'shing yoki o'z joylashuvingizni aniqlang.",
     myLocation: "Sizning joylashuvingiz",
     myLocationButton: "Mening joylashuvim",
     locating: "Aniqlanmoqda...",
@@ -304,6 +487,12 @@ export const uz = {
   },
 
   control: {
+    invite: "Taklif",
+    groupHint: "Bir navbatda {count} kishi: qo'shni o'rinlar bitta guruh.",
+    welcome: {
+      title: '"{name}" uyi yaratildi! 🎉',
+      text: "Endi xonadoshlarni qo'shing va har biriga taklif havolasini yuboring.",
+    },
     searchPlaceholder: "Qidirish...",
     searchAria: "Userlarni qidirish",
     add: "+ User qo'shish",
@@ -315,8 +504,8 @@ export const uz = {
     empty: 'Hali hech kim qo\'shilmagan. "{add}" tugmasini bosing.',
     notFound: '"{query}" bo\'yicha hech kim topilmadi.',
     stats: {
+      accounts: "Hisob ulangan",
       users: "Jami xonadoshlar",
-      admins: "Adminlar",
       duty: "Bugungi navbatchi",
       cleaning: "Keyingi uborka",
     },
@@ -329,8 +518,9 @@ export const uz = {
       actions: "Amallar",
     },
     roles: {
-      admin: "Admin",
-      user: "User",
+      owner: "Ega",
+      member: "Hisob",
+      noAccount: "Hisobsiz",
     },
     todayBadge: "Bugun",
     age: "{count} yosh",
@@ -339,7 +529,6 @@ export const uz = {
     selfDelete: "O'zingizni o'chira olmaysiz",
     orderTabsLabel: "Qaysi vazifa tartibi",
     pairLabel: "{number}-juftlik",
-    pairHint: "Uborka ikki kishidan: qo'shni o'rinlar bitta juftlik (1–2, 3–4, 5–6).",
     orderHint:
       "Har bir vazifaning o'z tartibi bor. O'zgarishlar ertadan kuchga kiradi: bugungi va o'tgan kunlar o'zgarmaydi.",
     swap: "Almashtirish",
@@ -355,6 +544,7 @@ export const uz = {
     moveUp: "{name}ni yuqoriga surish",
     moveDown: "{name}ni pastga surish",
     notices: {
+      inviteError: "Taklif havolasini yaratib bo'lmadi.",
       saveError: "Saqlab bo'lmadi: {error}",
       savedButOrder: "Ma'lumotlar saqlandi, lekin navbatni o'zgartirib bo'lmadi.",
       saved: "✅ {name} ma'lumotlari saqlandi",
@@ -386,13 +576,8 @@ export const uz = {
     lastName: "Familiya *",
     age: "Yosh *",
     ageSuffix: "yosh",
-    role: "Rol",
-    roleUser: "User",
-    roleAdmin: "Admin",
     namePlaceholder: "Masalan: Eldor",
     lastNamePlaceholder: "Masalan: Aliyev",
-    adminWarning:
-      "Admin login qila olishi uchun Supabase Authentication'da akkaunti bo'lishi va uning ID'si shu userning user_id'siga mos kelishi kerak.",
     nickname: "Telegram nickname",
     phone: "Telefon",
     email: "Email",

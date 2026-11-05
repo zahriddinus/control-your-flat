@@ -36,15 +36,14 @@ export const en = {
   },
 
   header: {
+    signup: "Sign up",
     mainMenu: "Main menu",
     openMenu: "Open menu",
     closeMenu: "Close menu",
     login: "Log in",
-    welcome: "Welcome, {name}! 👋",
     logoutSuccess: "You've logged out. Bye! 👋",
     logoutError: "Couldn't log out. Please try again.",
     language: "Language",
-    adminBadge: "Admin",
     logout: "Log out",
   },
 
@@ -57,17 +56,12 @@ export const en = {
   },
 
   login: {
-    title: "Admin login",
-    subtitle: "This section is for admins only",
     email: "Email",
     password: "Password",
     showPassword: "Show password",
     hidePassword: "Hide password",
     submit: "Log in",
     checking: "Checking...",
-    wrongCredentials: "Wrong email or password.",
-    profileNotFound: "User profile not found.",
-    adminsOnly: "Sorry, this section is for admins only.",
   },
 
   footer: {
@@ -100,15 +94,6 @@ export const en = {
     error: "Something went wrong",
   },
 
-  whoAmI: {
-    title: "Who are you?",
-    text: "Pick your name: the greeting, your duties and reminders will adapt to you.",
-    privacy: "Your choice is saved only on this device.",
-    later: "Later",
-    choose: "Pick your name",
-    change: "Not {name}?",
-  },
-
   done: {
     button: "Done: {task}",
     doneAt: "{task}: done at {time}",
@@ -127,6 +112,189 @@ export const en = {
     perfect: "Never missed",
   },
 
+  auth: {
+    login: {
+      title: "Log in",
+      subtitle: "Welcome back to your flat's duties",
+      forgot: "Forgot your password?",
+      noAccount: "No account yet?",
+    },
+    signup: {
+      title: "Sign up",
+      subtitle: "Create an account and add your flat in a minute",
+      link: "Sign up",
+      submit: "Create account",
+      loading: "Creating account...",
+      haveAccount: "Already have an account?",
+      checkTitle: "Check your email",
+      checkText: "We sent a confirmation email to {email}. Click the link inside.",
+      checkHint: "No email? Check your spam folder too.",
+    },
+    forgot: {
+      title: "Reset password",
+      subtitle: "Enter your email and we'll send you a link to set a new password",
+      submit: "Send link",
+      sent: "If an account exists for {email}, a link is on its way.",
+    },
+    reset: {
+      title: "New password",
+      submit: "Save password",
+      expiredTitle: "Link expired",
+      expiredText: "This reset link has expired or was already used. Request a new one.",
+    },
+    confirmPassword: "Repeat password",
+    newPassword: "New password",
+    passwordHint: "At least 8 characters.",
+    backToLogin: "Back to log in",
+    sending: "Sending...",
+    saving: "Saving...",
+    errors: {
+      wrongCredentials: "Wrong email or password.",
+      notConfirmed: "Your email isn't confirmed yet. Open the email we sent you.",
+      exists: "An account with this email already exists. Try logging in.",
+      weakPassword: "Password is too weak. Use 8+ characters with letters and numbers.",
+      samePassword: "The new password must differ from the old one.",
+      mismatch: "Passwords don't match.",
+      rateLimit: "Too many attempts. Please try again a bit later.",
+      unknown: "Something went wrong. Please try again.",
+    },
+  },
+
+  landing: {
+    title: "Flat chores, finally in order",
+    lead: "Daily duty, rubbish and deep cleaning: who does what and when. Shared with your flatmates in one place.",
+    start: "Start for free",
+    preview: {
+      title: "Who does what today?",
+      date: "Saturday",
+      duty: "Eldor",
+      rubbish: "Aziz",
+      cleaning: "Sardor, Jasur",
+    },
+    featuresTitle: "Why it's handy",
+    features: {
+      schedule: {
+        title: "Automatic schedule",
+        text: "Turns rotate on their own. Month, calendar and stats at a glance.",
+      },
+      rules: {
+        title: "Your own rules",
+        text: "Pick the tasks, how often they repeat and how many people take a turn.",
+      },
+      done: {
+        title: '"Done" and rating',
+        text: "Everyone marks their turn and the most active flatmate stands out.",
+      },
+      invite: {
+        title: "Invite links",
+        text: "Flatmates join with their own account through a link.",
+      },
+      telegram: {
+        title: "Telegram reminders",
+        text: "A morning and evening message about duties in your group.",
+      },
+      private: { title: "Private by design", text: "Only members of your flat can see its data." },
+    },
+    stepsTitle: "How to start",
+    steps: {
+      signup: { title: "Sign up", text: "Email and password, one minute." },
+      flat: { title: "Create your flat", text: "Name, start date and flatmates." },
+      invite: { title: "Invite flatmates", text: "Send the link on Telegram — done!" },
+    },
+  },
+
+  newFlat: {
+    title: "Create your flat",
+    titleAnother: "Add a flat",
+    subtitle: "A few details and your duty schedule is ready.",
+    stepFlat: "About the flat",
+    stepOwner: "About you",
+    ownerHint: "You live here too, so you take part in the rotation as the first flatmate.",
+    ownerName: "Your first name",
+    ownerLastName: "Your last name",
+    submit: "Create flat",
+    creating: "Creating...",
+    errors: {
+      tooMany: "One account can create up to 5 flats.",
+      timezone: "Invalid time zone.",
+      ownerName: "Enter your first name.",
+      unknown: "Couldn't create the flat. Please try again.",
+    },
+  },
+
+  flatForm: {
+    name: "Flat name",
+    namePlaceholder: "e.g. Sergeli, house 5",
+    startDate: "Duty start date",
+    startDateHint: "The rotation is counted from this day.",
+    timezone: "Time zone",
+    address: "Address",
+    addressPlaceholder: "City, district (optional)",
+    locate: "Location",
+    locationHint: 'For the weather: press "Location" while you\'re at home.',
+    locationSet: "Location will be saved: {lat}, {lon}",
+    geoDenied: "Location access was denied.",
+    geoUnsupported: "Your browser can't detect location.",
+  },
+
+  settings: {
+    title: "Flat settings",
+    flatTitle: "Flat details",
+    save: "Save",
+    saved: "Saved ✅",
+    saveError: "Couldn't save. Please try again.",
+    rulesTitle: "Rotation rules",
+    rulesHint: "Changes apply from tomorrow: past days stay in the history.",
+    enabled: "On",
+    disabled: "Off",
+    everyDays: "Every how many days",
+    people: "People per turn",
+    ruleSaved: '"{task}" rule saved ✅',
+    dangerTitle: "Delete flat",
+    dangerText: "The flat, flatmates, history and all marks will be deleted forever.",
+    deleteFlat: "Delete flat",
+    deleteTitle: "Delete this flat?",
+    deleteQuestion: '"{name}" and all its data will be deleted. Are you sure?',
+    deleteError: "Couldn't delete the flat.",
+  },
+
+  userMenu: {
+    myFlats: "My flats",
+    newFlat: "Add a flat",
+    noFlat: "No flat",
+    leave: "Leave flat",
+    leaveTitle: "Leave this flat?",
+    leaveQuestion: "You'll leave \"{name}\". You'll need a new invite to come back.",
+  },
+
+  invite: {
+    title: "You're invited to a flat",
+    subtitle: "Control Your Flat — flat duties",
+    flatLabel: "Flat",
+    asResident: "You'll join as {name}.",
+    join: "Join the flat",
+    signup: "Sign up and join",
+    login: "I have an account — log in",
+    signedInAs: "You're logged in as {email}.",
+    invalidTitle: "This invite doesn't work",
+    modalTitle: "Invite link",
+    modalText: "{name} will join the flat with their own account through this link.",
+    linkLabel: "Invite link",
+    copy: "Copy",
+    copied: "Copied",
+    share: "Share",
+    expires: "The link works for 7 days and only once.",
+    shareText: '{name}, join our flat "{flat}" on Control Your Flat:',
+    errors: {
+      notFound: "Invite not found.",
+      used: "This invite has already been used.",
+      expired: "This invite has expired. Ask the owner for a new one.",
+      alreadyMember:
+        "You're already a member of this flat. This link is for another flatmate, so send it to them.",
+      alreadyLinked: "This flatmate is already linked to another account.",
+      unknown: "Couldn't join. Please try again.",
+    },
+  },
   notFound: {
     title: "Page not found",
     text: "The page you're looking for doesn't exist or has been moved.",
@@ -134,6 +302,8 @@ export const en = {
   },
 
   home: {
+    noTasksTitle: "No tasks enabled",
+    noTasks: "Turn on at least one task in the flat settings.",
     me: {
       today: "Today you have:",
       tomorrow: "Tomorrow you have:",
@@ -201,7 +371,7 @@ export const en = {
   },
 
   weather: {
-    flatName: "Tashkent, Sergeli",
+    noLocation: "No flat address yet. Add a location in the settings or detect your own.",
     myLocation: "Your location",
     myLocationButton: "My location",
     locating: "Locating...",
@@ -305,6 +475,12 @@ export const en = {
   },
 
   control: {
+    invite: "Invite",
+    groupHint: "{count} people per turn: neighbouring places form one group.",
+    welcome: {
+      title: '"{name}" is ready! 🎉',
+      text: "Now add your flatmates and send each of them an invite link.",
+    },
     searchPlaceholder: "Search...",
     searchAria: "Search users",
     add: "+ Add user",
@@ -316,8 +492,8 @@ export const en = {
     empty: 'Nobody has been added yet. Click "{add}".',
     notFound: 'Nobody found for "{query}".',
     stats: {
+      accounts: "With account",
       users: "Flatmates",
-      admins: "Admins",
       duty: "On duty today",
       cleaning: "Next cleaning",
     },
@@ -330,8 +506,9 @@ export const en = {
       actions: "Actions",
     },
     roles: {
-      admin: "Admin",
-      user: "User",
+      owner: "Owner",
+      member: "Account",
+      noAccount: "No account",
     },
     todayBadge: "Today",
     age: { one: "{count} year old", other: "{count} years old" },
@@ -340,7 +517,6 @@ export const en = {
     selfDelete: "You can't delete yourself",
     orderTabsLabel: "Which task's order",
     pairLabel: "Pair {number}",
-    pairHint: "Cleaning is done in pairs: neighbouring places form a pair (1–2, 3–4, 5–6).",
     orderHint:
       "Each task has its own order. Changes take effect from tomorrow: today and past days stay the same.",
     swap: "Swap",
@@ -356,6 +532,7 @@ export const en = {
     moveUp: "Move {name} up",
     moveDown: "Move {name} down",
     notices: {
+      inviteError: "Couldn't create the invite link.",
       saveError: "Couldn't save: {error}",
       savedButOrder: "Details saved, but the order couldn't be changed.",
       saved: "✅ {name}'s details saved",
@@ -387,13 +564,8 @@ export const en = {
     lastName: "Last name *",
     age: "Age *",
     ageSuffix: "years",
-    role: "Role",
-    roleUser: "User",
-    roleAdmin: "Admin",
     namePlaceholder: "e.g. Eldor",
     lastNamePlaceholder: "e.g. Aliyev",
-    adminWarning:
-      "For an admin to log in, they need an account in Supabase Authentication whose ID matches this user's user_id.",
     nickname: "Telegram nickname",
     phone: "Phone",
     email: "Email",

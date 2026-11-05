@@ -1,17 +1,18 @@
 import { Avatar } from "../../components/Avatar";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
-import { TASKS } from "../../utils/schedule";
+import { useFlat } from "../../context/FlatContext";
 
 // Har bir xonadosh shu oyda nechta navbat olgani: rangli ustunlar ko'rinishida
 export const MonthStats = ({ users, monthSchedules, filterUserId, loading }) => {
   const { t } = useI18n();
+  const { tasks } = useFlat();
 
   const schedules = Object.values(monthSchedules);
 
   const stats = users.map((user) => {
     const counts = Object.fromEntries(
-      TASKS.map((task) => [
+      tasks.map((task) => [
         task.key,
         schedules.filter((schedule) => task.isAssigned(schedule, user.user_id)).length,
       ])
@@ -32,7 +33,7 @@ export const MonthStats = ({ users, monthSchedules, filterUserId, loading }) => 
           <h3 className="schedule__title fw-semibold m-0">{t("schedule.statsTitle")}</h3>
 
           <div className="d-flex flex-wrap gap-3 small text-muted">
-            {TASKS.map((task) => (
+            {tasks.map((task) => (
               <span className="d-inline-flex align-items-center gap-1" key={task.key}>
                 <TaskIcon taskKey={task.key} />
                 {t(`tasks.${task.key}.label`)}
@@ -61,7 +62,7 @@ export const MonthStats = ({ users, monthSchedules, filterUserId, loading }) => 
                 </span>
 
                 <span className="schedule-stats__bar">
-                  {TASKS.map((task) =>
+                  {tasks.map((task) =>
                     counts[task.key] > 0 ? (
                       <span
                         className={`schedule-stats__segment schedule-stats__segment--${task.key}`}

@@ -1,7 +1,7 @@
 import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
 import { WeatherIcon } from "../../components/WeatherIcon";
-import { TASKS } from "../../utils/schedule";
+import { useFlat } from "../../context/FlatContext";
 import { findDone } from "../../utils/done";
 import { useI18n } from "../../i18n";
 import { formatLongDate, getDayOfYear } from "../../utils/date";
@@ -97,20 +97,11 @@ const getGreeting = (hour) => {
 const formatTime = (value) =>
   new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
 
-// me - "Men kimman?"da tanlangan odam (bo'lmasa null), onWhoAmI - tanlov oynasini ochadi.
+// me - hisobimga ulangan xonadosh (bo'lmasa null).
 // done - bugungi "Bajardim" belgilari (null bo'lsa tugmalar ko'rinmaydi)
-export const Greeting = ({
-  now,
-  me,
-  schedules,
-  loading,
-  onWhoAmI,
-  done,
-  doneBusy,
-  onDone,
-  onUndo,
-}) => {
+export const Greeting = ({ now, me, schedules, loading, done, doneBusy, onDone, onUndo }) => {
   const { t, lang } = useI18n();
+  const { tasks } = useFlat();
   const tip = TIPS[getDayOfYear(now) % TIPS.length];
   const greeting = getGreeting(now.getHours());
   const greetingText = t(`home.greeting.${greeting.key}`);
@@ -121,7 +112,7 @@ export const Greeting = ({
     : t("home.greeting.title", { greeting: greetingText });
 
   const getMyTasks = (schedule) =>
-    me ? TASKS.filter((task) => task.isAssigned(schedule, me.user_id)) : [];
+    me ? tasks.filter((task) => task.isAssigned(schedule, me.user_id)) : [];
 
   const myDays = [
     { key: "today", tasks: getMyTasks(schedules[0]) },
@@ -215,13 +206,6 @@ export const Greeting = ({
             )}
 
             {renderDoneButtons()}
-
-            {onWhoAmI && (
-              <button type="button" className="home__who-btn" onClick={onWhoAmI}>
-                <AppIcon name="user" />
-                {me ? t("whoAmI.change", { name: me.name.trim() }) : t("whoAmI.choose")}
-              </button>
-            )}
           </div>
 
           <div className="home__greeting-scene">

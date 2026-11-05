@@ -3,15 +3,14 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabese";
 import { PageSkeleton } from "../../components/Skeleton";
 import { EmptyState, ErrorState } from "../../components/EmptyState";
-import { WhoAmI } from "../../components/WhoAmI";
 import { Confetti } from "../../components/Confetti";
 import { Notice, useNotice } from "../../components/Notice";
+import { useFlat } from "../../context/FlatContext";
 import { useI18n } from "../../i18n";
 import { addDays, formatDate, parseDate } from "../../utils/date";
-import { fetchSchedules, TASKS } from "../../utils/schedule";
+import { fetchSchedules } from "../../utils/schedule";
 import { queryWithCache } from "../../utils/offline";
 import { fetchDone, markDone, unmarkDone } from "../../utils/done";
-import { useMyUser } from "../../hooks/useMyUser";
 import { Greeting } from "./Greeting";
 import { WeatherCard } from "./WeatherCard";
 import { TodayTasks } from "./TodayTasks";
@@ -22,12 +21,12 @@ import { WeekView } from "./WeekView";
 import { QuickLinks } from "./QuickLinks";
 import { MonthRating } from "./MonthRating";
 
-// Musor har 3 kunda bir kishiga, uborka har 7 kunda ikki kishiga beriladi.
-// Shuncha kun ichida har bir xonadoshning har bir navbati kamida bir marta keladi
-const getDaysAhead = (usersCount) => Math.max(7, usersCount * 3, 7 * Math.ceil(usersCount / 2));
-
-// "Keyinroq" bosilgan bo'lsa, "Men kimman?" oynasi o'zi qayta ochilmaydi
-const SKIP_KEY = "whoAmISkipped";
+// Shuncha kun oldinga qaraladi: har bir vazifada har bir xonadoshga navbat kamida bir marta keladi
+const getDaysAhead = (usersCount, tasks) =>
+  Math.min(
+    90,
+    Math.max(7, ...tasks.map((task) => task.everyDays * Math.ceil(usersCount / task.people)))
+  );
 
 const readStorage = (key) => {
   try {
@@ -47,38 +46,50 @@ const writeStorage = (key, value) => {
 
 export const Home = () => {
   const { t } = useI18n();
+  const { flat, flatId, residentId, tasks } = useFlat();
   const [users, setUsers] = useState([]);
-  const [myUserId, setMyUserId] = useMyUser();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [schedules, setSchedules] = useState([]);
   const [schedulesLoading, setSchedulesLoading] = useState(true);
   const [scheduleError, setScheduleError] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [whoAmIOpen, setWhoAmIOpen] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  // Bugungi "Bajardim" belgilari. null - funksiya hali yo'q (SQL ishga tushirilmagan) yoki yuklanmoqda
+  // "Mening navbatim"da kim ko'rilmoqda: boshida o'zim, boshqani ham tanlash mumkin
+  const [viewUserId, setViewUserId] = useState(residentId);
+
+  // Bugungi "Bajardim" belgilari (null - yuklanmoqda)
   const [doneToday, setDoneToday] = useState(null);
   const [doneBusy, setDoneBusy] = useState(null);
   const [notice, showNotice] = useNotice();
 
+  useEffect(() => setViewUserId(residentId), [residentId]);
+
   // GET USERS
 
   useEffect(() => {
+    let cancelled = false;
+
     const getUsers = async () => {
+      setLoading(true);
+
       // Internet bo'lmasa, oxirgi saqlangan ro'yxat ko'rsatiladi
-      const { data, error } = await queryWithCache("users:home", () =>
+      const { data, error } = await queryWithCache(`users:home:${flatId}`, () =>
         supabase
           .from("users")
           .select("user_id, name, last_name, duty_order")
+          .eq("flat_id", flatId)
           .order("duty_order", { ascending: true })
       );
+
+      if (cancelled) return;
 
       if (error) {
         console.error(error);
         setError(error);
       } else {
+        setError(null);
         setUsers(data);
       }
 
@@ -86,7 +97,11 @@ export const Home = () => {
     };
 
     getUsers();
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [flatId]);
 
   // CURRENT DATE UPDATE
 
@@ -101,6 +116,7 @@ export const Home = () => {
   // Faqat kun almashganda o'zgaradi, shuning uchun navbatlar har daqiqa qayta so'ralmaydi
   const todayKey = formatDate(currentDate);
   const today = useMemo(() => parseDate(todayKey), [todayKey]);
+  const daysAhead = getDaysAhead(users.length, tasks);
 
   // GET SCHEDULES (bugundan boshlab)
 
@@ -113,11 +129,8 @@ export const Home = () => {
       setSchedulesLoading(true);
 
       try {
-        const dates = Array.from({ length: getDaysAhead(users.length) }, (_, index) =>
-          addDays(today, index)
-        );
-
-        const result = await fetchSchedules(dates);
+        const dates = Array.from({ length: daysAhead }, (_, index) => addDays(today, index));
+        const result = await fetchSchedules(flatId, dates);
 
         if (cancelled) return;
 
@@ -140,35 +153,33 @@ export const Home = () => {
     return () => {
       cancelled = true;
     };
-  }, [today, users.length]);
+  }, [flatId, today, users.length, daysAhead]);
 
   // GET TODAY'S DONE MARKS
 
   useEffect(() => {
     let cancelled = false;
 
-    fetchDone(todayKey, todayKey)
+    setDoneToday(null);
+
+    fetchDone(flatId, todayKey, todayKey)
       .then((records) => !cancelled && setDoneToday(records))
-      .catch((error) => console.error("Done error:", error));
+      .catch((error) => {
+        console.error("Done error:", error);
+        if (!cancelled) setDoneToday([]);
+      });
 
     return () => {
       cancelled = true;
     };
-  }, [todayKey]);
+  }, [flatId, todayKey]);
 
-  // Tanlangan odam ro'yxatda bo'lmasa (masalan, o'chirilgan), hech kim tanlanmagan deb olinadi
-  const me = users.find((user) => user.user_id === myUserId) ?? null;
-
-  // Birinchi kirishda "Men kimman?" oynasi o'zi ochiladi
-  useEffect(() => {
-    if (!loading && users.length && !me && !readStorage(SKIP_KEY)) {
-      setWhoAmIOpen(true);
-    }
-  }, [loading, users.length, me]);
+  // Men - hisobimga ulangan xonadosh
+  const me = users.find((user) => user.user_id === residentId) ?? null;
 
   // Bugun navbatim bo'lsa, kuniga bir marta konfetti
   const hasTaskToday =
-    !schedulesLoading && me && TASKS.some((task) => task.isAssigned(schedules[0], me.user_id));
+    !schedulesLoading && me && tasks.some((task) => task.isAssigned(schedules[0], me.user_id));
 
   useEffect(() => {
     if (!hasTaskToday) return;
@@ -181,17 +192,12 @@ export const Home = () => {
     setShowConfetti(true);
   }, [hasTaskToday, me, todayKey]);
 
-  const handleWhoAmISelect = (userId) => {
-    setMyUserId(userId);
-    setWhoAmIOpen(false);
-  };
-
   // "Bajardim" va uni bekor qilish (faqat bugungi o'z vazifasi uchun)
   const handleDone = async (taskKey) => {
     setDoneBusy(taskKey);
 
     try {
-      const doneAt = await markDone(taskKey, me.user_id);
+      const doneAt = await markDone(flatId, taskKey);
 
       setDoneToday((prev) => [
         ...(prev ?? []).filter(
@@ -213,7 +219,7 @@ export const Home = () => {
     setDoneBusy(taskKey);
 
     try {
-      await unmarkDone(taskKey, me.user_id);
+      await unmarkDone(flatId, taskKey);
 
       setDoneToday((prev) =>
         (prev ?? []).filter((record) => !(record.task === taskKey && record.user_id === me.user_id))
@@ -224,11 +230,6 @@ export const Home = () => {
     } finally {
       setDoneBusy(null);
     }
-  };
-
-  const handleWhoAmIClose = () => {
-    writeStorage(SKIP_KEY, "1");
-    setWhoAmIOpen(false);
   };
 
   if (loading) {
@@ -248,7 +249,14 @@ export const Home = () => {
       return <ErrorState text={t("home.schedulesError")} />;
     }
 
+    if (!tasks.length) {
+      return (
+        <EmptyState variant="notFound" title={t("home.noTasksTitle")} text={t("home.noTasks")} />
+      );
+    }
+
     const scheduleProps = { users, schedules, today, loading: schedulesLoading };
+    const hasCleaning = tasks.some((task) => task.key === "cleaning");
 
     return (
       <>
@@ -262,13 +270,15 @@ export const Home = () => {
         {!schedulesLoading && <DayHero users={users} schedule={schedules[0]} done={doneToday} />}
 
         <div className="row g-3 mb-4">
-          <div className="col-12 col-lg-6">
-            <MyTurn {...scheduleProps} userId={myUserId} onUserChange={setMyUserId} />
+          <div className={`col-12 ${hasCleaning ? "col-lg-6" : ""}`}>
+            <MyTurn {...scheduleProps} userId={viewUserId} onUserChange={setViewUserId} />
           </div>
 
-          <div className="col-12 col-lg-6">
-            <CleaningCountdown {...scheduleProps} />
-          </div>
+          {hasCleaning && (
+            <div className="col-12 col-lg-6">
+              <CleaningCountdown {...scheduleProps} />
+            </div>
+          )}
         </div>
 
         <WeekView {...scheduleProps} />
@@ -287,27 +297,18 @@ export const Home = () => {
           me={me}
           schedules={schedules}
           loading={schedulesLoading}
-          onWhoAmI={users.length ? () => setWhoAmIOpen(true) : undefined}
           done={doneToday}
           doneBusy={doneBusy}
           onDone={handleDone}
           onUndo={handleUndo}
         />
 
-        <WeatherCard users={users} schedules={schedules} />
+        <WeatherCard users={users} schedules={schedules} flat={flat} />
 
         {renderSchedules()}
 
         <QuickLinks users={users} today={today} />
       </div>
-
-      <WhoAmI
-        isOpen={whoAmIOpen}
-        users={users}
-        currentId={me?.user_id}
-        onSelect={handleWhoAmISelect}
-        onClose={handleWhoAmIClose}
-      />
 
       {showConfetti && <Confetti onDone={() => setShowConfetti(false)} />}
 

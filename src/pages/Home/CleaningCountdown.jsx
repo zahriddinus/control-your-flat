@@ -1,20 +1,21 @@
 import { useI18n } from "../../i18n";
 import { addDays, formatLongDate } from "../../utils/date";
-import { TASKS, getAssignedNames } from "../../utils/schedule";
+import { getAssigned, getAssignedNames } from "../../utils/schedule";
+import { useFlat } from "../../context/FlatContext";
 import { TaskIcon } from "../../components/TaskIcon";
-
-// get_duty_schedule'da generalniy uborka har 7 kunda bo'ladi
-const CLEANING_INTERVAL = 7;
-
-const cleaningTask = TASKS.find((task) => task.key === "cleaning");
 
 export const CleaningCountdown = ({ users, schedules, today, loading }) => {
   const { t, lang } = useI18n();
-  const days = schedules.findIndex((schedule) => schedule?.cleaning?.length > 0);
+  const { tasks } = useFlat();
+
+  // Uborka necha kunda bir bo'lishi - uy qoidasidan
+  const cleaningTask = tasks.find((task) => task.key === "cleaning");
+  const interval = cleaningTask?.everyDays ?? 7;
+  const days = schedules.findIndex((schedule) => getAssigned(schedule, "cleaning").length > 0);
 
   const names = getAssignedNames(users, cleaningTask, schedules[days]);
 
-  const progress = days === -1 ? 0 : ((CLEANING_INTERVAL - days) / CLEANING_INTERVAL) * 100;
+  const progress = days === -1 ? 0 : (Math.max(0, interval - days) / interval) * 100;
 
   return (
     <section className="home__panel card border-0 shadow-sm h-100 text-start">

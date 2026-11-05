@@ -1,6 +1,8 @@
 import "./controlUsers.scss";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "../../lib/supabese";
+import { useFlat } from "../../context/FlatContext";
 import { UserModal } from "../../components/UserModal";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { Avatar } from "../../components/Avatar";
@@ -12,18 +14,27 @@ import { AppIcon } from "../../components/AppIcon";
 import { useI18n } from "../../i18n";
 import { addDays, formatLongDate } from "../../utils/date";
 import { TASKS, fetchSchedules, sortUsersByOrder } from "../../utils/schedule";
+import { InviteModal } from "./InviteModal";
 import { StatsCards } from "./StatsCards";
 import { UsersTable } from "./UsersTable";
 import { UserCards } from "./UserCards";
 
 export const ControlUsers = () => {
   const { t, lang } = useI18n();
+  const location = useLocation();
+  const { flat, flatId, residentId, tasks } = useFlat();
   const [users, setUsers] = useState([]);
+
+  // Qaysi xonadoshning o'z hisobi bor: { [user_id]: "owner" | "member" }
+  const [accounts, setAccounts] = useState({});
+  const [invite, setInvite] = useState(null);
+
+  // Uy endigina yaratilgan bo'lsa, birinchi qadamlar haqida eslatma
+  const [showWelcome, setShowWelcome] = useState(Boolean(location.state?.welcome));
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
   const [weekSchedules, setWeekSchedules] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState(null);
 
   // Qaysi vazifaning tartibi ko'rsatilmoqda: har birining o'z tartibi bor
   const [orderTask, setOrderTask] = useState("duty");
@@ -49,19 +60,33 @@ export const ControlUsers = () => {
   // GET USERS
 
   const loadUsers = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*")
-      .order("duty_order", { ascending: true });
+    const [usersResult, membersResult] = await Promise.all([
+      supabase
+        .from("users")
+        .select("*")
+        .eq("flat_id", flatId)
+        .order("duty_order", { ascending: true }),
+      supabase.from("flat_members").select("resident_id, role").eq("flat_id", flatId),
+    ]);
+
+    const error = usersResult.error ?? membersResult.error;
 
     if (error) {
       console.error(error);
       return error;
     }
 
-    setUsers(data);
+    setUsers(usersResult.data);
+    setAccounts(
+      Object.fromEntries(
+        membersResult.data
+          .filter((member) => member.resident_id)
+          .map((member) => [member.resident_id, member.role])
+      )
+    );
+
     return null;
-  }, []);
+  }, [flatId]);
 
   useEffect(() => {
     const init = async () => {
@@ -78,13 +103,6 @@ export const ControlUsers = () => {
     if (error) showNotice(t("control.refreshError"), "danger");
   }
 
-  // O'zini o'chirib qo'ymasligi uchun hozirgi admin kimligini bilamiz
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setCurrentUserId(data.session?.user?.id ?? null);
-    });
-  }, []);
-
   // Statistika va bugungi navbatchi uchun 7 kunlik navbatlar.
   // Tartib o'zgarsa, navbatchilar ham o'zgaradi, shuning uchun users'ga bog'liq
   useEffect(() => {
@@ -95,6 +113,7 @@ export const ControlUsers = () => {
     const getWeekSchedules = async () => {
       try {
         const result = await fetchSchedules(
+          flatId,
           Array.from({ length: 7 }, (_, index) => addDays(today, index))
         );
 
@@ -109,16 +128,22 @@ export const ControlUsers = () => {
     return () => {
       cancelled = true;
     };
-  }, [users, today]);
+  }, [flatId, users, today]);
 
-  const orderTaskDef = TASKS.find((task) => task.key === orderTask);
+  // Tab faqat uyda yoqilgan vazifalar uchun; hech biri yoqilmagan bo'lsa - navbatchilik tartibi
+  const orderTaskDef =
+    tasks.find((task) => task.key === orderTask) ??
+    tasks[0] ??
+    TASKS.find((task) => task.key === "duty");
   const orderColumn = orderTaskDef.orderColumn;
 
   // Tanlangan tabdagi vazifada bugun kim turibdi (musor va uborka har kuni bo'lmaydi)
   const todayIds = users
     .filter((user) => orderTaskDef.isAssigned(weekSchedules[0], user.user_id))
     .map((user) => user.user_id);
-  const orderTaskTitle = t(`tasks.${orderTask}.title`);
+  const orderTaskKey = orderTaskDef.key;
+  const orderTaskTitle = t(`tasks.${orderTaskKey}.title`);
+  const groupSize = orderTaskDef.people ?? 1;
 
   const sortedUsers = useMemo(() => sortUsersByOrder(users, orderColumn), [users, orderColumn]);
 
@@ -164,7 +189,6 @@ export const ControlUsers = () => {
     const dutyOrder = Number(formData.dutyOrder);
 
     const fields = {
-      role: formData.role,
       name: formData.name,
       last_name: formData.lastName,
       age: Number(formData.age),
@@ -209,6 +233,7 @@ export const ControlUsers = () => {
     // ADD USER: surish, qo'shish va tarixni saqlash bitta tranzaksiyada
     else {
       const { data: newOrder, error: insertError } = await supabase.rpc("add_user", {
+        p_flat: flatId,
         p_user: fields,
         p_duty_order: dutyOrder > 0 ? dutyOrder : null,
       });
@@ -243,7 +268,7 @@ export const ControlUsers = () => {
     setSwapSource(null);
 
     const { error } = await supabase.rpc("move_user_in_order", {
-      p_task: orderTask,
+      p_task: orderTaskKey,
       p_user_id: user.user_id,
       p_new_order: newOrder,
     });
@@ -281,7 +306,7 @@ export const ControlUsers = () => {
     setSwapping(true);
 
     const { error } = await supabase.rpc("swap_users_in_order", {
-      p_task: orderTask,
+      p_task: orderTaskKey,
       p_user_a: first.user_id,
       p_user_b: second.user_id,
     });
@@ -329,6 +354,28 @@ export const ControlUsers = () => {
 
   const cancelDelete = useCallback(() => setUserToDelete(null), []);
 
+  // INVITE: xonadosh o'z hisobi bilan kirishi uchun havola (7 kun amal qiladi)
+
+  async function handleInvite(user) {
+    setBusy(true);
+
+    const { data: code, error } = await supabase.rpc("create_invite", {
+      p_resident_id: user.user_id,
+    });
+
+    setBusy(false);
+
+    if (error) {
+      console.error(error);
+      showNotice(t("control.notices.inviteError"), "danger");
+      return;
+    }
+
+    setInvite({ user, link: `${window.location.origin}/invite/${code}` });
+  }
+
+  const closeInvite = useCallback(() => setInvite(null), []);
+
   if (loading) {
     return <PageSkeleton variant="control" />;
   }
@@ -356,15 +403,17 @@ export const ControlUsers = () => {
       users: filteredUsers,
       orderColumn,
       todayIds,
-      todayTaskKey: orderTask,
-      pairMode: orderTask === "cleaning",
-      currentUserId,
+      todayTaskKey: orderTaskKey,
+      groupSize,
+      accounts,
+      currentUserId: residentId,
       busy,
       swapSourceId: swapSource?.user_id,
       onMove: handleMove,
       onSwap: handleSwap,
       onEdit: handleEdit,
       onDelete: setUserToDelete,
+      onInvite: handleInvite,
     };
 
     return (
@@ -415,7 +464,25 @@ export const ControlUsers = () => {
           </div>
         </div>
 
-        <StatsCards users={users} schedules={weekSchedules} />
+        {showWelcome && (
+          <div className="control__welcome alert alert-success d-flex align-items-start gap-3 text-start">
+            <AppIcon name="check" className="fs-4 flex-shrink-0" />
+
+            <div className="flex-grow-1">
+              <strong className="d-block">{t("control.welcome.title", { name: flat.name })}</strong>
+              <span className="small">{t("control.welcome.text")}</span>
+            </div>
+
+            <button
+              type="button"
+              className="btn-close"
+              aria-label={t("common.close")}
+              onClick={() => setShowWelcome(false)}
+            ></button>
+          </div>
+        )}
+
+        <StatsCards users={users} schedules={weekSchedules} accounts={accounts} />
 
         {/* QAYSI VAZIFA TARTIBI */}
 
@@ -424,15 +491,15 @@ export const ControlUsers = () => {
           role="group"
           aria-label={t("control.orderTabsLabel")}
         >
-          {TASKS.map((task) => (
+          {tasks.map((task) => (
             <button
               key={task.key}
               type="button"
               className={`control__tab btn d-inline-flex align-items-center justify-content-center gap-2 ${
-                orderTask === task.key ? "active" : ""
+                orderTaskKey === task.key ? "active" : ""
               }`}
               onClick={() => changeOrderTask(task.key)}
-              aria-pressed={orderTask === task.key}
+              aria-pressed={orderTaskKey === task.key}
             >
               <TaskIcon taskKey={task.key} />
               {t(`tasks.${task.key}.title`)}
@@ -445,10 +512,10 @@ export const ControlUsers = () => {
           {t("control.orderHint")}
         </p>
 
-        {orderTask === "cleaning" && (
+        {groupSize > 1 && (
           <p className="control__hint control__hint--pairs small text-start mb-3">
-            <TaskIcon taskKey="cleaning" />
-            {t("control.pairHint")}
+            <TaskIcon taskKey={orderTaskKey} />
+            {t("control.groupHint", { count: groupSize })}
           </p>
         )}
 
@@ -565,6 +632,8 @@ export const ControlUsers = () => {
           </div>
         )}
       </ConfirmModal>
+
+      <InviteModal invite={invite} flatName={flat.name} onClose={closeInvite} />
 
       <Notice notice={notice} />
     </div>

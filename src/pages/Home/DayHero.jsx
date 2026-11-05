@@ -3,6 +3,7 @@ import { Avatar } from "../../components/Avatar";
 import { AppIcon } from "../../components/AppIcon";
 import { useI18n } from "../../i18n";
 import { findDone } from "../../utils/done";
+import { getAssigned } from "../../utils/schedule";
 
 // Bootstrap Icons
 const TROPHY_PATH =
@@ -31,7 +32,7 @@ export const DayHero = ({ users, schedule, done }) => {
   const [thanked, setThanked] = useState(false);
   const [burstKey, setBurstKey] = useState(0);
 
-  const hero = users.find((user) => user.user_id === schedule?.duty?.user_id);
+  const hero = users.find((user) => user.user_id === getAssigned(schedule, "duty")[0]?.user_id);
 
   if (!hero) return null;
 

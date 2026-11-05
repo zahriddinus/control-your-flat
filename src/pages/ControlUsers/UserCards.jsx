@@ -11,7 +11,8 @@ export const UserCards = ({
   lastUserId,
   todayIds,
   todayTaskKey,
-  pairMode,
+  groupSize = 1,
+  accounts = {},
   currentUserId,
   busy,
   swapSourceId,
@@ -19,6 +20,7 @@ export const UserCards = ({
   onSwap,
   onEdit,
   onDelete,
+  onInvite,
 }) => {
   const { t } = useI18n();
 
@@ -26,8 +28,9 @@ export const UserCards = ({
     <div className="d-md-none d-flex flex-column gap-3">
       {users.map((user) => {
         const isToday = todayIds.includes(user.user_id);
-        // Uborka tabida qo'shni o'rinlar juftlik: 1-2, 3-4, ...
-        const pairNumber = Math.ceil((user[orderColumn] ?? 0) / 2);
+        // Bir navbatda bir necha kishi bo'lsa, qo'shni o'rinlar guruh
+        const pairMode = groupSize > 1;
+        const pairNumber = Math.ceil((user[orderColumn] ?? 0) / groupSize);
         const pairClass = pairMode ? `control__card--pair-${pairNumber % 2 ? "odd" : "even"}` : "";
 
         return (
@@ -55,7 +58,11 @@ export const UserCards = ({
                     {user.name} {user.last_name}
                   </span>
 
-                  <RoleBadges user={user} isToday={isToday} taskKey={todayTaskKey} />
+                  <RoleBadges
+                    account={accounts[user.user_id]}
+                    isToday={isToday}
+                    taskKey={todayTaskKey}
+                  />
                 </div>
 
                 <div className="btn-group-vertical btn-group-sm">
@@ -110,6 +117,7 @@ export const UserCards = ({
                 onSwap={onSwap}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onInvite={accounts[user.user_id] ? undefined : onInvite}
               />
             </div>
           </div>

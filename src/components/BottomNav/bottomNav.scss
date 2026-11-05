@@ -82,13 +82,13 @@ $bottom-nav-height: 64px;
     }
   }
 
-  // Sahifaning oxirgi qismi menyu ostida qolib ketmasin
-  .App {
+  // Sahifaning oxirgi qismi menyu ostida qolib ketmasin (menyu faqat uy a'zolariga chiqadi)
+  .App:has(.bottom-nav) {
     padding-bottom: calc(#{$bottom-nav-height} + env(safe-area-inset-bottom));
   }
 
   // "Yuqoriga" tugmasi menyudan yuqorida turadi
-  .scroll-top {
+  .App:has(.bottom-nav) .scroll-top {
     bottom: calc(#{$bottom-nav-height} + 16px + env(safe-area-inset-bottom));
   }
 }

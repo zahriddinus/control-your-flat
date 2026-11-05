@@ -1,14 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { WeatherIcon } from "../../components/WeatherIcon";
 import { useI18n } from "../../i18n";
 import { fetchAddress } from "../../utils/geocode";
-import {
-  FLAT_LOCATION,
-  fetchWeather,
-  getDailyWeather,
-  getWeatherInfo,
-  getWeatherTips,
-} from "../../utils/weather";
+import { fetchWeather, getDailyWeather, getWeatherInfo, getWeatherTips } from "../../utils/weather";
 
 // Ob-havo har 30 daqiqada yangilanadi
 const REFRESH_INTERVAL = 30 * 60 * 1000;
@@ -49,9 +43,24 @@ const SmallIcon = ({ name }) => (
   </svg>
 );
 
-export const WeatherCard = ({ users, schedules }) => {
+// flat - joriy uy: manzili kiritilgan bo'lsa, boshida uyning ob-havosi ko'rinadi
+export const WeatherCard = ({ users, schedules, flat }) => {
   const { t, lang } = useI18n();
-  const [location, setLocation] = useState(FLAT_LOCATION);
+
+  const flatLocation = useMemo(
+    () =>
+      flat?.latitude != null && flat?.longitude != null
+        ? {
+            latitude: flat.latitude,
+            longitude: flat.longitude,
+            timezone: flat.timezone,
+            isFlat: true,
+          }
+        : null,
+    [flat?.latitude, flat?.longitude, flat?.timezone]
+  );
+
+  const [location, setLocation] = useState(flatLocation);
   const [weather, setWeather] = useState(null);
   const [error, setError] = useState(null);
   const [locating, setLocating] = useState(false);
@@ -63,7 +72,14 @@ export const WeatherCard = ({ users, schedules }) => {
 
   const canLocate = "geolocation" in navigator;
 
+  // Boshqa uyga o'tilsa yoki uy manzili o'zgarsa
   useEffect(() => {
+    setLocation((current) => (!current || current.isFlat ? flatLocation : current));
+  }, [flatLocation]);
+
+  useEffect(() => {
+    if (!location) return;
+
     let cancelled = false;
 
     const getWeather = async () => {
@@ -127,7 +143,7 @@ export const WeatherCard = ({ users, schedules }) => {
     setAddress(null);
     setGeoError("");
     setWeather(null);
-    setLocation(FLAT_LOCATION);
+    setLocation(flatLocation);
   }
 
   const current = weather?.current;
@@ -142,10 +158,14 @@ export const WeatherCard = ({ users, schedules }) => {
     : [];
 
   const tips = weather
-    ? getWeatherTips({ weather, users, schedules, isFlat: location.isFlat, t })
+    ? getWeatherTips({ weather, users, schedules, isFlat: Boolean(location?.isFlat), t })
     : [];
 
   const renderContent = () => {
+    if (!location) {
+      return <p className="m-0">{t("weather.noLocation")}</p>;
+    }
+
     if (error) {
       return <p className="m-0">{t("weather.error")}</p>;
     }
@@ -226,10 +246,12 @@ export const WeatherCard = ({ users, schedules }) => {
               className="home__section-title d-flex align-items-center gap-2 m-0"
               title={address ? `${address.title}, ${address.subtitle}` : undefined}
             >
-              <SmallIcon name={location.isFlat ? "home" : "pin"} />
+              <SmallIcon name={!location || location.isFlat ? "home" : "pin"} />
               <span className="text-truncate">
                 {address?.title ??
-                  (location.isFlat ? t("weather.flatName") : t("weather.myLocation"))}
+                  (!location || location.isFlat
+                    ? flat?.address || flat?.name
+                    : t("weather.myLocation"))}
               </span>
             </h2>
 
@@ -241,7 +263,7 @@ export const WeatherCard = ({ users, schedules }) => {
           </div>
 
           {canLocate &&
-            (location.isFlat ? (
+            (!location || location.isFlat ? (
               <button
                 className="home__weather-btn btn btn-sm d-inline-flex align-items-center gap-1"
                 type="button"
