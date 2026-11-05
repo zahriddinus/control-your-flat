@@ -1,0 +1,154 @@
+.empty-state {
+  --es-main: #0d6efd;
+  --es-soft: rgba(13, 110, 253, 0.1);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 16px;
+  border: 1px dashed var(--bs-border-color);
+  border-radius: 16px;
+  text-align: center;
+  background-color: var(--bs-body-bg);
+  animation: empty-state-in 0.4s ease both;
+
+  &--notFound {
+    --es-main: #6f42c1;
+    --es-soft: rgba(111, 66, 193, 0.1);
+  }
+
+  &--error {
+    --es-main: #dc3545;
+    --es-soft: rgba(220, 53, 69, 0.08);
+  }
+
+  &--compact {
+    padding: 20px 16px;
+
+    .empty-state__art {
+      width: 88px;
+      height: 88px;
+    }
+  }
+
+  &__art {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 8px;
+    animation: empty-state-float 3.5s ease-in-out infinite;
+  }
+
+  &__title {
+    margin-bottom: 4px;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  &__text {
+    max-width: 360px;
+    margin-bottom: 12px;
+    color: var(--bs-secondary-color);
+    font-size: 0.9rem;
+  }
+
+  // Rasm bo'laklari
+  .es-shadow {
+    fill: var(--bs-secondary-bg);
+  }
+
+  .es-soft {
+    fill: var(--es-soft);
+  }
+
+  .es-line,
+  .es-handle {
+    fill: none;
+    stroke: var(--es-main);
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .es-handle {
+    stroke-width: 7;
+  }
+
+  .es-main-fill {
+    fill: var(--es-main);
+  }
+
+  .es-door {
+    fill: var(--bs-body-bg);
+    stroke: var(--es-main);
+    stroke-width: 3;
+  }
+
+  .es-plus {
+    fill: #20c997;
+  }
+
+  .es-plus-sign {
+    stroke: #fff;
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+
+  .es-plug {
+    fill: var(--es-main);
+  }
+
+  .es-zap {
+    fill: none;
+    stroke: #ffc107;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    animation: empty-state-blink 1.6s ease-in-out infinite;
+  }
+
+  .es-sparkle {
+    fill: #ffc107;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: empty-state-twinkle 2s ease-in-out infinite;
+
+    &--late {
+      animation-delay: 1s;
+    }
+  }
+}
+
+@keyframes empty-state-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes empty-state-float {
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes empty-state-blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes empty-state-twinkle {
+  50% {
+    opacity: 0.3;
+    transform: scale(0.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .empty-state,
+  .empty-state__art,
+  .empty-state .es-zap,
+  .empty-state .es-sparkle {
+    animation: none;
+  }
+}

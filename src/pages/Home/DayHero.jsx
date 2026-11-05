@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Avatar } from "../../components/Avatar";
+import { AppIcon } from "../../components/AppIcon";
 import { useI18n } from "../../i18n";
+import { findDone } from "../../utils/done";
 
 // Bootstrap Icons
 const TROPHY_PATH =
@@ -24,7 +26,7 @@ const HEARTS_COUNT = 6;
 
 // Bugungi navbatchiga kichik minnatdorchilik.
 // "Rahmat" faqat animatsiya: hech qayerga saqlanmaydi
-export const DayHero = ({ users, schedule }) => {
+export const DayHero = ({ users, schedule, done }) => {
   const { t } = useI18n();
   const [thanked, setThanked] = useState(false);
   const [burstKey, setBurstKey] = useState(0);
@@ -32,6 +34,8 @@ export const DayHero = ({ users, schedule }) => {
   const hero = users.find((user) => user.user_id === schedule?.duty?.user_id);
 
   if (!hero) return null;
+
+  const isDone = Boolean(findDone(done, "duty", hero.user_id));
 
   function handleThanks() {
     setThanked(true);
@@ -61,7 +65,14 @@ export const DayHero = ({ users, schedule }) => {
             {hero.name.trim()} {hero.last_name}
           </h3>
 
-          <span className="text-muted">{t("home.hero.text")}</span>
+          {isDone ? (
+            <span className="home__hero-done">
+              <AppIcon name="check" />
+              {t("done.heroDone")}
+            </span>
+          ) : (
+            <span className="text-muted">{t("home.hero.text")}</span>
+          )}
         </div>
 
         <button

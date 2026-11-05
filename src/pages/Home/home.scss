@@ -89,7 +89,6 @@
     }
   }
 
-
   &__task-name {
     font-size: 1.1rem;
   }
@@ -490,7 +489,6 @@
       font-size: 1.5rem;
     }
 
-
     &__countdown {
       font-size: 1.4rem;
     }
@@ -609,5 +607,279 @@
 
   &--chat {
     background: linear-gradient(135deg, #229ed9 0%, #2aabee 100%);
+  }
+}
+
+// "Men kimman?" tugmasi salomlashuv ostida (ko'k-binafsha fonda)
+.home__who-btn {
+  margin-top: 10px;
+  padding: 4px 12px 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+
+  &:hover {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.22);
+  }
+}
+
+// "Bajardim" tugmalari va "Bajarildi" belgilari
+.home__done {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.home__done-item {
+  padding: 6px 14px 6px 8px;
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.home__done-btn {
+  color: #0d6efd;
+  background-color: #fff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+  transition: transform 0.2s ease;
+  animation: home-done-pulse 2.4s ease-in-out infinite;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.8;
+  }
+}
+
+.home__done-item--done {
+  color: #fff;
+  background-color: rgba(32, 201, 151, 0.35);
+  animation: home-done-pop 0.4s ease;
+}
+
+.home__done-check {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  background-color: #20c997;
+}
+
+.home__done-undo {
+  margin-left: 4px;
+  padding: 0;
+  border: 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-decoration: underline;
+  background: none;
+
+  &:hover {
+    color: #fff;
+  }
+}
+
+@keyframes home-done-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 4px 14px rgba(15, 23, 42, 0.2),
+      0 0 0 0 rgba(255, 255, 255, 0.5);
+  }
+
+  50% {
+    box-shadow:
+      0 4px 14px rgba(15, 23, 42, 0.2),
+      0 0 0 8px rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes home-done-pop {
+  from {
+    transform: scale(0.85);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home__done-btn,
+  .home__done-item--done {
+    animation: none;
+  }
+}
+
+// Bugungi vazifa kartochkasida bajargan odam yonidagi yashil belgi
+.home__task-done {
+  width: 18px;
+  height: 18px;
+  margin-left: 4px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: 1px;
+  color: #fff;
+  font-size: 0.65rem;
+  background-color: #20c997;
+  animation: home-done-pop 0.4s ease;
+}
+
+.home__hero-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #198754;
+  font-weight: 600;
+}
+
+[data-bs-theme="dark"] .home__hero-done {
+  color: #75b798;
+}
+
+// Oylik reyting
+.home__rating {
+  border-radius: 16px;
+}
+
+.home__rating-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(135deg, #fbbf24 0%, #fd7e14 100%);
+}
+
+.home__rating-empty {
+  padding: 14px 16px;
+  border: 1px dashed var(--bs-border-color);
+  border-radius: 12px;
+  color: var(--bs-secondary-color);
+  font-size: 0.9rem;
+}
+
+.home__rating-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.home__rating-row {
+  padding: 8px 10px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: var(--bs-tertiary-bg);
+  }
+}
+
+// O'rin: 1 - oltin, 2 - kumush, 3 - bronza
+.home__rating-place {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-secondary-color);
+  font-size: 0.8rem;
+  font-weight: 700;
+  background-color: var(--bs-tertiary-bg);
+
+  &--1 {
+    color: #fff;
+    background: linear-gradient(135deg, #fde047 0%, #f59e0b 100%);
+  }
+
+  &--2 {
+    color: #fff;
+    background: linear-gradient(135deg, #e2e8f0 0%, #94a3b8 100%);
+  }
+
+  &--3 {
+    color: #fff;
+    background: linear-gradient(135deg, #fdba74 0%, #c2410c 100%);
+  }
+}
+
+.home__rating-badge {
+  padding: 1px 8px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+
+  &--best {
+    color: #b45309;
+    background-color: #fef3c7;
+  }
+
+  &--perfect {
+    color: #146c43;
+    background-color: #d1e7dd;
+  }
+}
+
+.home__rating-bar {
+  height: 6px;
+  margin-top: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background-color: var(--bs-secondary-bg);
+
+  span {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #20c997 0%, #0d6efd 100%);
+    transition: width 0.6s ease;
+  }
+}
+
+.home__rating-count {
+  min-width: 40px;
+  color: var(--bs-secondary-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: end;
+}
+
+[data-bs-theme="dark"] {
+  .home__rating-badge--best {
+    color: #fcd34d;
+    background-color: rgba(245, 158, 11, 0.18);
+  }
+
+  .home__rating-badge--perfect {
+    color: #75b798;
+    background-color: rgba(25, 135, 84, 0.2);
   }
 }

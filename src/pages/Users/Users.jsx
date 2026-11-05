@@ -2,6 +2,7 @@ import "./users.scss";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "../../lib/supabese";
 import { PageSkeleton } from "../../components/Skeleton";
+import { EmptyState, ErrorState } from "../../components/EmptyState";
 import { useI18n } from "../../i18n";
 import { Avatar } from "../../components/Avatar";
 import { AppIcon } from "../../components/AppIcon";
@@ -75,7 +76,7 @@ export const Users = () => {
   if (error) {
     return (
       <div className="container pt-3">
-        <div className="alert alert-danger">{t("common.loadError")}</div>
+        <ErrorState text={t("common.loadError")} />
       </div>
     );
   }
@@ -105,13 +106,13 @@ export const Users = () => {
           )}
         </div>
 
-        {!data.length && <div className="alert alert-info">{t("common.noUsers")}</div>}
+        {!data.length && <EmptyState variant="noUsers" text={t("common.noUsers")} />}
 
         {data.length > 0 && !filteredUsers.length && (
-          <div className="alert alert-secondary">{t("users.notFound", { query: search })}</div>
+          <EmptyState variant="notFound" text={t("users.notFound", { query: search })} compact />
         )}
 
-        <div className="row g-3">
+        <div className="row g-3 stagger">
           {filteredUsers.map((user) => {
             const todayTasks = getTodayTasks(user);
             const isOnDutyToday = todayTasks.length > 0;

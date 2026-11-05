@@ -1,8 +1,11 @@
+import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
 import { TASKS, getAssignedNames } from "../../utils/schedule";
+import { findDone } from "../../utils/done";
 
-export const TodayTasks = ({ users, schedules, loading }) => {
+// done - bugungi "Bajardim" belgilari: bajargan odam ismi yonida yashil belgi chiqadi
+export const TodayTasks = ({ users, schedules, loading, done }) => {
   const { t } = useI18n();
   const [todaySchedule, tomorrowSchedule] = schedules;
 
@@ -11,6 +14,29 @@ export const TodayTasks = ({ users, schedules, loading }) => {
     task,
     names: getAssignedNames(users, task, tomorrowSchedule),
   })).filter(({ names }) => names);
+
+  const renderNames = (task) => {
+    const assigned = users.filter((user) => task.isAssigned(todaySchedule, user.user_id));
+
+    if (!assigned.length) return "—";
+
+    return assigned.map((user, index) => {
+      const isDone = Boolean(findDone(done, task.key, user.user_id));
+
+      return (
+        <span key={user.user_id}>
+          {index > 0 && ", "}
+          {user.name.trim()}
+
+          {isDone && (
+            <span className="home__task-done" title={t("done.badge")}>
+              <AppIcon name="check" />
+            </span>
+          )}
+        </span>
+      );
+    });
+  };
 
   return (
     <section className="mb-4 text-start">
@@ -27,11 +53,7 @@ export const TodayTasks = ({ users, schedules, loading }) => {
                   <small className="text-muted d-block">{t(`tasks.${task.key}.label`)}</small>
 
                   <span className="home__task-name fw-semibold">
-                    {loading ? (
-                      <span className="placeholder col-8"></span>
-                    ) : (
-                      getAssignedNames(users, task, todaySchedule) || "—"
-                    )}
+                    {loading ? <span className="placeholder col-8"></span> : renderNames(task)}
                   </span>
                 </div>
               </div>

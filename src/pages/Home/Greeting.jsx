@@ -1,6 +1,8 @@
+import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
 import { WeatherIcon } from "../../components/WeatherIcon";
 import { TASKS } from "../../utils/schedule";
+import { findDone } from "../../utils/done";
 import { useI18n } from "../../i18n";
 import { formatLongDate, getDayOfYear } from "../../utils/date";
 
@@ -92,8 +94,22 @@ const getGreeting = (hour) => {
   return { key: "night", scene: "clear", isDay: false };
 };
 
-// me - "Mening navbatim"da tanlangan odam (bo'lmasa null)
-export const Greeting = ({ now, me, schedules, loading }) => {
+const formatTime = (value) =>
+  new Date(value).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" });
+
+// me - "Men kimman?"da tanlangan odam (bo'lmasa null), onWhoAmI - tanlov oynasini ochadi.
+// done - bugungi "Bajardim" belgilari (null bo'lsa tugmalar ko'rinmaydi)
+export const Greeting = ({
+  now,
+  me,
+  schedules,
+  loading,
+  onWhoAmI,
+  done,
+  doneBusy,
+  onDone,
+  onUndo,
+}) => {
   const { t, lang } = useI18n();
   const tip = TIPS[getDayOfYear(now) % TIPS.length];
   const greeting = getGreeting(now.getHours());
@@ -111,6 +127,60 @@ export const Greeting = ({ now, me, schedules, loading }) => {
     { key: "today", tasks: getMyTasks(schedules[0]) },
     { key: "tomorrow", tasks: getMyTasks(schedules[1]) },
   ].filter((day) => day.tasks.length);
+
+  const todayTasks = getMyTasks(schedules[0]);
+
+  // Bugungi har bir vazifam uchun: "Bajardim" tugmasi yoki "Bajarildi" belgisi
+  const renderDoneButtons = () => {
+    if (!me || loading || !done || !todayTasks.length) return null;
+
+    return (
+      <div className="home__done">
+        {todayTasks.map((task) => {
+          const record = findDone(done, task.key, me.user_id);
+          const busy = doneBusy === task.key;
+          const label = t(`tasks.${task.key}.label`);
+
+          if (record) {
+            return (
+              <span className="home__done-item home__done-item--done" key={task.key}>
+                <span className="home__done-check" aria-hidden="true">
+                  <AppIcon name="check" />
+                </span>
+                {t("done.doneAt", { task: label, time: formatTime(record.done_at) })}
+
+                <button
+                  type="button"
+                  className="home__done-undo"
+                  onClick={() => onUndo(task.key)}
+                  disabled={busy}
+                >
+                  {t("done.undo")}
+                </button>
+              </span>
+            );
+          }
+
+          return (
+            <button
+              type="button"
+              className="home__done-item home__done-btn"
+              key={task.key}
+              onClick={() => onDone(task.key)}
+              disabled={busy}
+            >
+              {busy ? (
+                <span className="spinner-border spinner-border-sm" aria-hidden="true"></span>
+              ) : (
+                <AppIcon name="check" />
+              )}
+              {t("done.button", { task: label })}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
 
   const renderMyDuties = () => {
     if (!myDays.length) return <span>{t("home.me.free")}</span>;
@@ -142,6 +212,15 @@ export const Greeting = ({ now, me, schedules, loading }) => {
               <div className="home__me">{renderMyDuties()}</div>
             ) : (
               <p className="home__subtitle m-0">{t("home.greeting.subtitle")}</p>
+            )}
+
+            {renderDoneButtons()}
+
+            {onWhoAmI && (
+              <button type="button" className="home__who-btn" onClick={onWhoAmI}>
+                <AppIcon name="user" />
+                {me ? t("whoAmI.change", { name: me.name.trim() }) : t("whoAmI.choose")}
+              </button>
             )}
           </div>
 

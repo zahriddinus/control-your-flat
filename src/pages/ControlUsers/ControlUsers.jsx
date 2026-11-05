@@ -5,6 +5,7 @@ import { UserModal } from "../../components/UserModal";
 import { ConfirmModal } from "../../components/ConfirmModal";
 import { Avatar } from "../../components/Avatar";
 import { PageSkeleton } from "../../components/Skeleton";
+import { EmptyState, ErrorState } from "../../components/EmptyState";
 import { Notice, useNotice } from "../../components/Notice";
 import { TaskIcon } from "../../components/TaskIcon";
 import { AppIcon } from "../../components/AppIcon";
@@ -335,21 +336,19 @@ export const ControlUsers = () => {
   if (error) {
     return (
       <div className="container pt-3">
-        <div className="alert alert-danger">{t("control.loadError")}</div>
+        <ErrorState text={t("control.loadError")} />
       </div>
     );
   }
 
   const renderUsers = () => {
     if (!users.length) {
-      return (
-        <div className="alert alert-info">{t("control.empty", { add: t("control.add") })}</div>
-      );
+      return <EmptyState variant="noUsers" text={t("control.empty", { add: t("control.add") })} />;
     }
 
     if (!filteredUsers.length) {
       return (
-        <div className="alert alert-secondary">{t("control.notFound", { query: search })}</div>
+        <EmptyState variant="notFound" text={t("control.notFound", { query: search })} compact />
       );
     }
 

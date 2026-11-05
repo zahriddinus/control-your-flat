@@ -12,6 +12,7 @@ export const en = {
   },
 
   common: {
+    retry: "Try again",
     loading: "Loading...",
     cancel: "Cancel",
     close: "Close",
@@ -92,6 +93,39 @@ export const en = {
   },
 
   offline: "📴 You're offline. Showing the last saved data.",
+
+  empty: {
+    noUsers: "The flat is empty for now",
+    notFound: "Nothing found",
+    error: "Something went wrong",
+  },
+
+  whoAmI: {
+    title: "Who are you?",
+    text: "Pick your name: the greeting, your duties and reminders will adapt to you.",
+    privacy: "Your choice is saved only on this device.",
+    later: "Later",
+    choose: "Pick your name",
+    change: "Not {name}?",
+  },
+
+  done: {
+    button: "Done: {task}",
+    doneAt: "{task}: done at {time}",
+    undo: "Undo",
+    badge: "Done",
+    heroDone: "Today's duty is done!",
+    success: "Nice work! Marked as done ✅",
+    error: "Couldn't mark it. Is it really your turn today?",
+  },
+
+  rating: {
+    title: "{month} rating",
+    subtitle: "Number of completed duties. Today's counts once it's marked.",
+    empty: 'No data yet. The rating fills up after the first "Done" marks.',
+    best: "Most active",
+    perfect: "Never missed",
+  },
 
   notFound: {
     title: "Page not found",

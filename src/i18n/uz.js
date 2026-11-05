@@ -12,6 +12,7 @@ export const uz = {
   },
 
   common: {
+    retry: "Qayta urinish",
     loading: "Yuklanmoqda...",
     cancel: "Bekor qilish",
     close: "Yopish",
@@ -92,6 +93,39 @@ export const uz = {
   },
 
   offline: "📴 Internet yo'q. Oxirgi saqlangan ma'lumotlar ko'rsatilmoqda.",
+
+  empty: {
+    noUsers: "Uy hali bo'sh",
+    notFound: "Hech narsa topilmadi",
+    error: "Nimadir xato ketdi",
+  },
+
+  whoAmI: {
+    title: "Siz kimsiz?",
+    text: "Ismingizni tanlang: salomlashuv, navbatlaringiz va eslatmalar sizga moslashadi.",
+    privacy: "Tanlov faqat shu qurilmada saqlanadi.",
+    later: "Keyinroq",
+    choose: "Ismingizni tanlang",
+    change: "{name} emasmisiz?",
+  },
+
+  done: {
+    button: "Bajardim: {task}",
+    doneAt: "{task}: bajarildi, {time}",
+    undo: "Bekor qilish",
+    badge: "Bajarildi",
+    heroDone: "Bugungi navbatchilik bajarildi!",
+    success: "Barakalla! Belgilab qo'yildi ✅",
+    error: "Belgilab bo'lmadi. Bugun aynan sizning navbatingizmi?",
+  },
+
+  rating: {
+    title: "{month} reytingi",
+    subtitle: "Bajarilgan navbatlar soni. Bugungi navbat belgilangandan keyin qo'shiladi.",
+    empty: "Hali ma'lumot yo'q. Birinchi \"Bajardim\" belgilaridan keyin reyting to'la boshlaydi.",
+    best: "Oyning eng faoli",
+    perfect: "Bitta ham qoldirmadi",
+  },
 
   notFound: {
     title: "Sahifa topilmadi",

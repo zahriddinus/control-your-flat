@@ -2,6 +2,7 @@ import "./dutiesSchedule.scss";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "../../lib/supabese";
 import { PageSkeleton } from "../../components/Skeleton";
+import { EmptyState, ErrorState } from "../../components/EmptyState";
 import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
@@ -273,7 +274,7 @@ export const DutiesSchedule = () => {
   if (error) {
     return (
       <div className="container pt-3">
-        <div className="alert alert-danger">{t("schedule.loadError")}</div>
+        <ErrorState text={t("schedule.loadError")} />
       </div>
     );
   }
@@ -281,7 +282,7 @@ export const DutiesSchedule = () => {
   if (!data.length) {
     return (
       <div className="container pt-3">
-        <div className="alert alert-info">{t("common.noUsers")}</div>
+        <EmptyState variant="noUsers" text={t("common.noUsers")} />
       </div>
     );
   }
@@ -447,7 +448,7 @@ export const DutiesSchedule = () => {
           })}
         </div>
 
-        {scheduleError && <div className="alert alert-danger">{t("schedule.schedulesError")}</div>}
+        {scheduleError && <ErrorState text={t("schedule.schedulesError")} compact />}
 
         {schedulesLoading && (
           <div className="d-flex align-items-center gap-2 text-primary mb-3">

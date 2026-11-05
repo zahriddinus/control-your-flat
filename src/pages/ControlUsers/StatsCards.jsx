@@ -38,7 +38,7 @@ export const StatsCards = ({ users, schedules }) => {
   ];
 
   return (
-    <div className="row g-3 mb-4">
+    <div className="row g-3 mb-4 stagger">
       {stats.map((stat) => (
         <div className="col-6 col-lg-3" key={stat.key}>
           <div className={`control__stat control__stat--${stat.key} card h-100 border-0 shadow-sm`}>

@@ -28,3 +28,39 @@ img {
 }
 
 @import "./dark.scss";
+
+// Sahifa almashganda yumshoq paydo bo'lish
+.page-transition {
+  animation: page-in 0.35s ease both;
+}
+
+// Ichidagi bo'laklar navbat bilan pastdan ko'tariladi
+.stagger > * {
+  animation: reveal-up 0.5s ease both;
+}
+
+@for $i from 2 through 10 {
+  .stagger > *:nth-child(#{$i}) {
+    animation-delay: #{($i - 1) * 60}ms;
+  }
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-transition,
+  .stagger > * {
+    animation: none;
+  }
+}
