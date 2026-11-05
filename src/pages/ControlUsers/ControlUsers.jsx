@@ -22,11 +22,14 @@ import { UserCards } from "./UserCards";
 export const ControlUsers = () => {
   const { t, lang } = useI18n();
   const location = useLocation();
-  const { flat, flatId, residentId, tasks } = useFlat();
+  const { flat, flatId, residentId, tasks, isOwner } = useFlat();
   const [users, setUsers] = useState([]);
 
   // Qaysi xonadoshning o'z hisobi bor: { [user_id]: "owner" | "member" }
   const [accounts, setAccounts] = useState({});
+
+  // Xonadoshning hisobi: { [user_id]: auth_user_id } - rolni o'zgartirish uchun kerak
+  const [accountIds, setAccountIds] = useState({});
   const [invite, setInvite] = useState(null);
 
   // Uy endigina yaratilgan bo'lsa, birinchi qadamlar haqida eslatma
@@ -66,7 +69,7 @@ export const ControlUsers = () => {
         .select("*")
         .eq("flat_id", flatId)
         .order("duty_order", { ascending: true }),
-      supabase.from("flat_members").select("resident_id, role").eq("flat_id", flatId),
+      supabase.from("flat_members").select("resident_id, role, auth_user_id").eq("flat_id", flatId),
     ]);
 
     const error = usersResult.error ?? membersResult.error;
@@ -77,12 +80,11 @@ export const ControlUsers = () => {
     }
 
     setUsers(usersResult.data);
-    setAccounts(
-      Object.fromEntries(
-        membersResult.data
-          .filter((member) => member.resident_id)
-          .map((member) => [member.resident_id, member.role])
-      )
+    const linked = membersResult.data.filter((member) => member.resident_id);
+
+    setAccounts(Object.fromEntries(linked.map((member) => [member.resident_id, member.role])));
+    setAccountIds(
+      Object.fromEntries(linked.map((member) => [member.resident_id, member.auth_user_id]))
     );
 
     return null;
@@ -197,6 +199,11 @@ export const ControlUsers = () => {
       email: formData.email,
     };
 
+    // Taklif orqali qo'shilganda qaysi rol bilan kirishi: faqat ega belgilaydi
+    if (selectedUser && isOwner && accounts[selectedUser.user_id] !== "owner") {
+      fields.invite_role = formData.role;
+    }
+
     // EDIT USER
     if (selectedUser) {
       const { error: userError } = await supabase
@@ -208,6 +215,22 @@ export const ControlUsers = () => {
         console.error(userError);
         showNotice(t("control.notices.saveError", { error: userError.message }), "danger");
         return;
+      }
+
+      // Huquq: ega oynada "Boshqaruvchi"ni tanlagan yoki olib tashlagan bo'lsa
+      const account = accounts[selectedUser.user_id];
+
+      if (isOwner && (account === "admin" || account === "member") && formData.role !== account) {
+        const { error: roleError } = await supabase.rpc("set_member_role", {
+          p_flat: flatId,
+          p_auth_user_id: accountIds[selectedUser.user_id],
+          p_role: formData.role,
+        });
+
+        if (roleError) {
+          console.error(roleError);
+          showNotice(t("members.error"), "danger");
+        }
       }
 
       // Oynadagi "navbatdagi o'rni" - navbatchilik tartibi
@@ -407,13 +430,16 @@ export const ControlUsers = () => {
       groupSize,
       accounts,
       currentUserId: residentId,
+      // Egani hech kim, boshqaruvchini esa faqat ega o'chira oladi
+      protectedIds: Object.entries(accounts)
+        .filter(([, role]) => role === "owner" || (role === "admin" && !isOwner))
+        .map(([id]) => id),
       busy,
       swapSourceId: swapSource?.user_id,
       onMove: handleMove,
       onSwap: handleSwap,
       onEdit: handleEdit,
       onDelete: setUserToDelete,
-      onInvite: handleInvite,
     };
 
     return (
@@ -563,6 +589,12 @@ export const ControlUsers = () => {
         selectedUser={selectedUser}
         onSubmit={handleModalSubmit}
         users={users}
+        account={selectedUser ? accounts[selectedUser.user_id] : undefined}
+        canManageRoles={isOwner}
+        onInvite={(user) => {
+          closeUserModal();
+          handleInvite(user);
+        }}
       />
 
       <ConfirmModal

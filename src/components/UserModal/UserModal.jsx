@@ -15,6 +15,22 @@ const EMPTY_FORM = {
   email: "",
 };
 
+// Huquq tanlovi: a'zo yoki boshqaruvchi
+const ROLE_OPTIONS = [
+  {
+    value: "member",
+    icon: "user",
+    labelKey: "control.roles.member",
+    textKey: "userModal.roleMemberText",
+  },
+  {
+    value: "admin",
+    icon: "sliders",
+    labelKey: "control.roles.admin",
+    textKey: "userModal.roleAdminText",
+  },
+];
+
 // Xatolar tarjima kaliti sifatida qaytadi: userModal.errors.*
 // Telegram nickname ("@"siz): 5-32 ta lotin harfi, raqam yoki "_"
 const NICKNAME_PATTERN = /^[A-Za-z0-9_]{5,32}$/;
@@ -71,7 +87,18 @@ const getOrderOptions = (users, selectedUser, t) => {
 };
 
 // users: duty_order bo'yicha tartiblangan barcha userlar
-export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] }) => {
+// account - tanlangan xonadoshning hisobi: "owner" | "admin" | "member" | undefined (hisobsiz).
+// canManageRoles - faqat ega boshqaruvchi tayinlay oladi
+export const UserModal = ({
+  isOpen,
+  onClose,
+  selectedUser,
+  onSubmit,
+  users = [],
+  account,
+  canManageRoles = false,
+  onInvite,
+}) => {
   const { t } = useI18n();
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState({});
@@ -93,11 +120,16 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
         nickname: (selectedUser.nickname || "").replace(/^@/, ""),
         phoneNumber: selectedUser.phone_number || "",
         email: selectedUser.email || "",
+        role: account
+          ? account === "admin"
+            ? "admin"
+            : "member"
+          : selectedUser.invite_role || "member",
       });
     } else {
       setFormData(EMPTY_FORM);
     }
-  }, [selectedUser, isOpen]);
+  }, [selectedUser, isOpen, account]);
 
   function handleChange(evt) {
     const { name } = evt.target;
@@ -307,6 +339,87 @@ export const UserModal = ({ isOpen, onClose, selectedUser, onSubmit, users = [] 
                   {renderError("email")}
                 </div>
               </section>
+
+              {/* HUQUQLAR: faqat ega, faqat tahrirlashda */}
+
+              {selectedUser && canManageRoles && (
+                <section className="user-modal__section">
+                  <h3 className="user-modal__section-title">
+                    <AppIcon name="shield" />
+                    {t("userModal.rights")}
+                  </h3>
+
+                  {account === "owner" && (
+                    <p className="small text-muted m-0">{t("userModal.rightsOwner")}</p>
+                  )}
+
+                  {account !== "owner" && (
+                    <>
+                      <div
+                        className="user-modal__roles"
+                        role="radiogroup"
+                        aria-label={t("userModal.rights")}
+                      >
+                        {ROLE_OPTIONS.map((option) => (
+                          <label
+                            key={option.value}
+                            className={`user-modal__role ${formData.role === option.value ? "user-modal__role--active" : ""}`}
+                          >
+                            <input
+                              type="radio"
+                              className="form-check-input"
+                              name="role"
+                              value={option.value}
+                              checked={formData.role === option.value}
+                              onChange={() =>
+                                setFormData((prev) => ({ ...prev, role: option.value }))
+                              }
+                              disabled={saving}
+                            />
+
+                            <span className="user-modal__role-icon" aria-hidden="true">
+                              <AppIcon name={option.icon} />
+                            </span>
+
+                            <span>
+                              <span className="fw-semibold d-block">{t(option.labelKey)}</span>
+                              <small className="text-muted">{t(option.textKey)}</small>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+
+                      {formData.role === "owner" && (
+                        <small className="d-block text-primary mt-2">
+                          <AppIcon name="shield" className="me-1" />
+                          {t("userModal.pendingOwner")}
+                        </small>
+                      )}
+
+                      {/* Hisobsiz: tanlov saqlanadi va taklif orqali qo'shilganda shu rol bilan kiradi */}
+                      {!account && (
+                        <div className="user-modal__pending">
+                          <small className="text-muted d-block mb-2">
+                            {t("userModal.rightsNoAccount")}
+                          </small>
+
+                          {onInvite && (
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-success"
+                              onClick={() => onInvite(selectedUser)}
+                              disabled={saving}
+                            >
+                              <AppIcon name="send" className="me-1" />
+                              {t("userModal.inviteLink")}
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </section>
+              )}
 
               {/* NAVBAT */}
 

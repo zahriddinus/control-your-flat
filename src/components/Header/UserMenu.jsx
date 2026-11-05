@@ -13,7 +13,7 @@ export const UserMenu = ({ onNavigate, onLogout }) => {
   const { t } = useI18n();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { memberships, membership, flat, isOwner, selectFlat, reload } = useFlat();
+  const { memberships, membership, flat, isOwner, isManager, selectFlat, reload } = useFlat();
   const [isOpen, setIsOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -92,7 +92,7 @@ export const UserMenu = ({ onNavigate, onLogout }) => {
           <span className="d-block fw-semibold">{profile.name.trim()}</span>
 
           {flat ? (
-            <span className={`badge ${isOwner ? "text-bg-primary" : "text-bg-light border"}`}>
+            <span className={`badge ${isManager ? "text-bg-primary" : "text-bg-light border"}`}>
               {flat.name}
             </span>
           ) : (
@@ -125,7 +125,11 @@ export const UserMenu = ({ onNavigate, onLogout }) => {
                   }`}
                   onClick={() => handleSelectFlat(item.flat_id)}
                 >
-                  <AppIcon name={item.role === "owner" ? "shield" : "home"} />
+                  <AppIcon
+                    name={
+                      item.role === "owner" ? "shield" : item.role === "admin" ? "sliders" : "home"
+                    }
+                  />
                   <span className="flex-grow-1 text-truncate">{item.flat.name}</span>
                   {item.flat_id === membership?.flat_id && <AppIcon name="check" />}
                 </button>
@@ -147,7 +151,7 @@ export const UserMenu = ({ onNavigate, onLogout }) => {
           </li>
         )}
 
-        {isOwner && (
+        {isManager && (
           <>
             <li>
               <Link className="dropdown-item" to="/control-users" onClick={close}>

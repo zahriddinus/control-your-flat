@@ -4,9 +4,10 @@ import { useI18n } from "../../i18n";
 
 // Jadval va mobil kartochkalar uchun umumiy bo'laklar
 
-// account - "owner" (uy egasi), "member" (o'z hisobi bilan kiradi) yoki yo'q.
+// account - "owner" (uy egasi), "admin" (boshqaruvchi), qolganlar bir xil "A'zo".
 // taskKey - qaysi vazifa bo'yicha "Bugun" (tanlangan tab)
-export const RoleBadges = ({ account, isToday, taskKey = "duty" }) => {
+// pending - hali qo'shilmagan, lekin qo'shilganda shu rol bilan kiradi: "admin" | "owner"
+export const RoleBadges = ({ account, pending = null, isToday, taskKey = "duty" }) => {
   const { t } = useI18n();
 
   return (
@@ -18,16 +19,27 @@ export const RoleBadges = ({ account, isToday, taskKey = "duty" }) => {
         </span>
       )}
 
-      {account === "member" && (
-        <span className="control__account-badge control__account-badge--member badge">
-          <AppIcon name="check" />
-          {t("control.roles.member")}
+      {account === "admin" && (
+        <span className="control__account-badge control__account-badge--admin badge">
+          <AppIcon name="sliders" />
+          {t("control.roles.admin")}
         </span>
       )}
 
-      {!account && (
+      {pending && (
+        <span
+          className={`control__account-badge control__account-badge--pending badge ${
+            pending === "owner" ? "text-bg-primary" : "control__account-badge--admin"
+          }`}
+        >
+          <AppIcon name={pending === "owner" ? "shield" : "sliders"} />
+          {t(`control.roles.${pending}`)} · {t("control.roles.pending")}
+        </span>
+      )}
+
+      {account !== "owner" && account !== "admin" && !pending && (
         <span className="control__account-badge control__account-badge--none badge">
-          {t("control.roles.noAccount")}
+          {t("control.roles.member")}
         </span>
       )}
 
@@ -63,11 +75,9 @@ const SWAP_BUTTONS = {
 };
 
 // compact - jadval uchun faqat ikonkalar, nomi esa tooltip'da
-// onInvite - hisobi yo'q xonadoshga taklif havolasi (bo'lmasa tugma chiqmaydi)
 export const UserActions = ({
   user,
   compact = false,
-  onInvite,
   isSelf,
   disabled,
   swapState = "idle",
@@ -84,27 +94,6 @@ export const UserActions = ({
 
     return (
       <div className="control__actions">
-        {onInvite && (
-          <button
-            className="control__icon-btn control__icon-btn--invite"
-            type="button"
-            onClick={() => onInvite(user)}
-            disabled={disabled}
-            title={t("control.invite")}
-            aria-label={t("control.invite")}
-          >
-            <AppIcon name="send" />
-          </button>
-        )}
-
-        {/* Taklif kerak bo'lmasa ham joy saqlanadi, shunda ustunlar tekis turadi */}
-        {!onInvite && (
-          <span
-            className="control__icon-btn control__icon-btn--placeholder"
-            aria-hidden="true"
-          ></span>
-        )}
-
         <button
           className={`control__icon-btn control__icon-btn--swap control__icon-btn--${swapState}`}
           type="button"
@@ -143,18 +132,6 @@ export const UserActions = ({
 
   return (
     <>
-      {onInvite && (
-        <button
-          className="btn btn-sm btn-outline-success me-2"
-          type="button"
-          onClick={() => onInvite(user)}
-          disabled={disabled}
-        >
-          <AppIcon name="send" className="me-1" />
-          {t("control.invite")}
-        </button>
-      )}
-
       <button
         className={`btn btn-sm ${swapButton.className} me-2`}
         type="button"

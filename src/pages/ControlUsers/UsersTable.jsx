@@ -13,13 +13,13 @@ export const UsersTable = ({
   groupSize = 1,
   accounts = {},
   currentUserId,
+  protectedIds = [],
   busy,
   swapSourceId,
   onMove,
   onSwap,
   onEdit,
   onDelete,
-  onInvite,
 }) => {
   const { t } = useI18n();
   const [draggedId, setDraggedId] = useState(null);
@@ -140,6 +140,11 @@ export const UsersTable = ({
 
                     <RoleBadges
                       account={accounts[user.user_id]}
+                      pending={
+                        !accounts[user.user_id] && user.invite_role !== "member"
+                          ? user.invite_role
+                          : null
+                      }
                       isToday={todayIds.includes(user.user_id)}
                       taskKey={todayTaskKey}
                     />
@@ -169,13 +174,12 @@ export const UsersTable = ({
                 <UserActions
                   compact
                   user={user}
-                  isSelf={user.user_id === currentUserId}
+                  isSelf={user.user_id === currentUserId || protectedIds.includes(user.user_id)}
                   disabled={busy}
                   swapState={getSwapState(user)}
                   onSwap={onSwap}
                   onEdit={onEdit}
                   onDelete={onDelete}
-                  onInvite={accounts[user.user_id] ? undefined : onInvite}
                 />
               </td>
             </tr>

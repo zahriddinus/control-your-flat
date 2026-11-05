@@ -132,6 +132,8 @@ export const FlatProvider = ({ children }) => {
     flat: membership?.flat ?? null,
     flatId,
     isOwner: membership?.role === "owner",
+    // Ega yoki boshqaruvchi: xonadoshlar, navbatlar, qoidalar va takliflarni boshqaradi
+    isManager: membership?.role === "owner" || membership?.role === "admin",
     residentId: membership?.resident_id ?? null,
     tasks,
     flatTasks,

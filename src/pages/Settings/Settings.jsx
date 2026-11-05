@@ -10,6 +10,8 @@ import { ConfirmModal } from "../../components/ConfirmModal";
 import { FlatForm } from "../../components/FlatForm";
 import { Notice, useNotice } from "../../components/Notice";
 import { TASKS } from "../../utils/schedule";
+import { MembersSection } from "./MembersSection";
+import { HandoverModal } from "./HandoverModal";
 
 // Bazadagi uy -> forma qiymatlari
 const toFormValues = (flat) => ({
@@ -115,13 +117,14 @@ const TaskRule = ({ taskKey, rule, onSave }) => {
 export const Settings = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { flat, flatId, flatTasks, reload, reloadTasks } = useFlat();
+  const { flat, flatId, flatTasks, isOwner, reload, reloadTasks } = useFlat();
   const [notice, showNotice] = useNotice(3500);
 
   const [values, setValues] = useState(() => toFormValues(flat));
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [handoverOpen, setHandoverOpen] = useState(false);
 
   useEffect(() => setValues(toFormValues(flat)), [flat]);
 
@@ -246,27 +249,66 @@ export const Settings = () => {
         </div>
       </section>
 
-      {/* XAVFLI ZONA */}
+      {/* A'ZOLAR VA HUQUQLAR */}
 
-      <section className="settings__section settings__danger card border-0 shadow-sm">
-        <div className="card-body p-3 p-md-4 d-flex flex-column flex-sm-row align-items-sm-center gap-3 text-start">
-          <div className="flex-grow-1">
-            <h2 className="settings__section-title text-danger mb-1">
-              {t("settings.dangerTitle")}
-            </h2>
-            <p className="small text-muted m-0">{t("settings.dangerText")}</p>
+      <MembersSection onNotice={showNotice} />
+
+      {/* UYDAN CHIQISH: ega avval egalikni boshqaruvchiga beradi */}
+
+      {isOwner && (
+        <section className="settings__section card border-0 shadow-sm">
+          <div className="card-body p-3 p-md-4 d-flex flex-column flex-sm-row align-items-sm-center gap-3 text-start">
+            <div className="flex-grow-1">
+              <h2 className="settings__section-title mb-1">{t("handover.title")}</h2>
+              <p className="small text-muted m-0">{t("handover.sectionText")}</p>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-outline-warning text-nowrap"
+              onClick={() => setHandoverOpen(true)}
+            >
+              <AppIcon name="logout" className="me-1" />
+              {t("handover.menu")}
+            </button>
           </div>
+        </section>
+      )}
 
-          <button
-            type="button"
-            className="btn btn-outline-danger"
-            onClick={() => setDeleteOpen(true)}
-          >
-            <AppIcon name="trash" className="me-1" />
-            {t("settings.deleteFlat")}
-          </button>
-        </div>
-      </section>
+      <HandoverModal
+        isOpen={handoverOpen}
+        flat={flat}
+        onClose={() => setHandoverOpen(false)}
+        onDone={async () => {
+          setHandoverOpen(false);
+          await reload();
+          navigate("/", { replace: true });
+        }}
+      />
+
+      {/* XAVFLI ZONA: faqat ega */}
+
+      {isOwner && (
+        <section className="settings__section settings__danger card border-0 shadow-sm">
+          <div className="card-body p-3 p-md-4 d-flex flex-column flex-sm-row align-items-sm-center gap-3 text-start">
+            <div className="flex-grow-1">
+              <h2 className="settings__section-title text-danger mb-1">
+                {t("settings.dangerTitle")}
+              </h2>
+              <p className="small text-muted m-0">{t("settings.dangerText")}</p>
+            </div>
+
+            <button
+              type="button"
+              className="btn btn-outline-danger"
+              onClick={() => setDeleteOpen(true)}
+            >
+              <AppIcon name="trash" className="me-1" />
+              {t("settings.deleteFlat")}
+            </button>
+          </div>
+        </section>
+      )}
 
       <ConfirmModal
         isOpen={deleteOpen}

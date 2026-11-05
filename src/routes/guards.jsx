@@ -30,11 +30,11 @@ export const RequireFlat = ({ children, skeleton = "home" }) => {
   return children;
 };
 
-// Faqat uy egasi uchun
-export const RequireOwner = ({ children }) => {
-  const { isOwner } = useFlat();
+// Faqat uy egasi yoki boshqaruvchisi uchun
+export const RequireManager = ({ children }) => {
+  const { isManager } = useFlat();
 
-  if (!isOwner) return <Navigate to="/" replace />;
+  if (!isManager) return <Navigate to="/" replace />;
 
   return children;
 };

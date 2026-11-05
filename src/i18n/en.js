@@ -295,6 +295,48 @@ export const en = {
       unknown: "Couldn't join. Please try again.",
     },
   },
+  members: {
+    pendingOwnerHint:
+      "Becomes the owner as soon as they join through the invite link, and you stay on as a manager.",
+    pendingOwnerQuestion:
+      "{name} hasn't joined yet. As soon as they join through the invite link, they become the owner and you become a manager. You can cancel this any time before then.",
+    pendingOwnerSet: "{name} will become the owner after joining ✅",
+    pendingOwnerCancelled: "Handing ownership to {name} was cancelled",
+    pendingHint:
+      "Hasn't joined yet. Once they join through the invite link, you can also hand ownership to them.",
+    alone:
+      'No managers yet. On the management page, edit a flatmate and choose "Manager" under "Permissions": they\'ll appear here. The flatmate must have joined with their own account through an invite.',
+    goInvite: "Go to management →",
+    title: "Owner and managers",
+    hint: "A manager handles flatmates, rotations, rules and invites just like the owner. Only the owner can delete the flat or transfer ownership, and ownership can only go to a manager.",
+    you: "you",
+    demote: "Remove manager",
+    transfer: "Transfer ownership",
+    remove: "Remove from flat",
+    transferTitle: "Transfer ownership?",
+    transferQuestion:
+      "{name} will become the new owner. You'll stay on as a manager and can't take ownership back yourself (only the new owner can).",
+    removeTitle: "Remove from the flat?",
+    removeQuestion:
+      "{name}'s account will be removed from the flat. Their flatmate row and turns stay, and you can send a new invite later.",
+    promoted: "{name} is now a manager ✅",
+    demoted: "{name} is now a regular member",
+    transferred: "Ownership transferred to {name} ✅",
+    removed: "{name} was removed from the flat",
+    error: "Couldn't do that. Please try again.",
+  },
+
+  handover: {
+    sectionText:
+      "To leave the flat, hand ownership to one of the managers: they become the new owner and you leave.",
+    menu: "Hand over and leave",
+    title: "Hand over ownership and leave",
+    text: 'Pick the new owner of "{name}". They become the owner right away and you leave the flat.',
+    noAdmins:
+      "To leave, you first need to hand over ownership, but there are no managers yet. Edit a flatmate and make them a manager.",
+    confirm: "Hand over and leave",
+  },
+
   notFound: {
     title: "Page not found",
     text: "The page you're looking for doesn't exist or has been moved.",
@@ -475,7 +517,6 @@ export const en = {
   },
 
   control: {
-    invite: "Invite",
     groupHint: "{count} people per turn: neighbouring places form one group.",
     welcome: {
       title: '"{name}" is ready! 🎉',
@@ -506,9 +547,10 @@ export const en = {
       actions: "Actions",
     },
     roles: {
+      pending: "pending",
+      admin: "Manager",
       owner: "Owner",
-      member: "Account",
-      noAccount: "No account",
+      member: "Member",
     },
     todayBadge: "Today",
     age: { one: "{count} year old", other: "{count} years old" },
@@ -554,6 +596,14 @@ export const en = {
   },
 
   userModal: {
+    pendingOwner: "Becomes the owner after joining. You can cancel this in the settings.",
+    roleMemberText: "Sees the schedule and marks their own turns",
+    roleAdminText: "Manages flatmates, rotations and rules",
+    inviteLink: "Create invite link",
+    rights: "Permissions",
+    rightsOwner: "This is the flat owner: they have every permission.",
+    rightsNoAccount:
+      "Hasn't joined yet. Your choice is saved: once they join through the invite link, they'll get these permissions. You can send the link any way you like.",
     editTitle: "Edit user",
     addTitle: "New flatmate",
     enterName: "Enter a first and last name",

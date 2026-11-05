@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import "./confirmModal.scss";
 import { useModalEffects } from "../../hooks/useModalEffects";
 import { useI18n } from "../../i18n";
@@ -26,7 +27,8 @@ export const ConfirmModal = ({
     if (!loading) onCancel();
   };
 
-  return (
+  // Sahifaning eng yuqori qatlamida: header kabi ota elementlar stillari oynani buzmaydi
+  return createPortal(
     <>
       <div
         className="modal fade show d-block"
@@ -92,6 +94,7 @@ export const ConfirmModal = ({
       </div>
 
       <div className="modal-backdrop fade show"></div>
-    </>
+    </>,
+    document.body
   );
 };

@@ -16,7 +16,7 @@ import {
   Signup,
   Users,
 } from "../pages";
-import { GuestOnly, RequireAuth, RequireFlat, RequireOwner } from "./guards";
+import { GuestOnly, RequireAuth, RequireFlat, RequireManager } from "./guards";
 
 // Bosh sahifa: mehmonga tanishtiruv, a'zoga - uyning bugungi holati
 const HomeGate = () => {
@@ -41,7 +41,7 @@ const MemberPage = ({ children, skeleton }) => (
 
 const OwnerPage = ({ children, skeleton }) => (
   <MemberPage skeleton={skeleton}>
-    <RequireOwner>{children}</RequireOwner>
+    <RequireManager>{children}</RequireManager>
   </MemberPage>
 );
 

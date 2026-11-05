@@ -54,3 +54,70 @@ $user-modal-gradient: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
     border-radius: 0;
   }
 }
+
+// Huquq tanlovi: ikki ixcham radio karta
+.user-modal__roles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.user-modal__role {
+  padding: 8px 10px;
+  border: 1.5px solid var(--bs-border-color);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  line-height: 1.25;
+  cursor: pointer;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease;
+
+  .form-check-input {
+    flex-shrink: 0;
+    margin: 0;
+  }
+
+  small {
+    font-size: 0.72rem;
+  }
+
+  &:hover {
+    border-color: rgba(13, 110, 253, 0.5);
+  }
+
+  &--active {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.08);
+  }
+}
+
+.user-modal__role-icon {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.8rem;
+  background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+}
+
+.user-modal__pending {
+  margin-top: 8px;
+
+  small {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .user-modal__roles {
+    grid-template-columns: 1fr;
+  }
+}

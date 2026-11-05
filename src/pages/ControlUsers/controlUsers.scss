@@ -471,7 +471,7 @@
   }
 }
 
-// Hisob holati belgisi: ega / hisob ulangan / hisobsiz
+// Rol belgisi: ega / boshqaruvchi / a'zo
 .control__account-badge {
   display: inline-flex;
   align-items: center;
@@ -479,36 +479,29 @@
   margin-right: 4px;
 }
 
-// Taklif tugmasi: yashil
-.control__icon-btn--invite:hover:not(:disabled) {
-  color: #198754;
-  border-color: #198754;
-  background-color: rgba(25, 135, 84, 0.08);
-}
-
 // Uy yaratilgandan keyingi birinchi eslatma
 .control__welcome {
   border-radius: 14px;
 }
 
-// Hisob belgilari ikkala mavzuda ham o'qiladigan ranglarda
-.control__account-badge--member {
-  color: #198754;
-  border: 1px solid rgba(25, 135, 84, 0.35);
-  background-color: rgba(25, 135, 84, 0.1);
-}
-
+// Rol belgilari ikkala mavzuda ham o'qiladigan ranglarda
 .control__account-badge--none {
   color: var(--bs-secondary-color);
   border: 1px solid var(--bs-border-color);
   background-color: var(--bs-tertiary-bg);
 }
 
-[data-bs-theme="dark"] .control__account-badge--member {
-  color: #75b798;
+.control__account-badge--admin {
+  color: #6f42c1;
+  border: 1px solid rgba(111, 66, 193, 0.35);
+  background-color: rgba(111, 66, 193, 0.1);
 }
 
-// Ko'rinmas joy egallovchi: amal tugmalari ustunlarda tekis turishi uchun
-.control__icon-btn--placeholder {
-  visibility: hidden;
+[data-bs-theme="dark"] .control__account-badge--admin {
+  color: #c4a8f5;
+}
+
+// Hali qo'shilmagan, lekin boshqaruvchi bo'ladi: chiziqli ramka
+.control__account-badge--pending {
+  border-style: dashed;
 }

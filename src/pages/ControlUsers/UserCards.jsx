@@ -14,13 +14,13 @@ export const UserCards = ({
   groupSize = 1,
   accounts = {},
   currentUserId,
+  protectedIds = [],
   busy,
   swapSourceId,
   onMoveStep,
   onSwap,
   onEdit,
   onDelete,
-  onInvite,
 }) => {
   const { t } = useI18n();
 
@@ -60,6 +60,11 @@ export const UserCards = ({
 
                   <RoleBadges
                     account={accounts[user.user_id]}
+                    pending={
+                      !accounts[user.user_id] && user.invite_role !== "member"
+                        ? user.invite_role
+                        : null
+                    }
                     isToday={isToday}
                     taskKey={todayTaskKey}
                   />
@@ -109,7 +114,7 @@ export const UserCards = ({
 
               <UserActions
                 user={user}
-                isSelf={user.user_id === currentUserId}
+                isSelf={user.user_id === currentUserId || protectedIds.includes(user.user_id)}
                 disabled={busy}
                 swapState={
                   !swapSourceId ? "idle" : user.user_id === swapSourceId ? "source" : "target"
@@ -117,7 +122,6 @@ export const UserCards = ({
                 onSwap={onSwap}
                 onEdit={onEdit}
                 onDelete={onDelete}
-                onInvite={accounts[user.user_id] ? undefined : onInvite}
               />
             </div>
           </div>

@@ -307,6 +307,48 @@ export const uz = {
       unknown: "Qo'shilib bo'lmadi. Qayta urinib ko'ring.",
     },
   },
+  members: {
+    pendingOwnerHint:
+      "Taklif havolasi orqali qo'shilgan zahoti uy egasi bo'ladi, siz esa boshqaruvchi bo'lib qolasiz.",
+    pendingOwnerQuestion:
+      "{name} hali saytga qo'shilmagan. U taklif havolasi orqali qo'shilgan zahoti uy egasi bo'ladi, siz esa boshqaruvchi bo'lib qolasiz. Ungacha istalgan payt bekor qilishingiz mumkin.",
+    pendingOwnerSet: "{name} qo'shilganda uy egasi bo'ladi ✅",
+    pendingOwnerCancelled: "{name}ga egalik berish bekor qilindi",
+    pendingHint:
+      "Hali saytga qo'shilmagan. Taklif havolasi orqali qo'shilgach, unga egalikni ham berish mumkin bo'ladi.",
+    alone:
+      "Hozircha boshqaruvchi yo'q. Boshqaruv sahifasida xonadoshni tahrirlang va \"Huquqlar\" bo'limida \"Boshqaruvchi\"ni tanlang: u shu ro'yxatda paydo bo'ladi. Buning uchun xonadosh taklif orqali o'z hisobi bilan qo'shilgan bo'lishi kerak.",
+    goInvite: "Boshqaruv sahifasiga o'tish →",
+    title: "Ega va boshqaruvchilar",
+    hint: "Boshqaruvchi xonadoshlar, navbatlar, qoidalar va takliflarni ega kabi boshqaradi. Uyni o'chirish va egalikni o'tkazish faqat egada. Egalikni faqat boshqaruvchiga berish mumkin.",
+    you: "siz",
+    demote: "Huquqni olish",
+    transfer: "Egalikni berish",
+    remove: "Uydan chiqarish",
+    transferTitle: "Egalikni o'tkazasizmi?",
+    transferQuestion:
+      "{name} uyning yangi egasi bo'ladi. Siz boshqaruvchi bo'lib qolasiz va keyin egalikni qaytarib ololmaysiz (faqat yangi ega qaytara oladi).",
+    removeTitle: "Uydan chiqarasizmi?",
+    removeQuestion:
+      "{name} hisobi uydan chiqariladi. Xonadosh qatori va navbatlari qoladi, keyin yangi taklif yuborish mumkin.",
+    promoted: "{name} endi boshqaruvchi ✅",
+    demoted: "{name} oddiy a'zo bo'ldi",
+    transferred: "Egalik {name}ga o'tkazildi ✅",
+    removed: "{name} uydan chiqarildi",
+    error: "Amalni bajarib bo'lmadi. Qayta urinib ko'ring.",
+  },
+
+  handover: {
+    sectionText:
+      "Uydan chiqmoqchi bo'lsangiz, egalikni boshqaruvchilardan biriga bering: u yangi ega bo'ladi, siz esa uydan chiqasiz.",
+    menu: "Egalikni berib chiqish",
+    title: "Egalikni berib uydan chiqish",
+    text: '"{name}" uyining yangi egasini tanlang. U darhol ega bo\'ladi, siz esa uydan chiqasiz.',
+    noAdmins:
+      'Uydan chiqish uchun avval egalikni kimgadir berishingiz kerak, lekin hozircha boshqaruvchi yo\'q. Xonadoshni tahrirlab, "Boshqaruvchi" qiling.',
+    confirm: "Berib chiqish",
+  },
+
   notFound: {
     title: "Sahifa topilmadi",
     text: "Siz qidirgan sahifa mavjud emas yoki ko'chirilgan.",
@@ -487,7 +529,6 @@ export const uz = {
   },
 
   control: {
-    invite: "Taklif",
     groupHint: "Bir navbatda {count} kishi: qo'shni o'rinlar bitta guruh.",
     welcome: {
       title: '"{name}" uyi yaratildi! 🎉',
@@ -518,9 +559,10 @@ export const uz = {
       actions: "Amallar",
     },
     roles: {
+      pending: "kutilmoqda",
+      admin: "Boshqaruvchi",
       owner: "Ega",
-      member: "Hisob",
-      noAccount: "Hisobsiz",
+      member: "A'zo",
     },
     todayBadge: "Bugun",
     age: "{count} yosh",
@@ -566,6 +608,14 @@ export const uz = {
   },
 
   userModal: {
+    pendingOwner: "Qo'shilganda uy egasi bo'ladi. Bekor qilish - Sozlamalarda.",
+    roleMemberText: "Jadvalni ko'radi va o'z navbatini belgilaydi",
+    roleAdminText: "Xonadoshlar, navbatlar va qoidalarni boshqaradi",
+    inviteLink: "Taklif havolasini yaratish",
+    rights: "Huquqlar",
+    rightsOwner: "Bu uy egasi: unga hamma huquqlar berilgan.",
+    rightsNoAccount:
+      "Hali saytga qo'shilmagan. Tanlovingiz saqlanadi: taklif havolasi orqali qo'shilganda shu huquq bilan kiradi. Havolani xohlagan yo'l bilan yuborish mumkin.",
     editTitle: "Userni tahrirlash",
     addTitle: "Yangi xonadosh",
     enterName: "Ism va familiyani kiriting",
