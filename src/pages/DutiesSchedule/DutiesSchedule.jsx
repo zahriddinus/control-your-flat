@@ -8,6 +8,7 @@ import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
 import { useTaskText } from "../../hooks/useTaskText";
 import { useFlat } from "../../context/FlatContext";
+import { useSwipe } from "../../hooks/useGestures";
 import { formatDate, formatLongDate, getMonthName } from "../../utils/date";
 import {
   attachTaskOrders,
@@ -59,6 +60,9 @@ export const DutiesSchedule = () => {
 
   const dateRef = useRef();
   const filterRef = useRef();
+
+  // Telefonda chapga surilsa - keyingi oy, o'ngga - oldingi oy
+  const pageRef = useRef(null);
 
   // GET USERS
 
@@ -179,6 +183,11 @@ export const DutiesSchedule = () => {
     // Bugun tanlansa, sana yana avtomatik yangilanib turadi
     setSelectedDate(formatDate(date) === formatDate(currentDate) ? null : date);
   }
+
+  useSwipe(pageRef, {
+    onLeft: () => changeMonth(1),
+    onRight: () => changeMonth(-1),
+  });
 
   function changeMonth(offset) {
     const nextMonth = new Date(year, month + offset, 1);
@@ -320,7 +329,7 @@ export const DutiesSchedule = () => {
 
   return (
     <div className="container">
-      <div className="schedule py-3 py-md-4">
+      <div className="schedule py-3 py-md-4" ref={pageRef}>
         {/* SANA BOSHQARUVI */}
 
         <div className="schedule__controls d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">

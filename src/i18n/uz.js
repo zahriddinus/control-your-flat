@@ -5,6 +5,7 @@ export const uz = {
   },
 
   nav: {
+    stats: "Statistika",
     home: "Asosiy",
     schedule: "Navbatlar",
     users: "Xonadoshlar",
@@ -409,6 +410,70 @@ export const uz = {
     deleted: '"{name}" vazifasi o\'chirildi',
     deleteTitle: "Vazifani o'chirasizmi?",
     tooMany: "Bitta uyda ko'pi bilan 10 ta o'z vazifasi bo'lishi mumkin.",
+  },
+
+  activity: {
+    title: "Uyda nima gap?",
+    empty:
+      "Hozircha voqealar yo'q. \"Bajardim\" belgilari, almashuvlar va o'zgarishlar shu yerda chiqadi.",
+    someone: "Kimdir",
+    deletedTask: "o'chirilgan vazifa",
+    kinds: {
+      done: '{actor}: "{task}" bajarildi',
+      joined: "{actor} uyga qo'shildi",
+      resident_added: "{actor} yangi xonadosh qo'shdi: {target}",
+      order_changed: '{actor} "{task}" tartibini o\'zgartirdi',
+      order_swapped: '{actor} "{task}" da {a} va {b} o\'rnini almashtirdi',
+      task_added: '{actor} yangi vazifa qo\'shdi: "{task}"',
+      rules_changed: '{actor} "{task}" qoidasini o\'zgartirdi',
+      swap_requested: '{actor} {target}ga "{task}" navbatini almashishni taklif qildi',
+      swap_accepted: '{actor} va {target} "{task}" navbatini almashdi ({fromDay} ↔ {toDay})',
+      swap_declined: "{actor} {target}ning almashish taklifini rad etdi",
+    },
+  },
+
+  swaps: {
+    title: "Navbat almashish",
+    ask: "Almashishni so'rash",
+    hint: "Navbatingiz kuni bora olmaysizmi? Xonadoshingizga kunlarni almashishni taklif qiling.",
+    incoming: "{name} {fromDay} kungi navbatini sizning {toDay} kungi navbatingizga almashmoqchi",
+    outgoing:
+      "Siz {name}ga {fromDay} kungi navbatingizni uning {toDay} kungisiga almashishni taklif qildingiz",
+    waiting: "javob kutilmoqda",
+    accept: "Qabul qilish",
+    decline: "Rad etish",
+    accepted: "Navbatlar almashtirildi ✅",
+    declined: "Taklif rad etildi",
+    cancelled: "So'rov bekor qilindi",
+    sent: "So'rov yuborildi ✅",
+    requestTitle: "Navbatni almashish",
+    stepMine: "Qaysi navbatingizni berasiz?",
+    stepOther: "Kimning qaysi kuni bilan almashasiz?",
+    noTurns: "Yaqin kunlarda navbatingiz yo'q.",
+    noOthers: "Bu vazifada yaqin kunlarda boshqa navbat yo'q.",
+    message: "Izoh (ixtiyoriy)",
+    messagePlaceholder: "Masalan: o'sha kuni shahar tashqarisidaman",
+    send: "So'rov yuborish",
+    errors: {
+      pending: "Bu kunlar uchun allaqachon javob kutilayotgan so'rov bor.",
+      changed: "Navbatlar o'zgarib ketgan. Sahifani yangilab, qayta urinib ko'ring.",
+      unknown: "So'rov yuborib bo'lmadi. Qayta urinib ko'ring.",
+    },
+  },
+
+  stats: {
+    title: "Statistika",
+    year: "Yil",
+    total: "Yildagi jami navbatlar",
+    done: '"Bajardim" belgilari',
+    best: "Eng faol",
+    byMonth: "Oylar bo'yicha navbatlar",
+    byPerson: "Xonadoshlar bo'yicha",
+    person: "Xonadosh",
+    totalShort: "Jami",
+    doneRate: "Bajarilgan",
+    turns: "{count} ta navbat",
+    doneHint: 'Bajarilganlik foizi "Bajardim" belgilari ishga tushgan kundan hisoblanadi.',
   },
 
   notFound: {

@@ -16,6 +16,7 @@ import { useTaskText } from "../../hooks/useTaskText";
 import { addDays, formatLongDate } from "../../utils/date";
 import { TASKS, attachTaskOrders, fetchSchedules, sortUsersByOrder } from "../../utils/schedule";
 import { InviteModal } from "./InviteModal";
+import { logActivity } from "../../utils/activity";
 import { StatsCards } from "./StatsCards";
 import { UsersTable } from "./UsersTable";
 import { UserCards } from "./UserCards";
@@ -305,6 +306,7 @@ export const ControlUsers = () => {
       showNotice(t("control.notices.moveError", { error: error.message }), "danger");
     } else {
       showNotice(t("control.notices.moved", { name: user.name, order: newOrder }));
+      logActivity(flatId, residentId, "order_changed", orderTaskKey);
     }
 
     await refreshUsers();
@@ -343,6 +345,10 @@ export const ControlUsers = () => {
       showNotice(t("control.notices.swapError", { error: error.message }), "danger");
     } else {
       showNotice(t("control.notices.swapped", { a: first.name, b: second.name }));
+      logActivity(flatId, residentId, "order_swapped", orderTaskKey, {
+        a: first.name.trim(),
+        b: second.name.trim(),
+      });
     }
 
     setSwapping(false);

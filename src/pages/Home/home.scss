@@ -928,3 +928,164 @@
     background-color: #20c997;
   }
 }
+
+// Navbat almashish
+.home__swaps {
+  border-radius: 16px;
+}
+
+.home__swap {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--bs-border-color-translucent);
+  border-radius: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+
+  &--incoming {
+    border-color: rgba(13, 110, 253, 0.4);
+    background-color: rgba(13, 110, 253, 0.06);
+  }
+}
+
+.swap__step {
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.95rem;
+  font-weight: 700;
+
+  span {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.8rem;
+    background: linear-gradient(135deg, #0d6efd 0%, #6f42c1 100%);
+  }
+}
+
+.swap__options {
+  max-height: 220px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.swap__option {
+  padding: 8px 10px;
+  border: 1.5px solid var(--bs-border-color);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: start;
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+
+  &.active {
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.08);
+  }
+}
+
+// Faollik lentasi
+.home__activity {
+  border-radius: 16px;
+}
+
+.home__activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.home__activity-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.home__activity-avatar {
+  position: relative;
+  flex-shrink: 0;
+}
+
+// Avatar burchagidagi voqea belgisi
+.home__activity-kind {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--bs-body-bg);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 0.6rem;
+  background-color: #6c757d;
+
+  &--done,
+  &--swap_accepted {
+    background-color: #20c997;
+  }
+
+  &--joined,
+  &--resident_added,
+  &--task_added {
+    background-color: #0d6efd;
+  }
+
+  &--swap_requested {
+    background-color: #6f42c1;
+  }
+
+  &--swap_declined {
+    background-color: #dc3545;
+  }
+}
+
+// Pastga tortib yangilash: yuqoridan tushadigan doira
+.home__pull {
+  position: fixed;
+  top: 70px;
+  left: 50%;
+  z-index: 1030;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-secondary-color);
+  background-color: var(--bs-body-bg);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+  transition: color 0.15s ease;
+
+  &--ready {
+    color: #0d6efd;
+  }
+}
+
+// O'q pastga qaraydi; yetarlicha tortilganda yuqoriga aylanadi
+.home__pull-arrow {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+
+  .home__pull--ready & {
+    transform: rotate(0deg);
+  }
+}

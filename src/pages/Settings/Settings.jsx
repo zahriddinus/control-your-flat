@@ -11,6 +11,7 @@ import { FlatForm } from "../../components/FlatForm";
 import { Notice, useNotice } from "../../components/Notice";
 import { useTaskText } from "../../hooks/useTaskText";
 import { TASKS } from "../../utils/schedule";
+import { logActivity } from "../../utils/activity";
 import { MembersSection } from "./MembersSection";
 import { TaskModal } from "./TaskModal";
 import { HandoverModal } from "./HandoverModal";
@@ -155,7 +156,7 @@ const TaskRule = ({ taskKey, rule, onSave, onEdit, onDelete }) => {
 export const Settings = () => {
   const { t } = useI18n();
   const navigate = useNavigate();
-  const { flat, flatId, flatTasks, allTasks, isOwner, reload, reloadTasks } = useFlat();
+  const { flat, flatId, flatTasks, allTasks, isOwner, residentId, reload, reloadTasks } = useFlat();
   const taskText = useTaskText();
   const [notice, showNotice] = useNotice(3500);
 
@@ -225,12 +226,13 @@ export const Settings = () => {
 
     await reloadTasks();
     showNotice(t("settings.ruleSaved", { task: taskText(taskKey, "title") }));
+    logActivity(flatId, residentId, "rules_changed", taskKey);
   }
 
   async function handleTaskSubmit(values) {
     const editing = taskModal?.task;
 
-    const { error } = editing
+    const { data, error } = editing
       ? await supabase.rpc("update_task_info", {
           p_flat: flatId,
           p_task: editing.key,
@@ -259,6 +261,9 @@ export const Settings = () => {
     setTaskModal(null);
     await reloadTasks();
     showNotice(t(editing ? "tasksEditor.saved" : "tasksEditor.added", { name: values.name }));
+
+    // Yangi vazifa lentaga (create_task yangi kalitni qaytaradi)
+    if (!editing) logActivity(flatId, residentId, "task_added", data);
   }
 
   async function handleRestore(taskKey) {

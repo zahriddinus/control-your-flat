@@ -89,6 +89,8 @@ const ICONS = {
       <path d="M8 4.8v3.7M8 11.2h.01" />
     </>
   ),
+  // Ustunli grafik
+  chart: <path d="M2 14h12M4 14V9M7 14V4.5M10 14V7M13 14V2.5" />,
   table: (
     <>
       <rect x="2" y="2.5" width="12" height="11" rx="1.5" />

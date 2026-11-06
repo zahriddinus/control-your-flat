@@ -27,7 +27,11 @@ Built with React 19, React Router 7, Bootstrap 5, Sass and [Supabase](https://su
   - add, edit and delete flatmates;
   - drag to reorder each task's rotation, or swap two people;
   - send invite links.
-- Dark mode, uz/ru/en translations, installable PWA with offline cache, and a Telegram bot.
+- **Custom tasks:** add your own tasks with a name, icon and colour. The three default tasks can be renamed, deleted and restored too.
+- **Swap requests:** a flatmate offers to swap days. When the other accepts, both days swap as one-off overrides; the rotation itself stays.
+- **Activity feed** on the home page, **yearly stats** (`/stats`) and a **profile page** (`/profile`) for your own details, avatar colour and password.
+- **Roles:** owner, manager and member, with ownership transfer and an onboarding checklist for new flats.
+- Dark mode, uz/ru/en translations, installable PWA with offline cache, mobile gestures (swipe months, pull to refresh) and a Telegram bot.
 
 ## Getting started
 
@@ -60,6 +64,7 @@ Run the migrations in **Supabase → SQL Editor**, in this order:
 2. [20261102_schedule_range.sql](supabase/migrations/20261102_schedule_range.sql)
 3. [20261106_duty_done.sql](supabase/migrations/20261106_duty_done.sql)
 4. [20261107_multi_flat.sql](supabase/migrations/20261107_multi_flat.sql). This one turns the single-flat database into the multi-flat one. It moves existing residents into a first flat named "Sergeli" and keeps a copy of the old tables in the `backup` schema.
+5. Then every later file in [supabase/migrations](supabase/migrations) in date order (roles, profiles, custom tasks, activity and swaps).
 
 In **Authentication → URL Configuration**, set the **Site URL** to your production address. Add `http://localhost:3000/**` and your production URL to **Redirect URLs**. Confirmation and password-reset emails link there.
 

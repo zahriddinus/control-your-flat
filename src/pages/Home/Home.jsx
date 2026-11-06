@@ -21,6 +21,10 @@ import { WeekView } from "./WeekView";
 import { QuickLinks } from "./QuickLinks";
 import { MonthRating } from "./MonthRating";
 import { OnboardingChecklist } from "./OnboardingChecklist";
+import { SwapCenter } from "./SwapCenter";
+import { ActivityFeed } from "./ActivityFeed";
+import { usePullToRefresh, vibrate } from "../../hooks/useGestures";
+import { AppIcon } from "../../components/AppIcon";
 
 // Shuncha kun oldinga qaraladi: har bir vazifada har bir xonadoshga navbat kamida bir marta keladi
 const getDaysAhead = (usersCount, tasks) =>
@@ -56,6 +60,16 @@ export const Home = () => {
   const [scheduleError, setScheduleError] = useState(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [showConfetti, setShowConfetti] = useState(false);
+
+  // Almashish qabul qilinsa yoki "Bajardim" bosilsa: navbatlar va lenta qayta yuklanadi
+  const [refreshKey, setRefreshKey] = useState(0);
+  const refresh = () => setRefreshKey((key) => key + 1);
+
+  // Telefonda sahifa tepasida pastga tortilsa - navbatlar, belgilar va lenta qayta yuklanadi
+  const { pull, refreshing } = usePullToRefresh(async () => {
+    refresh();
+    await new Promise((resolve) => setTimeout(resolve, 600));
+  });
 
   // "Mening navbatim"da kim ko'rilmoqda: boshida o'zim, boshqani ham tanlash mumkin
   const [viewUserId, setViewUserId] = useState(residentId);
@@ -154,7 +168,7 @@ export const Home = () => {
     return () => {
       cancelled = true;
     };
-  }, [flatId, today, users.length, daysAhead]);
+  }, [flatId, today, users.length, daysAhead, refreshKey]);
 
   // GET TODAY'S DONE MARKS
 
@@ -173,7 +187,7 @@ export const Home = () => {
     return () => {
       cancelled = true;
     };
-  }, [flatId, todayKey]);
+  }, [flatId, todayKey, refreshKey]);
 
   // Men - hisobimga ulangan xonadosh
   const me = users.find((user) => user.user_id === residentId) ?? null;
@@ -196,6 +210,7 @@ export const Home = () => {
   // "Bajardim" va uni bekor qilish (faqat bugungi o'z vazifasi uchun)
   const handleDone = async (taskKey) => {
     setDoneBusy(taskKey);
+    vibrate(20);
 
     try {
       const doneAt = await markDone(flatId, taskKey);
@@ -208,6 +223,7 @@ export const Home = () => {
       ]);
       setShowConfetti(true);
       showNotice(t("done.success"));
+      refresh();
     } catch (error) {
       console.error(error);
       showNotice(t("done.error"), "danger");
@@ -270,6 +286,16 @@ export const Home = () => {
 
         {!schedulesLoading && <DayHero users={users} schedule={schedules[0]} done={doneToday} />}
 
+        {!schedulesLoading && (
+          <SwapCenter
+            users={users}
+            schedules={schedules}
+            today={today}
+            onChanged={refresh}
+            onNotice={showNotice}
+          />
+        )}
+
         <div className="row g-3 mb-4">
           <div className={`col-12 ${hasCleaning ? "col-lg-6" : ""}`}>
             <MyTurn {...scheduleProps} userId={viewUserId} onUserChange={setViewUserId} />
@@ -285,12 +311,29 @@ export const Home = () => {
         <WeekView {...scheduleProps} />
 
         {doneToday && <MonthRating users={users} today={today} doneToday={doneToday} />}
+
+        <ActivityFeed users={users} refreshKey={refreshKey} />
       </>
     );
   };
 
   return (
     <div className="home">
+      {/* Pastga tortib yangilash ko'rsatkichi */}
+      {(pull > 0 || refreshing) && (
+        <div
+          className={`home__pull ${pull >= 1 || refreshing ? "home__pull--ready" : ""}`}
+          style={{ transform: `translate(-50%, ${refreshing ? 16 : pull * 56 - 40}px)` }}
+          aria-hidden="true"
+        >
+          {refreshing ? (
+            <span className="spinner-border spinner-border-sm"></span>
+          ) : (
+            <AppIcon name="arrowUp" className="home__pull-arrow" />
+          )}
+        </div>
+      )}
+
       {/* Bo'limlar ketma-ket paydo bo'ladi (stagger) */}
       <div className="container py-3 py-md-4 stagger">
         <Greeting

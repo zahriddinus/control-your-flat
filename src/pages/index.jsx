@@ -9,6 +9,7 @@ import { NewFlat } from "./NewFlat";
 import { Invite } from "./Invite";
 import { Settings } from "./Settings";
 import { Profile } from "./Profile";
+import { Stats } from "./Stats";
 
 export {
   Home,
@@ -25,4 +26,5 @@ export {
   Invite,
   Settings,
   Profile,
+  Stats,
 };
