@@ -1,4 +1,5 @@
 import { useI18n } from "../../i18n";
+import { useTaskText } from "../../hooks/useTaskText";
 import { addDays, formatDaysLeft, formatLongDate } from "../../utils/date";
 import { useFlat } from "../../context/FlatContext";
 import { TaskIcon } from "../../components/TaskIcon";
@@ -13,6 +14,7 @@ const getBadgeClass = (days) => {
 // userId va onUserChange Home'dan keladi: salomlashish ham shu tanlovga qaraydi
 export const MyTurn = ({ users, schedules, today, loading, userId, onUserChange }) => {
   const { t, lang } = useI18n();
+  const taskText = useTaskText();
   const { tasks } = useFlat();
 
   const user = users.find((item) => item.user_id === userId);
@@ -57,7 +59,7 @@ export const MyTurn = ({ users, schedules, today, loading, userId, onUserChange 
                 >
                   <span className="d-flex align-items-center gap-2">
                     <TaskIcon taskKey={task.key} size="md" />
-                    {t(`tasks.${task.key}.label`)}
+                    {taskText(task.key, "label")}
                   </span>
 
                   {loading ? (

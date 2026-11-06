@@ -1,5 +1,6 @@
 import { TaskChip } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
+import { useTaskText } from "../../hooks/useTaskText";
 import { addDays, formatLongDate, getShortWeekday } from "../../utils/date";
 import { useFlat } from "../../context/FlatContext";
 import { getAssignedNames } from "../../utils/schedule";
@@ -18,7 +19,8 @@ export const MonthCalendar = ({
   filterUserId,
   onSelectDay,
 }) => {
-  const { t, lang } = useI18n();
+  const { lang } = useI18n();
+  const taskText = useTaskText();
   const { tasks } = useFlat();
 
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -100,7 +102,7 @@ export const MonthCalendar = ({
                       key={task.key}
                       taskKey={task.key}
                       names={names}
-                      title={`${t(`tasks.${task.key}.label`)}: ${names}`}
+                      title={`${taskText(task.key, "label")}: ${names}`}
                       mine={mine}
                       dim={hasFilter && !mine}
                     />

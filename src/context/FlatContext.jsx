@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { supabase } from "../lib/supabese";
-import { TASKS } from "../utils/schedule";
+import { TASKS, makeTask } from "../utils/schedule";
 import { useAuth } from "./AuthContext";
 
 const FlatContext = createContext(null);
@@ -42,7 +42,7 @@ export const FlatProvider = ({ children }) => {
     const { data, error } = await supabase
       .from("flat_members")
       .select(
-        "flat_id, role, resident_id, resident:users(name, last_name), flat:flats(id, name, start_date, timezone, latitude, longitude, address)"
+        "flat_id, role, resident_id, resident:users(user_id, name, last_name, avatar_color), flat:flats(id, name, start_date, timezone, latitude, longitude, address)"
       )
       .eq("auth_user_id", userId)
       .order("joined_at", { ascending: true });
@@ -84,7 +84,7 @@ export const FlatProvider = ({ children }) => {
 
     const { data, error } = await supabase
       .from("flat_tasks")
-      .select("task, enabled, every_days, people")
+      .select("task, enabled, every_days, people, is_custom, name, icon, color, position")
       .eq("flat_id", flatId);
 
     if (error) {
@@ -111,17 +111,45 @@ export const FlatProvider = ({ children }) => {
   );
   const tasksLoading = Boolean(flatId) && taskState.flatId !== flatId;
 
-  // Yoqilgan vazifalar, qoidalari bilan (TASKS tartibida)
-  const tasks = useMemo(
-    () =>
-      TASKS.map((task) => {
-        const rule = flatTasks.find((item) => item.task === task.key);
+  // Barcha vazifalar qoidalari bilan: avval o'rnatilgan 3 tasi (TASKS tartibida), keyin uyning
+  // o'z vazifalari (custom). O'z vazifasining tartibi user["order:<kalit>"] da (attachTaskOrders)
+  const allTasks = useMemo(() => {
+    const withRule = (task, rule) => ({
+      ...task,
+      everyDays: rule.every_days,
+      people: rule.people,
+      enabled: rule.enabled,
+    });
 
-        return rule
-          ? { ...task, everyDays: rule.every_days, people: rule.people, enabled: rule.enabled }
-          : null;
-      }).filter((task) => task?.enabled),
-    [flatTasks]
+    const builtin = TASKS.map((task) => {
+      const rule = flatTasks.find((item) => item.task === task.key);
+
+      // O'rnatilgan vazifa ham nomi, belgisi va rangi bilan tahrirlanadi (bo'sh - asl holi)
+      return rule
+        ? { ...withRule(task, rule), name: rule.name, icon: rule.icon, color: rule.color }
+        : null;
+    }).filter(Boolean);
+
+    const custom = flatTasks
+      .filter((rule) => rule.is_custom)
+      .sort((a, b) => a.position - b.position)
+      .map((rule) => ({
+        ...withRule(makeTask(rule.task, `order:${rule.task}`), rule),
+        custom: true,
+        name: rule.name,
+        icon: rule.icon,
+        color: rule.color,
+      }));
+
+    return [...builtin, ...custom];
+  }, [flatTasks]);
+
+  // Faqat yoqilganlari - jadval, bosh sahifa va boshqalar shularni ko'rsatadi
+  const tasks = useMemo(() => allTasks.filter((task) => task.enabled), [allTasks]);
+
+  const taskByKey = useMemo(
+    () => Object.fromEntries(allTasks.map((task) => [task.key, task])),
+    [allTasks]
   );
 
   const value = {
@@ -136,6 +164,8 @@ export const FlatProvider = ({ children }) => {
     isManager: membership?.role === "owner" || membership?.role === "admin",
     residentId: membership?.resident_id ?? null,
     tasks,
+    allTasks,
+    taskByKey,
     flatTasks,
     selectFlat,
     reload: loadMemberships,

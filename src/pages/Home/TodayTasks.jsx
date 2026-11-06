@@ -1,6 +1,7 @@
 import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
+import { useTaskText } from "../../hooks/useTaskText";
 import { useFlat } from "../../context/FlatContext";
 import { getAssignedNames } from "../../utils/schedule";
 import { findDone } from "../../utils/done";
@@ -8,6 +9,7 @@ import { findDone } from "../../utils/done";
 // done - bugungi "Bajardim" belgilari: bajargan odam ismi yonida yashil belgi chiqadi
 export const TodayTasks = ({ users, schedules, loading, done }) => {
   const { t } = useI18n();
+  const taskText = useTaskText();
   const { tasks } = useFlat();
   const [todaySchedule, tomorrowSchedule] = schedules;
 
@@ -54,7 +56,7 @@ export const TodayTasks = ({ users, schedules, loading, done }) => {
                 <TaskIcon taskKey={task.key} size="lg" />
 
                 <div className="flex-grow-1 overflow-hidden">
-                  <small className="text-muted d-block">{t(`tasks.${task.key}.label`)}</small>
+                  <small className="text-muted d-block">{taskText(task.key, "label")}</small>
 
                   <span className="home__task-name fw-semibold">
                     {loading ? <span className="placeholder col-8"></span> : renderNames(task)}

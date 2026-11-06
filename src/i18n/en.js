@@ -337,6 +337,68 @@ export const en = {
     confirm: "Hand over and leave",
   },
 
+  profile: {
+    title: "My profile",
+    personal: "Personal details",
+    age: "Age",
+    color: "Avatar colour",
+    colorAuto: "Automatic",
+    password: "Change password",
+    passwordSaved: "Password updated ✅",
+    site: "Theme and language",
+    saved: "Profile saved ✅",
+    saveError: "Couldn't save. Please try again.",
+  },
+
+  onboarding: {
+    title: "Finish setting up your flat",
+    progress: "{done} of {total} steps done",
+    hide: "Hide",
+    go: "Go",
+    steps: {
+      flat: {
+        title: "Flat created",
+        text: "",
+      },
+      flatmates: {
+        title: "Add your flatmates",
+        text: "The rotation goes round between them.",
+      },
+      invite: {
+        title: "Send an invite",
+        text: "Flatmates log in with their own account and see their turns.",
+      },
+      rules: {
+        title: "Review the rules",
+        text: "Which tasks, how often and how many people.",
+      },
+      profile: {
+        title: "Complete your profile",
+        text: "Your Telegram username or phone number.",
+      },
+    },
+  },
+
+  tasksEditor: {
+    restoreTitle: "Restore deleted default tasks:",
+    restored: '"{name}" restored ✅',
+    deleteQuestion:
+      'The task "{name}", its history and "Done" marks will be deleted. A default task can be restored later, but its history won\'t come back.',
+    reset: "Restore default",
+    add: "Add task",
+    addTitle: "New task",
+    editTitle: "Edit task",
+    name: "Name",
+    namePlaceholder: "e.g. Wash the dishes",
+    icon: "Icon",
+    color: "Colour",
+    added: 'Task "{name}" added ✅',
+    saved: '"{name}" saved ✅',
+    deleted: 'Task "{name}" deleted',
+    deleteTitle: "Delete this task?",
+    tooMany: "A flat can have up to 10 custom tasks.",
+  },
+
   notFound: {
     title: "Page not found",
     text: "The page you're looking for doesn't exist or has been moved.",

@@ -12,8 +12,9 @@ import { Notice, useNotice } from "../../components/Notice";
 import { TaskIcon } from "../../components/TaskIcon";
 import { AppIcon } from "../../components/AppIcon";
 import { useI18n } from "../../i18n";
+import { useTaskText } from "../../hooks/useTaskText";
 import { addDays, formatLongDate } from "../../utils/date";
-import { TASKS, fetchSchedules, sortUsersByOrder } from "../../utils/schedule";
+import { TASKS, attachTaskOrders, fetchSchedules, sortUsersByOrder } from "../../utils/schedule";
 import { InviteModal } from "./InviteModal";
 import { StatsCards } from "./StatsCards";
 import { UsersTable } from "./UsersTable";
@@ -21,6 +22,7 @@ import { UserCards } from "./UserCards";
 
 export const ControlUsers = () => {
   const { t, lang } = useI18n();
+  const taskText = useTaskText();
   const location = useLocation();
   const { flat, flatId, residentId, tasks, isOwner } = useFlat();
   const [users, setUsers] = useState([]);
@@ -63,23 +65,25 @@ export const ControlUsers = () => {
   // GET USERS
 
   const loadUsers = useCallback(async () => {
-    const [usersResult, membersResult] = await Promise.all([
+    const [usersResult, membersResult, ordersResult] = await Promise.all([
       supabase
         .from("users")
         .select("*")
         .eq("flat_id", flatId)
         .order("duty_order", { ascending: true }),
       supabase.from("flat_members").select("resident_id, role, auth_user_id").eq("flat_id", flatId),
+      supabase.from("task_orders").select("task, user_id, position").eq("flat_id", flatId),
     ]);
 
-    const error = usersResult.error ?? membersResult.error;
+    const error = usersResult.error ?? membersResult.error ?? ordersResult.error;
 
     if (error) {
       console.error(error);
       return error;
     }
 
-    setUsers(usersResult.data);
+    // O'z vazifalari tartibi user["order:<kalit>"] bo'lib qo'shiladi
+    setUsers(attachTaskOrders(usersResult.data, ordersResult.data));
     const linked = membersResult.data.filter((member) => member.resident_id);
 
     setAccounts(Object.fromEntries(linked.map((member) => [member.resident_id, member.role])));
@@ -144,7 +148,7 @@ export const ControlUsers = () => {
     .filter((user) => orderTaskDef.isAssigned(weekSchedules[0], user.user_id))
     .map((user) => user.user_id);
   const orderTaskKey = orderTaskDef.key;
-  const orderTaskTitle = t(`tasks.${orderTaskKey}.title`);
+  const orderTaskTitle = taskText(orderTaskKey, "title");
   const groupSize = orderTaskDef.people ?? 1;
 
   const sortedUsers = useMemo(() => sortUsersByOrder(users, orderColumn), [users, orderColumn]);
@@ -528,7 +532,7 @@ export const ControlUsers = () => {
               aria-pressed={orderTaskKey === task.key}
             >
               <TaskIcon taskKey={task.key} />
-              {t(`tasks.${task.key}.title`)}
+              {taskText(task.key, "title")}
             </button>
           ))}
         </div>

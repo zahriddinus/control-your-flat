@@ -110,6 +110,15 @@ export const UserMenu = ({ onNavigate, onLogout }) => {
           </span>
         </li>
 
+        {flat && (
+          <li>
+            <Link className="dropdown-item" to="/profile" onClick={close}>
+              <AppIcon name="user" className="header__menu-icon" />
+              {t("profile.title")}
+            </Link>
+          </li>
+        )}
+
         {memberships.length > 0 && (
           <>
             <li>

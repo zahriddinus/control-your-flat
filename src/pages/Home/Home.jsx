@@ -20,6 +20,7 @@ import { CleaningCountdown } from "./CleaningCountdown";
 import { WeekView } from "./WeekView";
 import { QuickLinks } from "./QuickLinks";
 import { MonthRating } from "./MonthRating";
+import { OnboardingChecklist } from "./OnboardingChecklist";
 
 // Shuncha kun oldinga qaraladi: har bir vazifada har bir xonadoshga navbat kamida bir marta keladi
 const getDaysAhead = (usersCount, tasks) =>
@@ -78,7 +79,7 @@ export const Home = () => {
       const { data, error } = await queryWithCache(`users:home:${flatId}`, () =>
         supabase
           .from("users")
-          .select("user_id, name, last_name, duty_order")
+          .select("user_id, name, last_name, avatar_color, duty_order")
           .eq("flat_id", flatId)
           .order("duty_order", { ascending: true })
       );
@@ -302,6 +303,9 @@ export const Home = () => {
           onDone={handleDone}
           onUndo={handleUndo}
         />
+
+        {/* Yangi uy uchun birinchi qadamlar (ega va boshqaruvchilarga) */}
+        <OnboardingChecklist usersCount={users.length} />
 
         <WeatherCard users={users} schedules={schedules} flat={flat} />
 

@@ -12,7 +12,7 @@ export const getAssigned = (schedule, taskKey) => {
   return value ? [value] : [];
 };
 
-const makeTask = (key, orderColumn) => ({
+export const makeTask = (key, orderColumn) => ({
   key,
   orderColumn,
   isAssigned: (schedule, userId) =>
@@ -34,6 +34,29 @@ export const sortUsersByOrder = (users, orderColumn) =>
       (a[orderColumn] ?? Infinity) - (b[orderColumn] ?? Infinity) ||
       (a.duty_order ?? Infinity) - (b.duty_order ?? Infinity)
   );
+
+// Uyning o'z vazifalari tartibi (task_orders) userlarga "order:<kalit>" maydoni bo'lib qo'shiladi,
+// shunda o'rnatilgan vazifalar (duty_order va h.k.) bilan bir xil ishlatiladi
+export const fetchTaskOrders = async (flatId) => {
+  const { data, error } = await supabase
+    .from("task_orders")
+    .select("task, user_id, position")
+    .eq("flat_id", flatId);
+
+  if (error) throw error;
+
+  return data;
+};
+
+export const attachTaskOrders = (users, rows) =>
+  users.map((user) => ({
+    ...user,
+    ...Object.fromEntries(
+      rows
+        .filter((row) => row.user_id === user.user_id)
+        .map((row) => [`order:${row.task}`, row.position])
+    ),
+  }));
 
 const getAssignedUsers = (users, task, schedule) =>
   users.filter((user) => task.isAssigned(schedule, user.user_id));

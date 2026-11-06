@@ -124,3 +124,12 @@
     opacity: 0.35;
   }
 }
+
+// Uyning o'z vazifasi: rangi inline beriladi, belgi chiziqli
+.task-icon--custom {
+  color: #fff;
+
+  svg {
+    fill: none;
+  }
+}

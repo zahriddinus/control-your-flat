@@ -4,6 +4,7 @@ import { supabase } from "../../lib/supabese";
 import { PageSkeleton } from "../../components/Skeleton";
 import { EmptyState, ErrorState } from "../../components/EmptyState";
 import { useI18n } from "../../i18n";
+import { useTaskText } from "../../hooks/useTaskText";
 import { Avatar } from "../../components/Avatar";
 import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
@@ -13,6 +14,7 @@ import { queryWithCache } from "../../utils/offline";
 
 export const Users = () => {
   const { t } = useI18n();
+  const taskText = useTaskText();
   const { flatId, tasks } = useFlat();
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +31,7 @@ export const Users = () => {
       const { data, error } = await queryWithCache(`users:list:${flatId}`, () =>
         supabase
           .from("users")
-          .select("user_id, name, last_name, nickname, phone_number, duty_order")
+          .select("user_id, name, last_name, avatar_color, nickname, phone_number, duty_order")
           .eq("flat_id", flatId)
           .order("duty_order", { ascending: true })
       );
@@ -155,7 +157,7 @@ export const Users = () => {
                         {todayTasks.map((task) => (
                           <span className="users__today-badge badge text-bg-warning" key={task.key}>
                             <TaskIcon taskKey={task.key} />
-                            {t("users.todayTask", { task: t(`tasks.${task.key}.label`) })}
+                            {t("users.todayTask", { task: taskText(task.key, "label") })}
                           </span>
                         ))}
                       </div>

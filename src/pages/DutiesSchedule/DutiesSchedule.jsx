@@ -6,9 +6,15 @@ import { EmptyState, ErrorState } from "../../components/EmptyState";
 import { AppIcon } from "../../components/AppIcon";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
+import { useTaskText } from "../../hooks/useTaskText";
 import { useFlat } from "../../context/FlatContext";
 import { formatDate, formatLongDate, getMonthName } from "../../utils/date";
-import { fetchSchedules, sortUsersByOrder } from "../../utils/schedule";
+import {
+  attachTaskOrders,
+  fetchSchedules,
+  fetchTaskOrders,
+  sortUsersByOrder,
+} from "../../utils/schedule";
 import { buildIcs, downloadFile } from "../../utils/ics";
 import { queryWithCache } from "../../utils/offline";
 import { ScheduleTable } from "./ScheduleTable";
@@ -33,6 +39,7 @@ const VIEWS = [
 
 export const DutiesSchedule = () => {
   const { t, lang } = useI18n();
+  const taskText = useTaskText();
   const { flatId, tasks } = useFlat();
 
   const [monthSchedules, setMonthSchedules] = useState({});
@@ -61,7 +68,9 @@ export const DutiesSchedule = () => {
       const { data, error } = await queryWithCache(`users:schedule:${flatId}`, () =>
         supabase
           .from("users")
-          .select("user_id, name, last_name, duty_order, rubbish_order, cleaning_order")
+          .select(
+            "user_id, name, last_name, avatar_color, duty_order, rubbish_order, cleaning_order"
+          )
           .eq("flat_id", flatId)
           .order("duty_order", { ascending: true })
       );
@@ -69,7 +78,15 @@ export const DutiesSchedule = () => {
       if (error) {
         console.error(error);
         setError(error);
-      } else {
+        setLoading(false);
+        return;
+      }
+
+      // O'z vazifalari tartibi. Yuklanmasa, ular navbatchilik tartibida ko'rinadi
+      try {
+        setData(attachTaskOrders(data, await fetchTaskOrders(flatId)));
+      } catch (ordersError) {
+        console.error(ordersError);
         setData(data);
       }
 
@@ -240,8 +257,8 @@ export const DutiesSchedule = () => {
     const events = myEvents.map(({ day, task }) => ({
       date: new Date(year, month, day),
       taskKey: task.key,
-      title: t(`schedule.ics.${task.key}`),
-      reminder: t("schedule.ics.reminder", { task: t(`tasks.${task.key}.label`) }),
+      title: task.name ? taskText(task.key, "title") : t(`schedule.ics.${task.key}`),
+      reminder: t("schedule.ics.reminder", { task: taskText(task.key, "label") }),
     }));
 
     const content = buildIcs({
@@ -432,7 +449,7 @@ export const DutiesSchedule = () => {
                     <TaskIcon taskKey={task.key} size="md" />
 
                     <div className="overflow-hidden">
-                      <small className="text-muted">{t(`tasks.${task.key}.label`)}</small>
+                      <small className="text-muted">{taskText(task.key, "label")}</small>
 
                       <p className="schedule__summary-name m-0 fw-semibold">
                         {schedulesLoading ? (

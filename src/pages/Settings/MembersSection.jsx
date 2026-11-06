@@ -31,11 +31,13 @@ export const MembersSection = ({ onNotice }) => {
     const [membersResult, pendingResult] = await Promise.all([
       supabase
         .from("flat_members")
-        .select("auth_user_id, role, resident_id, resident:users(name, last_name)")
+        .select(
+          "auth_user_id, role, resident_id, resident:users(user_id, name, last_name, avatar_color)"
+        )
         .eq("flat_id", flatId),
       supabase
         .from("users")
-        .select("user_id, name, last_name, invite_role")
+        .select("user_id, name, last_name, invite_role, avatar_color")
         .eq("flat_id", flatId)
         .in("invite_role", ["admin", "owner"]),
     ]);

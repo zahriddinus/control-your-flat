@@ -26,7 +26,7 @@ export const HandoverModal = ({ isOpen, flat, onClose, onDone }) => {
 
     supabase
       .from("flat_members")
-      .select("auth_user_id, resident:users(name, last_name)")
+      .select("auth_user_id, resident:users(user_id, name, last_name, avatar_color)")
       .eq("flat_id", flat.id)
       .eq("role", "admin")
       .then(({ data, error }) => {

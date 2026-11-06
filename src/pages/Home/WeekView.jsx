@@ -1,11 +1,13 @@
 import { TaskChip } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
+import { useTaskText } from "../../hooks/useTaskText";
 import { addDays, formatDate, getShortWeekday } from "../../utils/date";
 import { useFlat } from "../../context/FlatContext";
 import { getAssignedNames } from "../../utils/schedule";
 
 export const WeekView = ({ users, schedules, today, loading }) => {
   const { t, lang } = useI18n();
+  const taskText = useTaskText();
   const { tasks } = useFlat();
   const week = Array.from({ length: 7 }, (_, index) => ({
     date: addDays(today, index),
@@ -44,7 +46,7 @@ export const WeekView = ({ users, schedules, today, loading }) => {
                       key={task.key}
                       taskKey={task.key}
                       names={names}
-                      title={`${t(`tasks.${task.key}.label`)}: ${names}`}
+                      title={`${taskText(task.key, "label")}: ${names}`}
                     />
                   );
                 })

@@ -1,11 +1,13 @@
 import { Avatar } from "../../components/Avatar";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
+import { useTaskText } from "../../hooks/useTaskText";
 import { useFlat } from "../../context/FlatContext";
 
 // Har bir xonadosh shu oyda nechta navbat olgani: rangli ustunlar ko'rinishida
 export const MonthStats = ({ users, monthSchedules, filterUserId, loading }) => {
   const { t } = useI18n();
+  const taskText = useTaskText();
   const { tasks } = useFlat();
 
   const schedules = Object.values(monthSchedules);
@@ -36,7 +38,7 @@ export const MonthStats = ({ users, monthSchedules, filterUserId, loading }) => 
             {tasks.map((task) => (
               <span className="d-inline-flex align-items-center gap-1" key={task.key}>
                 <TaskIcon taskKey={task.key} />
-                {t(`tasks.${task.key}.label`)}
+                {taskText(task.key, "label")}
               </span>
             ))}
           </div>
@@ -67,7 +69,7 @@ export const MonthStats = ({ users, monthSchedules, filterUserId, loading }) => 
                       <span
                         className={`schedule-stats__segment schedule-stats__segment--${task.key}`}
                         style={{ width: `${(counts[task.key] / maxTotal) * 100}%` }}
-                        title={`${t(`tasks.${task.key}.label`)}: ${counts[task.key]}`}
+                        title={`${taskText(task.key, "label")}: ${counts[task.key]}`}
                         key={task.key}
                       >
                         {counts[task.key]}

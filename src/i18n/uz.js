@@ -349,6 +349,68 @@ export const uz = {
     confirm: "Berib chiqish",
   },
 
+  profile: {
+    title: "Mening profilim",
+    personal: "Shaxsiy ma'lumotlar",
+    age: "Yosh",
+    color: "Avatar rangi",
+    colorAuto: "Avtomatik",
+    password: "Parolni o'zgartirish",
+    passwordSaved: "Parol yangilandi ✅",
+    site: "Mavzu va til",
+    saved: "Profil saqlandi ✅",
+    saveError: "Saqlab bo'lmadi. Qayta urinib ko'ring.",
+  },
+
+  onboarding: {
+    title: "Uyingizni sozlashni tugating",
+    progress: "{done} / {total} qadam bajarildi",
+    hide: "Yashirish",
+    go: "O'tish",
+    steps: {
+      flat: {
+        title: "Uy yaratildi",
+        text: "",
+      },
+      flatmates: {
+        title: "Xonadoshlarni qo'shing",
+        text: "Navbatlar jadvali ular orasida aylanadi.",
+      },
+      invite: {
+        title: "Taklif yuboring",
+        text: "Xonadoshlar o'z hisobi bilan kirib, navbatini ko'radi.",
+      },
+      rules: {
+        title: "Qoidalarni ko'rib chiqing",
+        text: "Qaysi vazifa, necha kunda bir va necha kishi.",
+      },
+      profile: {
+        title: "Profilingizni to'ldiring",
+        text: "Telegram nickname yoki telefon raqamingiz.",
+      },
+    },
+  },
+
+  tasksEditor: {
+    restoreTitle: "O'chirilgan standart vazifalarni qaytarish:",
+    restored: '"{name}" qaytarildi ✅',
+    deleteQuestion:
+      '"{name}" vazifasi, uning tarixi va "Bajardim" belgilari o\'chadi. Standart vazifani keyin qaytarish mumkin, lekin tarixi qaytmaydi.',
+    reset: "Asl holiga qaytarish",
+    add: "Vazifa qo'shish",
+    addTitle: "Yangi vazifa",
+    editTitle: "Vazifani tahrirlash",
+    name: "Nomi",
+    namePlaceholder: "Masalan: Idish yuvish",
+    icon: "Belgisi",
+    color: "Rangi",
+    added: '"{name}" vazifasi qo\'shildi ✅',
+    saved: '"{name}" saqlandi ✅',
+    deleted: '"{name}" vazifasi o\'chirildi',
+    deleteTitle: "Vazifani o'chirasizmi?",
+    tooMany: "Bitta uyda ko'pi bilan 10 ta o'z vazifasi bo'lishi mumkin.",
+  },
+
   notFound: {
     title: "Sahifa topilmadi",
     text: "Siz qidirgan sahifa mavjud emas yoki ko'chirilgan.",

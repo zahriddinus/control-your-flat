@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { TaskIcon } from "../../components/TaskIcon";
 import { useI18n } from "../../i18n";
+import { useTaskText } from "../../hooks/useTaskText";
 import { formatLongDate, getShortWeekday } from "../../utils/date";
 
 const isWeekend = (date) => date.getDay() === 0 || date.getDay() === 6;
@@ -19,11 +20,12 @@ export const ScheduleTable = ({
   onSelectDay,
 }) => {
   const { t, lang } = useI18n();
+  const taskText = useTaskText();
 
   const wrapperRef = useRef(null);
 
   const selectedSchedule = monthSchedules[selectedDay];
-  const taskLabel = t(`tasks.${taskKey}.label`);
+  const taskLabel = taskText(taskKey, "label");
   const hasFilter = users.some((user) => user.user_id === filterUserId);
   const dates = days.map((day) => new Date(year, month, day));
 
@@ -63,7 +65,7 @@ export const ScheduleTable = ({
     <section className="schedule__section mb-4">
       <h3 className="schedule__title d-flex align-items-center gap-2 text-start fw-semibold m-0 mb-2">
         <TaskIcon taskKey={taskKey} size="md" />
-        {t(`tasks.${taskKey}.title`)}
+        {taskText(taskKey, "title")}
       </h3>
 
       <div className="table-responsive shadow-sm rounded" ref={wrapperRef}>

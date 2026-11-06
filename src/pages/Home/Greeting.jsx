@@ -4,6 +4,7 @@ import { WeatherIcon } from "../../components/WeatherIcon";
 import { useFlat } from "../../context/FlatContext";
 import { findDone } from "../../utils/done";
 import { useI18n } from "../../i18n";
+import { useTaskText } from "../../hooks/useTaskText";
 import { formatLongDate, getDayOfYear } from "../../utils/date";
 
 // Maslahat belgilari (16x16). Ba'zilari to'ldirilgan, ba'zilari chiziqli
@@ -101,6 +102,7 @@ const formatTime = (value) =>
 // done - bugungi "Bajardim" belgilari (null bo'lsa tugmalar ko'rinmaydi)
 export const Greeting = ({ now, me, schedules, loading, done, doneBusy, onDone, onUndo }) => {
   const { t, lang } = useI18n();
+  const taskText = useTaskText();
   const { tasks } = useFlat();
   const tip = TIPS[getDayOfYear(now) % TIPS.length];
   const greeting = getGreeting(now.getHours());
@@ -130,7 +132,7 @@ export const Greeting = ({ now, me, schedules, loading, done, doneBusy, onDone, 
         {todayTasks.map((task) => {
           const record = findDone(done, task.key, me.user_id);
           const busy = doneBusy === task.key;
-          const label = t(`tasks.${task.key}.label`);
+          const label = taskText(task.key, "label");
 
           if (record) {
             return (
@@ -183,7 +185,7 @@ export const Greeting = ({ now, me, schedules, loading, done, doneBusy, onDone, 
         {day.tasks.map((task) => (
           <span className="home__me-chip" key={task.key}>
             <TaskIcon taskKey={task.key} />
-            {t(`tasks.${task.key}.label`)}
+            {taskText(task.key, "label")}
           </span>
         ))}
       </span>

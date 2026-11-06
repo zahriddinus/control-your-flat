@@ -15,6 +15,7 @@ import {
   Settings,
   Signup,
   Users,
+  Profile,
 } from "../pages";
 import { GuestOnly, RequireAuth, RequireFlat, RequireManager } from "./guards";
 
@@ -110,6 +111,14 @@ export const AppRoutes = () => {
           element={
             <MemberPage skeleton="users">
               <Users />
+            </MemberPage>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <MemberPage skeleton="users">
+              <Profile />
             </MemberPage>
           }
         />

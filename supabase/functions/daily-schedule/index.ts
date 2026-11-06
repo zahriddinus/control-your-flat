@@ -14,8 +14,11 @@
 
 type User = { user_id: string; name: string; last_name: string | null; nickname: string | null };
 type Person = { user_id: string; name: string; last_name: string | null };
-type TaskKey = "duty" | "rubbish" | "cleaning";
-type Schedule = Record<TaskKey, Person[]>;
+type BuiltinTask = "duty" | "rubbish" | "cleaning";
+// Kun: har bir vazifa kaliti bo'yicha odamlar (o'rnatilganlar va uyning o'z vazifalari)
+type Schedule = Record<string, Person[]>;
+// Xabardagi bitta vazifa qatori
+type TaskLine = { key: string; icon: string; label: string; none: string; join: string };
 type WeatherDay = { icon: string; label: string; min: number; max: number; rain: number; wet: boolean };
 type Weather = { today: WeatherDay; tomorrow: WeatherDay };
 type Flat = {
@@ -26,7 +29,15 @@ type Flat = {
   longitude: number | null;
   telegram_chat_id: string | null;
 };
-type FlatTask = { task: TaskKey; enabled: boolean; every_days: number };
+type FlatTask = {
+  task: string;
+  enabled: boolean;
+  every_days: number;
+  is_custom: boolean;
+  name: string | null;
+  icon: string | null;
+  position: number;
+};
 
 const WEEKDAYS = ["Yakshanba", "Dushanba", "Seshanba", "Chorshanba", "Payshanba", "Juma", "Shanba"];
 const MONTHS = [
@@ -49,13 +60,57 @@ const TIPS = [
 ];
 
 // Vazifalar: belgisi, nomi, bugun ham keyin ham bo'lmasa nima yoziladi va ismlar orasidagi so'z
-const TASK_LINES: Record<TaskKey, { icon: string; label: string; none: string; join: string }> = {
-  duty: { icon: "⭐", label: "Navbatchi", none: "—", join: ", " },
-  rubbish: { icon: "🗑", label: "Musor", none: "bugun yo'q", join: ", " },
-  cleaning: { icon: "🧹", label: "Uborka", none: "yaqin kunlarda yo'q", join: " va " },
+const TASK_LINES: Record<BuiltinTask, TaskLine> = {
+  duty: { key: "duty", icon: "⭐", label: "Navbatchi", none: "—", join: ", " },
+  rubbish: { key: "rubbish", icon: "🗑", label: "Musor", none: "bugun yo'q", join: ", " },
+  cleaning: { key: "cleaning", icon: "🧹", label: "Uborka", none: "yaqin kunlarda yo'q", join: " va " },
 };
 
-const TASK_ORDER: TaskKey[] = ["duty", "rubbish", "cleaning"];
+const TASK_ORDER: BuiltinTask[] = ["duty", "rubbish", "cleaning"];
+
+// Uyning o'z vazifalari belgilari (saytdagi ikonkalar bilan mos)
+const CUSTOM_EMOJI: Record<string, string> = {
+  star: "⭐",
+  bin: "🗑",
+  sparkles: "✨",
+  dishes: "🍽",
+  plant: "🪴",
+  laundry: "🧺",
+  cart: "🛒",
+  bath: "🛁",
+  pet: "🐾",
+  cook: "🍳",
+  broom: "🧹",
+  window: "🪟",
+  water: "💧",
+};
+
+// Yoqilgan vazifalar xabar tartibida: avval o'rnatilganlar, keyin o'z vazifalari
+const toTaskLines = (flatTasks: FlatTask[]): TaskLine[] => {
+  const enabled = flatTasks.filter((item) => item.enabled);
+
+  // Nomi yoki belgisi o'zgartirilgan bo'lsa - shu, aks holda asl holi
+  const builtin = TASK_ORDER.map((key) => [key, enabled.find((item) => item.task === key)] as const)
+    .filter(([, item]) => item)
+    .map(([key, item]) => ({
+      ...TASK_LINES[key],
+      label: item?.name ? escapeHtml(item.name) : TASK_LINES[key].label,
+      icon: item?.icon ? (CUSTOM_EMOJI[item.icon] ?? TASK_LINES[key].icon) : TASK_LINES[key].icon,
+    }));
+
+  const custom = enabled
+    .filter((item) => item.is_custom)
+    .sort((a, b) => a.position - b.position)
+    .map((item) => ({
+      key: item.task,
+      icon: CUSTOM_EMOJI[item.icon ?? ""] ?? "✅",
+      label: escapeHtml(item.name ?? ""),
+      none: "—",
+      join: ", ",
+    }));
+
+  return [...builtin, ...custom];
+};
 
 // Supabase serverlari soatidagi kichik farq tufayli ba'zan "JWT issued at future" (PGRST303)
 // qaytadi. Bu vaqtinchalik: biroz kutib, qayta uriniladi
@@ -192,7 +247,7 @@ export const buildMorningMessage = ({
   flatName: string;
   today: string;
   schedules: Schedule[];
-  tasks: TaskKey[];
+  tasks: TaskLine[];
   users: User[];
   weather: Weather | null;
 }) => {
@@ -206,15 +261,15 @@ export const buildMorningMessage = ({
   lines.push("");
 
   // Bugungi navbatchilar belgilanadi. Vazifa bugun bo'lmasa, keyingisi qachonligi
-  for (const task of tasks) {
-    const line = TASK_LINES[task];
-    const people = todaySchedule[task];
+  for (const line of tasks) {
+    const task = line.key;
+    const people = todaySchedule[task] ?? [];
     let value: string;
 
     if (people.length) {
       value = people.map(mention.withName).join(line.join);
     } else {
-      const nextIndex = schedules.findIndex((schedule) => schedule[task].length > 0);
+      const nextIndex = schedules.findIndex((schedule) => (schedule[task] ?? []).length > 0);
 
       if (nextIndex === -1) {
         value = line.none;
@@ -233,11 +288,11 @@ export const buildMorningMessage = ({
   // Ertangi navbatlar qisqacha, iqtibos ichida (belgilanmaydi: kechki eslatmada belgilanadi)
   const tomorrowLines = [`🔜 <b>Ertaga</b> · ${formatUzDate(addDays(today, 1))}`];
 
-  for (const task of tasks) {
-    const people = tomorrowSchedule[task];
+  for (const line of tasks) {
+    const people = tomorrowSchedule[line.key] ?? [];
 
     if (people.length) {
-      tomorrowLines.push(`${TASK_LINES[task].icon} ${people.map(fullName).join(TASK_LINES[task].join)}`);
+      tomorrowLines.push(`${line.icon} ${people.map(fullName).join(line.join)}`);
     }
   }
 
@@ -286,7 +341,7 @@ export const buildEveningMessage = ({
   flatName: string;
   tomorrow: string;
   schedule: Schedule;
-  tasks: TaskKey[];
+  tasks: TaskLine[];
   users: User[];
   weather: Weather | null;
 }) => {
@@ -298,11 +353,11 @@ export const buildEveningMessage = ({
   if (weather) lines.push(formatWeatherLine(weather.tomorrow));
   lines.push("");
 
-  for (const task of tasks) {
-    const people = schedule[task];
+  for (const line of tasks) {
+    const people = schedule[line.key] ?? [];
 
     if (people.length) {
-      lines.push(`${TASK_LINES[task].icon} <b>${TASK_LINES[task].label}:</b> ${people.map(mention.only).join(", ")}`);
+      lines.push(`${line.icon} <b>${line.label}:</b> ${people.map(mention.only).join(", ")}`);
     }
   }
 
@@ -341,11 +396,15 @@ const getMode = async (request: Request) => {
 };
 
 // Bazadan kelgan kun: har bir vazifa - odamlar ro'yxati
-const toSchedule = (result: Partial<Schedule> | null): Schedule => ({
-  duty: result?.duty ?? [],
-  rubbish: result?.rubbish ?? [],
-  cleaning: result?.cleaning ?? [],
-});
+const toSchedule = (result: Record<string, unknown> | null): Schedule => {
+  const schedule: Schedule = { duty: [], rubbish: [], cleaning: [] };
+
+  for (const [key, value] of Object.entries(result ?? {})) {
+    if (key !== "date" && Array.isArray(value)) schedule[key] = value as Person[];
+  }
+
+  return schedule;
+};
 
 export const handler = async (request: Request) => {
   const botToken = Deno.env.get("TELEGRAM_BOT_TOKEN");
@@ -417,7 +476,7 @@ export const handler = async (request: Request) => {
 
     const [users, flatTasks, weather] = await Promise.all([
       supabaseRequest(`users?select=user_id,name,last_name,nickname&flat_id=eq.${flat.id}`) as Promise<User[]>,
-      supabaseRequest(`flat_tasks?select=task,enabled,every_days&flat_id=eq.${flat.id}`) as Promise<FlatTask[]>,
+      supabaseRequest(`flat_tasks?select=task,enabled,every_days,is_custom,name,icon,position&flat_id=eq.${flat.id}`) as Promise<FlatTask[]>,
       // Ob-havo ishlamasa ham xabar yuboriladi
       fetchWeather(flat).catch((error) => {
         console.error(error);
@@ -426,7 +485,7 @@ export const handler = async (request: Request) => {
     ]);
 
     const enabled = flatTasks.filter((item) => item.enabled);
-    const tasks = TASK_ORDER.filter((task) => enabled.some((item) => item.task === task));
+    const tasks = toTaskLines(flatTasks);
 
     if (!users.length || !tasks.length) return "skipped";
 
@@ -440,7 +499,7 @@ export const handler = async (request: Request) => {
         start_date: today,
         end_date: addDays(today, lookahead - 1),
       }),
-    })) as Partial<Schedule>[];
+    })) as Record<string, unknown>[];
 
     const schedules = range.map(toSchedule);
 

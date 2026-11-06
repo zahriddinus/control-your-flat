@@ -174,3 +174,80 @@
   font-size: 1.4rem;
   background-color: rgba(111, 66, 193, 0.12);
 }
+
+// O'z vazifasi qatoridagi tahrirlash va o'chirish
+.settings__rule-tools {
+  display: flex;
+  gap: 6px;
+}
+
+// Vazifa oynasi: ikonka va rang tanlash
+.task-editor__icons,
+.task-editor__colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.task-editor__icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1.5px solid var(--bs-border-color);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bs-body-color);
+  background-color: var(--bs-body-bg);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &.active {
+    color: #0d6efd;
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.1);
+  }
+}
+
+.task-editor__color {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  transition: transform 0.15s ease;
+
+  &.active {
+    border-color: var(--bs-body-color);
+    transform: scale(1.1);
+  }
+}
+
+// O'chirilgan standart vazifalarni qaytarish
+.settings__restore {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border: 1px dashed var(--bs-border-color);
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// Qatorlar bir xil: maydonlar va tugmalar o'ng tomonda tekis
+@media (min-width: 576px) {
+  .settings__rule-fields {
+    margin-left: auto;
+  }
+}
